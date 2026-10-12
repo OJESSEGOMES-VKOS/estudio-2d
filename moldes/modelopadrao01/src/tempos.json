@@ -1,0 +1,91 @@
+{
+ "_leia": "Gerado por scripts/gerar_tempos.py a partir de src/palavras.json. Não editar à mão.",
+ "fps": 30,
+ "duracao": 30.36,
+ "video_fim": 30.2,
+ "blocos": [
+  0.0,
+  3.013,
+  4.96,
+  10.633,
+  14.84,
+  19.923,
+  23.883,
+  26.683
+ ],
+ "planos": [
+  "A",
+  "B",
+  "A",
+  "A",
+  "B",
+  "A",
+  "A",
+  "B"
+ ],
+ "editor": {
+  "de": 2.15,
+  "corte": 2.52,
+  "legenda": 3.54,
+  "tela": 4.76,
+  "devolve": 4.96
+ },
+ "modelos": {
+  "de": 4.96,
+  "diferenca": 5.24,
+  "modelos": 6.12,
+  "criei": 6.96,
+  "melhorei": 7.6,
+  "editar": 8.26,
+  "formatos": [
+   8.5,
+   8.82,
+   9.34
+  ],
+  "claude": 9.84,
+  "sai": 10.633
+ },
+ "celular": {
+  "de": 10.633,
+  "instagram": 11.94,
+  "nome": 13.24,
+  "desses": 13.6,
+  "devolve": 14.84
+ },
+ "previas": {
+  "de": 15.51,
+  "x3": 17.86,
+  "sai": 19.923
+ },
+ "outros": {
+  "de": 21.91,
+  "sai": 23.523
+ },
+ "zooms": [],
+ "prompt": {
+  "de": 23.883,
+  "palavras": [
+   24.21,
+   24.75,
+   24.99,
+   25.15,
+   25.53,
+   25.81,
+   25.99,
+   26.19
+  ],
+  "sai": 26.683
+ },
+ "fecho": {
+  "comenta": 26.75,
+  "edicao": 27.35,
+  "aqui": 27.91,
+  "embaixo": 28.09,
+  "mandar": 28.69,
+  "dm": 29.13
+ },
+ "silencio": {
+  "de": 19.873,
+  "ate": 20.423
+ }
+}

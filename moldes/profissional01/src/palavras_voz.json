@@ -1,0 +1,485 @@
+{
+ "duracao": 30.36,
+ "palavras": [
+  {
+   "texto": "Esse",
+   "de": 0.54,
+   "ate": 0.58
+  },
+  {
+   "texto": "vídeo",
+   "de": 0.58,
+   "ate": 0.78
+  },
+  {
+   "texto": "está",
+   "de": 0.78,
+   "ate": 0.94
+  },
+  {
+   "texto": "sendo",
+   "de": 0.94,
+   "ate": 1.2
+  },
+  {
+   "texto": "100%",
+   "de": 1.2,
+   "ate": 1.74
+  },
+  {
+   "texto": "editado",
+   "de": 1.74,
+   "ate": 2.3
+  },
+  {
+   "texto": "pelo",
+   "de": 2.3,
+   "ate": 2.52
+  },
+  {
+   "texto": "Claude.",
+   "de": 2.52,
+   "ate": 2.86
+  },
+  {
+   "texto": "Ele",
+   "de": 3.1,
+   "ate": 3.36
+  },
+  {
+   "texto": "foi",
+   "de": 3.38,
+   "ate": 3.54
+  },
+  {
+   "texto": "criado",
+   "de": 3.58,
+   "ate": 3.9
+  },
+  {
+   "texto": "justamente",
+   "de": 3.9,
+   "ate": 4.12
+  },
+  {
+   "texto": "para",
+   "de": 4.12,
+   "ate": 4.58
+  },
+  {
+   "texto": "te",
+   "de": 4.58,
+   "ate": 4.76
+  },
+  {
+   "texto": "mostrar",
+   "de": 4.8,
+   "ate": 4.96
+  },
+  {
+   "texto": "a",
+   "de": 4.96,
+   "ate": 5.24
+  },
+  {
+   "texto": "diferença",
+   "de": 5.24,
+   "ate": 5.52
+  },
+  {
+   "texto": "entre",
+   "de": 5.52,
+   "ate": 5.82
+  },
+  {
+   "texto": "vários",
+   "de": 5.94,
+   "ate": 6.12
+  },
+  {
+   "texto": "modelos",
+   "de": 6.12,
+   "ate": 6.74
+  },
+  {
+   "texto": "que",
+   "de": 6.74,
+   "ate": 6.88
+  },
+  {
+   "texto": "eu",
+   "de": 6.92,
+   "ate": 6.96
+  },
+  {
+   "texto": "criei",
+   "de": 6.96,
+   "ate": 7.36
+  },
+  {
+   "texto": "e",
+   "de": 7.36,
+   "ate": 7.6
+  },
+  {
+   "texto": "melhorei",
+   "de": 7.74,
+   "ate": 8.1
+  },
+  {
+   "texto": "para",
+   "de": 8.1,
+   "ate": 8.26
+  },
+  {
+   "texto": "editar",
+   "de": 8.3,
+   "ate": 8.5
+  },
+  {
+   "texto": "qualquer",
+   "de": 8.5,
+   "ate": 8.82
+  },
+  {
+   "texto": "tipo",
+   "de": 8.88,
+   "ate": 9.16
+  },
+  {
+   "texto": "de",
+   "de": 9.16,
+   "ate": 9.34
+  },
+  {
+   "texto": "vídeo",
+   "de": 9.34,
+   "ate": 9.52
+  },
+  {
+   "texto": "usando",
+   "de": 9.52,
+   "ate": 9.7
+  },
+  {
+   "texto": "o",
+   "de": 9.7,
+   "ate": 9.84
+  },
+  {
+   "texto": "Claude.",
+   "de": 9.84,
+   "ate": 10.06
+  },
+  {
+   "texto": "Inclusive,",
+   "de": 10.72,
+   "ate": 11.18
+  },
+  {
+   "texto": "se",
+   "de": 11.18,
+   "ate": 11.38
+  },
+  {
+   "texto": "você",
+   "de": 11.38,
+   "ate": 11.56
+  },
+  {
+   "texto": "estiver",
+   "de": 11.56,
+   "ate": 11.8
+  },
+  {
+   "texto": "no",
+   "de": 11.8,
+   "ate": 11.94
+  },
+  {
+   "texto": "Instagram",
+   "de": 11.94,
+   "ate": 12.18
+  },
+  {
+   "texto": "agora,",
+   "de": 12.18,
+   "ate": 12.54
+  },
+  {
+   "texto": "você",
+   "de": 12.58,
+   "ate": 12.8
+  },
+  {
+   "texto": "está",
+   "de": 12.8,
+   "ate": 12.92
+  },
+  {
+   "texto": "vendo",
+   "de": 12.92,
+   "ate": 13.1
+  },
+  {
+   "texto": "apenas",
+   "de": 13.12,
+   "ate": 13.24
+  },
+  {
+   "texto": "um",
+   "de": 13.24,
+   "ate": 13.6
+  },
+  {
+   "texto": "desses",
+   "de": 13.6,
+   "ate": 13.78
+  },
+  {
+   "texto": "modelos.",
+   "de": 13.78,
+   "ate": 14.46
+  },
+  {
+   "texto": "Eu",
+   "de": 14.64,
+   "ate": 14.84
+  },
+  {
+   "texto": "posso",
+   "de": 14.84,
+   "ate": 15.04
+  },
+  {
+   "texto": "até",
+   "de": 15.1,
+   "ate": 15.26
+  },
+  {
+   "texto": "colocar",
+   "de": 15.3,
+   "ate": 15.66
+  },
+  {
+   "texto": "duas",
+   "de": 15.66,
+   "ate": 16.18
+  },
+  {
+   "texto": "prévias",
+   "de": 16.28,
+   "ate": 16.66
+  },
+  {
+   "texto": "rápidas",
+   "de": 16.66,
+   "ate": 17.14
+  },
+  {
+   "texto": "aqui",
+   "de": 17.24,
+   "ate": 17.38
+  },
+  {
+   "texto": "em",
+   "de": 17.38,
+   "ate": 17.46
+  },
+  {
+   "texto": "cima,",
+   "de": 17.48,
+   "ate": 17.82
+  },
+  {
+   "texto": "aceleradas",
+   "de": 18.02,
+   "ate": 18.76
+  },
+  {
+   "texto": "em",
+   "de": 18.78,
+   "ate": 18.94
+  },
+  {
+   "texto": "três",
+   "de": 18.96,
+   "ate": 19.22
+  },
+  {
+   "texto": "vezes.",
+   "de": 19.22,
+   "ate": 19.56
+  },
+  {
+   "texto": "Mas",
+   "de": 20.0,
+   "ate": 20.33
+  },
+  {
+   "texto": "se",
+   "de": 20.33,
+   "ate": 20.49
+  },
+  {
+   "texto": "você",
+   "de": 20.49,
+   "ate": 20.73
+  },
+  {
+   "texto": "quiser",
+   "de": 20.73,
+   "ate": 21.07
+  },
+  {
+   "texto": "realmente",
+   "de": 21.07,
+   "ate": 21.47
+  },
+  {
+   "texto": "ver",
+   "de": 21.47,
+   "ate": 21.91
+  },
+  {
+   "texto": "outros",
+   "de": 21.91,
+   "ate": 22.15
+  },
+  {
+   "texto": "modelos",
+   "de": 22.15,
+   "ate": 22.77
+  },
+  {
+   "texto": "de",
+   "de": 22.78,
+   "ate": 22.93
+  },
+  {
+   "texto": "edição",
+   "de": 22.93,
+   "ate": 23.31
+  },
+  {
+   "texto": "como",
+   "de": 23.31,
+   "ate": 23.59
+  },
+  {
+   "texto": "esse",
+   "de": 23.59,
+   "ate": 23.95
+  },
+  {
+   "texto": "e",
+   "de": 24.17,
+   "ate": 24.21
+  },
+  {
+   "texto": "aprender",
+   "de": 24.21,
+   "ate": 24.75
+  },
+  {
+   "texto": "a",
+   "de": 24.82,
+   "ate": 24.99
+  },
+  {
+   "texto": "como",
+   "de": 24.99,
+   "ate": 25.15
+  },
+  {
+   "texto": "usar",
+   "de": 25.15,
+   "ate": 25.53
+  },
+  {
+   "texto": "isso",
+   "de": 25.58,
+   "ate": 25.81
+  },
+  {
+   "texto": "nos",
+   "de": 25.82,
+   "ate": 25.99
+  },
+  {
+   "texto": "seus",
+   "de": 25.99,
+   "ate": 26.19
+  },
+  {
+   "texto": "vídeos,",
+   "de": 26.19,
+   "ate": 26.55
+  },
+  {
+   "texto": "comenta",
+   "de": 26.78,
+   "ate": 27.35
+  },
+  {
+   "texto": "edição",
+   "de": 27.35,
+   "ate": 27.91
+  },
+  {
+   "texto": "aqui",
+   "de": 27.91,
+   "ate": 28.09
+  },
+  {
+   "texto": "embaixo",
+   "de": 28.1,
+   "ate": 28.27
+  },
+  {
+   "texto": "que",
+   "de": 28.27,
+   "ate": 28.49
+  },
+  {
+   "texto": "eu",
+   "de": 28.49,
+   "ate": 28.53
+  },
+  {
+   "texto": "vou",
+   "de": 28.53,
+   "ate": 28.57
+  },
+  {
+   "texto": "te",
+   "de": 28.58,
+   "ate": 28.69
+  },
+  {
+   "texto": "mandar",
+   "de": 28.69,
+   "ate": 28.83
+  },
+  {
+   "texto": "na",
+   "de": 28.84,
+   "ate": 28.99
+  },
+  {
+   "texto": "sua",
+   "de": 28.99,
+   "ate": 29.13
+  },
+  {
+   "texto": "DM",
+   "de": 29.13,
+   "ate": 29.37
+  },
+  {
+   "texto": "agora.",
+   "de": 29.37,
+   "ate": 29.63
+  }
+ ]
+}

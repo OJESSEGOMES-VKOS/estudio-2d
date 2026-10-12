@@ -1,0 +1,8 @@
+faster-whisper==1.2.1
+ctranslate2==4.8.1
+av==18.1.0
+opencv-python-headless>=4.10
+numpy>=1.24
+scipy>=1.11
+requests>=2.31
+pillow>=10

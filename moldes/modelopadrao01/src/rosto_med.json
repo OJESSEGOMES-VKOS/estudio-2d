@@ -1,0 +1,76 @@
+{
+ "trechos": [
+  {
+   "de": 0.0,
+   "ate": 3.013,
+   "amostras": 19,
+   "cx": 574.4,
+   "olhos": 613.7,
+   "largura": 389.1,
+   "queixo": 916.9
+  },
+  {
+   "de": 3.013,
+   "ate": 4.96,
+   "amostras": 11,
+   "cx": 539.7,
+   "olhos": 578.6,
+   "largura": 377.2,
+   "queixo": 894.9
+  },
+  {
+   "de": 4.96,
+   "ate": 10.633,
+   "amostras": 34,
+   "cx": 525.2,
+   "olhos": 605.3,
+   "largura": 387.9,
+   "queixo": 920.9
+  },
+  {
+   "de": 10.633,
+   "ate": 14.84,
+   "amostras": 26,
+   "cx": 525.4,
+   "olhos": 632.2,
+   "largura": 387.5,
+   "queixo": 946.9
+  },
+  {
+   "de": 14.84,
+   "ate": 19.923,
+   "amostras": 30,
+   "cx": 546.2,
+   "olhos": 611.4,
+   "largura": 404.1,
+   "queixo": 932.0
+  },
+  {
+   "de": 19.923,
+   "ate": 23.883,
+   "amostras": 24,
+   "cx": 573.0,
+   "olhos": 602.4,
+   "largura": 412.1,
+   "queixo": 932.4
+  },
+  {
+   "de": 23.883,
+   "ate": 26.683,
+   "amostras": 17,
+   "cx": 574.9,
+   "olhos": 658.0,
+   "largura": 421.1,
+   "queixo": 984.1
+  },
+  {
+   "de": 26.683,
+   "ate": 30.36,
+   "amostras": 21,
+   "cx": 542.5,
+   "olhos": 644.2,
+   "largura": 429.2,
+   "queixo": 985.2
+  }
+ ]
+}

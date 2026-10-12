@@ -1,0 +1,89 @@
+{
+  "fps": 30,
+  "duracao_q": 951,
+  "cenas": [
+    {"id": "C1", "de_q": 0, "ate_q": 92, "tela": "T1+T3", "entrada": "corte"},
+    {"id": "C2", "de_q": 92, "ate_q": 137, "tela": "T2", "entrada": "flash-branco"},
+    {"id": "C3", "de_q": 137, "ate_q": 243, "tela": "T8", "entrada": "atravessar"},
+    {"id": "C4", "de_q": 243, "ate_q": 316, "tela": "T6", "entrada": "flash-quente"},
+    {"id": "C5", "de_q": 321, "ate_q": 377, "tela": "T2", "entrada": "preto-seco"},
+    {"id": "C6", "de_q": 377, "ate_q": 435, "tela": "T4", "entrada": "corte-seco"},
+    {"id": "C7", "de_q": 435, "ate_q": 600, "tela": "T9+T10+T3", "entrada": "clarao-portas"},
+    {"id": "C8", "de_q": 600, "ate_q": 720, "tela": "T7", "entrada": "flash-branco"},
+    {"id": "C9", "de_q": 720, "ate_q": 803, "tela": "T5", "entrada": "flash-quente"},
+    {"id": "C10", "de_q": 803, "ate_q": 951, "tela": "T20+T10", "entrada": "clarao-quente"}
+  ],
+  "flashes": [
+    {"q": 92, "cor": "branco"},
+    {"q": 243, "cor": "quente"},
+    {"q": 435, "cor": "sol"},
+    {"q": 600, "cor": "branco"},
+    {"q": 720, "cor": "quente"},
+    {"q": 803, "cor": "quente"}
+  ],
+  "previas": {"de_q": 470, "ate_q": 600},
+  "texto": {"84": "“EDIÇÃO”"},
+  "blocos": [
+    {"id": "B1", "cena": "C1", "pos": "centro", "linhas": [
+      {"ids": [0, 1, 2, 3], "fs": 68, "y": 770},
+      {"ids": [4], "fs": 210, "y": 960, "tipo": "contador"},
+      {"ids": [5, 6, 7], "fs": 68, "y": 1150, "ouro": [7]}
+    ]},
+    {"id": "B2", "cena": "C2", "pos": "embaixo", "linhas": [
+      {"ids": [8, 9, 10], "fs": 70, "y": 1210},
+      {"ids": [11, 12], "fs": 70, "y": 1294}
+    ]},
+    {"id": "B3", "cena": "C3", "pos": "centro", "linhas": [
+      {"ids": [13, 14, 15, 16], "fs": 64, "y": 852},
+      {"ids": [17, 18, 19], "fs": 64, "y": 928, "ouro": [19]},
+      {"ids": [20, 21, 22], "fs": 64, "y": 1004},
+      {"ids": [23, 24], "fs": 64, "y": 1080}
+    ]},
+    {"id": "B4", "cena": "C4", "pos": "embaixo", "linhas": [
+      {"ids": [25, 26, 27], "fs": 70, "y": 1210},
+      {"ids": [28, 29, 30], "fs": 70, "y": 1294},
+      {"ids": [31, 32, 33], "fs": 70, "y": 1378, "ouro": [33]}
+    ]},
+    {"id": "B5", "cena": "C5", "pos": "embaixo", "linhas": [
+      {"ids": [34, 35, 36], "fs": 70, "y": 1210},
+      {"ids": [37, 38, 39], "fs": 70, "y": 1294},
+      {"ids": [40], "fs": 70, "y": 1378}
+    ]},
+    {"id": "B6", "cena": "C6", "pos": "embaixo", "estilo": "tensao", "linhas": [
+      {"ids": [41, 42, 43], "fs": 70, "y": 1210},
+      {"ids": [44, 45, 46], "fs": 70, "y": 1294},
+      {"ids": [47], "fs": 70, "y": 1378}
+    ]},
+    {"id": "B7", "cena": "C7", "pos": "embaixo", "ate_q": 512, "linhas": [
+      {"ids": [48, 49, 50, 51], "fs": 70, "y": 1210},
+      {"ids": [52, 53, 54], "fs": 70, "y": 1294}
+    ]},
+    {"id": "B8", "cena": "C7", "pos": "embaixo", "de_q": 514, "linhas": [
+      {"ids": [55, 56, 57], "fs": 70, "y": 1210},
+      {"ids": [58, 59], "fs": 70, "y": 1294},
+      {"ids": [60, 61], "fs": 70, "y": 1378}
+    ]},
+    {"id": "B9", "cena": "C8", "pos": "centro", "encolhe_q": 650, "linhas": [
+      {"ids": [62, 63, 64], "fs": 76, "y": 880},
+      {"ids": [65, 66, 67], "fs": 76, "y": 970}
+    ]},
+    {"id": "B10", "cena": "C8", "pos": "centro", "linhas": [
+      {"ids": [68, 69], "fs": 104, "y": 800, "tipo": "contorno"},
+      {"ids": [70, 71], "fs": 104, "y": 920, "tipo": "contorno"},
+      {"ids": [72, 73], "fs": 64, "y": 1050}
+    ]},
+    {"id": "B11", "cena": "C9", "pos": "embaixo", "linhas": [
+      {"ids": [74, 75, 76], "fs": 70, "y": 1210},
+      {"ids": [77, 78, 79], "fs": 70, "y": 1294},
+      {"ids": [80, 81, 82], "fs": 70, "y": 1378}
+    ]},
+    {"id": "B12", "cena": "C10", "pos": "fecho", "linhas": [
+      {"ids": [83], "fs": 72, "y": 740},
+      {"ids": [84], "fs": 150, "y": 890, "tipo": "assinatura"}
+    ]},
+    {"id": "B13", "cena": "C10", "pos": "fecho", "linhas": [
+      {"ids": [85, 86, 87, 88, 89], "fs": 54, "y": 1075},
+      {"ids": [90, 91, 92, 93, 94, 95], "fs": 54, "y": 1145}
+    ]}
+  ]
+}

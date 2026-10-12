@@ -1,0 +1,24 @@
+{
+  "name": "vitrine-youtubeedition01",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "studio": "remotion studio",
+    "render": "remotion render src/index.ts VitrineYoutubeEdition01 out/so-video.mp4 --codec=h264 --crf=16 --concurrency=2",
+    "still": "remotion still VitrineYoutubeEdition01"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.530",
+    "@remotion/google-fonts": "4.0.530",
+    "@remotion/media": "4.0.530",
+    "@remotion/motion-blur": "4.0.530",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "remotion": "4.0.530"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.2",
+    "typescript": "5.9.3"
+  }
+}

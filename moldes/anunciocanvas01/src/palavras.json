@@ -1,0 +1,625 @@
+{
+ "duracao": 42.068,
+ "palavras": [
+  {
+   "texto": "Sua",
+   "de": 0.164,
+   "ate": 0.457
+  },
+  {
+   "texto": "agenda",
+   "de": 0.468,
+   "ate": 0.761
+  },
+  {
+   "texto": "ainda",
+   "de": 0.772,
+   "ate": 1.042
+  },
+  {
+   "texto": "vive",
+   "de": 1.054,
+   "ate": 1.324
+  },
+  {
+   "texto": "no",
+   "de": 1.335,
+   "ate": 1.437
+  },
+  {
+   "texto": "meio",
+   "de": 1.448,
+   "ate": 1.673
+  },
+  {
+   "texto": "das",
+   "de": 1.684,
+   "ate": 1.819
+  },
+  {
+   "texto": "mensagens?",
+   "de": 1.831,
+   "ate": 2.54
+  },
+  {
+   "texto": "O",
+   "de": 2.76,
+   "ate": 2.85
+  },
+  {
+   "texto": "cliente",
+   "de": 2.862,
+   "ate": 3.312
+  },
+  {
+   "texto": "pede",
+   "de": 3.323,
+   "ate": 3.549
+  },
+  {
+   "texto": "horário",
+   "de": 3.56,
+   "ate": 3.875
+  },
+  {
+   "texto": "às",
+   "de": 3.886,
+   "ate": 3.931
+  },
+  {
+   "texto": "onze",
+   "de": 3.943,
+   "ate": 4.337
+  },
+  {
+   "texto": "da",
+   "de": 4.348,
+   "ate": 4.438
+  },
+  {
+   "texto": "noite.",
+   "de": 4.449,
+   "ate": 4.855
+  },
+  {
+   "texto": "Você",
+   "de": 5.1,
+   "ate": 5.426
+  },
+  {
+   "texto": "responde",
+   "de": 5.438,
+   "ate": 5.922
+  },
+  {
+   "texto": "de",
+   "de": 5.933,
+   "ate": 6.001
+  },
+  {
+   "texto": "manhã,",
+   "de": 6.012,
+   "ate": 6.339
+  },
+  {
+   "texto": "e",
+   "de": 6.575,
+   "ate": 6.665
+  },
+  {
+   "texto": "ele",
+   "de": 6.676,
+   "ate": 6.8
+  },
+  {
+   "texto": "já",
+   "de": 6.812,
+   "ate": 6.958
+  },
+  {
+   "texto": "marcou",
+   "de": 6.969,
+   "ate": 7.341
+  },
+  {
+   "texto": "em",
+   "de": 7.352,
+   "ate": 7.465
+  },
+  {
+   "texto": "outro",
+   "de": 7.476,
+   "ate": 7.735
+  },
+  {
+   "texto": "lugar.",
+   "de": 7.746,
+   "ate": 8.05
+  },
+  {
+   "texto": "Outro",
+   "de": 8.335,
+   "ate": 8.617
+  },
+  {
+   "texto": "confirma",
+   "de": 8.628,
+   "ate": 9.146
+  },
+  {
+   "texto": "e,",
+   "de": 9.157,
+   "ate": 9.293
+  },
+  {
+   "texto": "no",
+   "de": 9.54,
+   "ate": 9.664
+  },
+  {
+   "texto": "dia,",
+   "de": 9.675,
+   "ate": 9.957
+  },
+  {
+   "texto": "não",
+   "de": 10.16,
+   "ate": 10.419
+  },
+  {
+   "texto": "aparece.",
+   "de": 10.43,
+   "ate": 10.97
+  },
+  {
+   "texto": "É",
+   "de": 11.186,
+   "ate": 11.287
+  },
+  {
+   "texto": "uma",
+   "de": 11.298,
+   "ate": 11.456
+  },
+  {
+   "texto": "hora",
+   "de": 11.467,
+   "ate": 11.681
+  },
+  {
+   "texto": "parada",
+   "de": 11.692,
+   "ate": 12.086
+  },
+  {
+   "texto": "que",
+   "de": 12.098,
+   "ate": 12.199
+  },
+  {
+   "texto": "ninguém",
+   "de": 12.21,
+   "ate": 12.548
+  },
+  {
+   "texto": "paga.",
+   "de": 12.559,
+   "ate": 12.908
+  },
+  {
+   "texto": "Agora",
+   "de": 13.464,
+   "ate": 13.948
+  },
+  {
+   "texto": "tem",
+   "de": 13.959,
+   "ate": 14.094
+  },
+  {
+   "texto": "o",
+   "de": 14.105,
+   "ate": 14.139
+  },
+  {
+   "texto": "Marcaí.",
+   "de": 14.15,
+   "ate": 14.657
+  },
+  {
+   "texto": "Você",
+   "de": 14.882,
+   "ate": 15.22
+  },
+  {
+   "texto": "manda",
+   "de": 15.231,
+   "ate": 15.524
+  },
+  {
+   "texto": "o",
+   "de": 15.535,
+   "ate": 15.569
+  },
+  {
+   "texto": "seu",
+   "de": 15.58,
+   "ate": 15.761
+  },
+  {
+   "texto": "link",
+   "de": 15.772,
+   "ate": 16.076
+  },
+  {
+   "texto": "e",
+   "de": 16.087,
+   "ate": 16.121
+  },
+  {
+   "texto": "o",
+   "de": 16.132,
+   "ate": 16.166
+  },
+  {
+   "texto": "cliente",
+   "de": 16.177,
+   "ate": 16.616
+  },
+  {
+   "texto": "marca",
+   "de": 16.628,
+   "ate": 16.898
+  },
+  {
+   "texto": "sozinho.",
+   "de": 16.909,
+   "ate": 17.472
+  },
+  {
+   "texto": "Escolhe",
+   "de": 17.687,
+   "ate": 18.093
+  },
+  {
+   "texto": "o",
+   "de": 18.104,
+   "ate": 18.127
+  },
+  {
+   "texto": "serviço,",
+   "de": 18.138,
+   "ate": 18.678
+  },
+  {
+   "texto": "o",
+   "de": 18.937,
+   "ate": 18.994
+  },
+  {
+   "texto": "horário",
+   "de": 19.005,
+   "ate": 19.399
+  },
+  {
+   "texto": "e",
+   "de": 19.41,
+   "ate": 19.455
+  },
+  {
+   "texto": "paga",
+   "de": 19.467,
+   "ate": 19.703
+  },
+  {
+   "texto": "o",
+   "de": 19.714,
+   "ate": 19.748
+  },
+  {
+   "texto": "sinal",
+   "de": 19.759,
+   "ate": 20.063
+  },
+  {
+   "texto": "no",
+   "de": 20.075,
+   "ate": 20.187
+  },
+  {
+   "texto": "Pix.",
+   "de": 20.199,
+   "ate": 20.604
+  },
+  {
+   "texto": "A",
+   "de": 20.809,
+   "ate": 20.91
+  },
+  {
+   "texto": "confirmação",
+   "de": 20.922,
+   "ate": 21.62
+  },
+  {
+   "texto": "chega",
+   "de": 21.631,
+   "ate": 21.879
+  },
+  {
+   "texto": "na",
+   "de": 21.89,
+   "ate": 22.003
+  },
+  {
+   "texto": "hora.",
+   "de": 22.014,
+   "ate": 22.284
+  },
+  {
+   "texto": "Um",
+   "de": 22.539,
+   "ate": 22.686
+  },
+  {
+   "texto": "dia",
+   "de": 22.697,
+   "ate": 22.922
+  },
+  {
+   "texto": "antes,",
+   "de": 22.933,
+   "ate": 23.361
+  },
+  {
+   "texto": "o",
+   "de": 23.598,
+   "ate": 23.643
+  },
+  {
+   "texto": "lembrete",
+   "de": 23.654,
+   "ate": 24.105
+  },
+  {
+   "texto": "vai",
+   "de": 24.116,
+   "ate": 24.251
+  },
+  {
+   "texto": "sozinho.",
+   "de": 24.262,
+   "ate": 24.803
+  },
+  {
+   "texto": "E",
+   "de": 25.008,
+   "ate": 25.12
+  },
+  {
+   "texto": "quem",
+   "de": 25.132,
+   "ate": 25.312
+  },
+  {
+   "texto": "já",
+   "de": 25.323,
+   "ate": 25.447
+  },
+  {
+   "texto": "pagou",
+   "de": 25.458,
+   "ate": 25.762
+  },
+  {
+   "texto": "o",
+   "de": 25.774,
+   "ate": 25.819
+  },
+  {
+   "texto": "sinal",
+   "de": 25.83,
+   "ate": 26.134
+  },
+  {
+   "texto": "não",
+   "de": 26.145,
+   "ate": 26.292
+  },
+  {
+   "texto": "esquece.",
+   "de": 26.303,
+   "ate": 26.798
+  },
+  {
+   "texto": "De",
+   "de": 27.013,
+   "ate": 27.171
+  },
+  {
+   "texto": "manhã,",
+   "de": 27.182,
+   "ate": 27.475
+  },
+  {
+   "texto": "você",
+   "de": 27.723,
+   "ate": 27.993
+  },
+  {
+   "texto": "abre",
+   "de": 28.004,
+   "ate": 28.252
+  },
+  {
+   "texto": "o",
+   "de": 28.263,
+   "ate": 28.286
+  },
+  {
+   "texto": "painel",
+   "de": 28.297,
+   "ate": 28.759
+  },
+  {
+   "texto": "e",
+   "de": 28.77,
+   "ate": 28.838
+  },
+  {
+   "texto": "vê",
+   "de": 28.849,
+   "ate": 29.007
+  },
+  {
+   "texto": "o",
+   "de": 29.018,
+   "ate": 29.086
+  },
+  {
+   "texto": "dia",
+   "de": 29.097,
+   "ate": 29.277
+  },
+  {
+   "texto": "inteiro.",
+   "de": 29.288,
+   "ate": 29.694
+  },
+  {
+   "texto": "Doze",
+   "de": 29.929,
+   "ate": 30.255
+  },
+  {
+   "texto": "atendimentos,",
+   "de": 30.266,
+   "ate": 30.976
+  },
+  {
+   "texto": "todos",
+   "de": 31.179,
+   "ate": 31.516
+  },
+  {
+   "texto": "confirmados.",
+   "de": 31.528,
+   "ate": 32.293
+  },
+  {
+   "texto": "Sem",
+   "de": 32.498,
+   "ate": 32.803
+  },
+  {
+   "texto": "parar",
+   "de": 32.814,
+   "ate": 33.107
+  },
+  {
+   "texto": "o",
+   "de": 33.118,
+   "ate": 33.185
+  },
+  {
+   "texto": "corte",
+   "de": 33.197,
+   "ate": 33.557
+  },
+  {
+   "texto": "pra",
+   "de": 33.568,
+   "ate": 33.692
+  },
+  {
+   "texto": "responder",
+   "de": 33.703,
+   "ate": 34.176
+  },
+  {
+   "texto": "mensagem.",
+   "de": 34.188,
+   "ate": 34.773
+  },
+  {
+   "texto": "Pra",
+   "de": 34.968,
+   "ate": 35.137
+  },
+  {
+   "texto": "salão,",
+   "de": 35.148,
+   "ate": 35.52
+  },
+  {
+   "texto": "barbearia",
+   "de": 35.79,
+   "ate": 36.308
+  },
+  {
+   "texto": "e",
+   "de": 36.32,
+   "ate": 36.365
+  },
+  {
+   "texto": "estúdio",
+   "de": 36.376,
+   "ate": 36.793
+  },
+  {
+   "texto": "de",
+   "de": 36.804,
+   "ate": 36.871
+  },
+  {
+   "texto": "estética.",
+   "de": 36.883,
+   "ate": 37.378
+  },
+  {
+   "texto": "Teste",
+   "de": 37.603,
+   "ate": 37.885
+  },
+  {
+   "texto": "grátis",
+   "de": 37.896,
+   "ate": 38.29
+  },
+  {
+   "texto": "por",
+   "de": 38.301,
+   "ate": 38.448
+  },
+  {
+   "texto": "catorze",
+   "de": 38.459,
+   "ate": 38.977
+  },
+  {
+   "texto": "dias.",
+   "de": 38.988,
+   "ate": 39.439
+  },
+  {
+   "texto": "Marcaí.",
+   "de": 39.854,
+   "ate": 40.473
+  },
+  {
+   "texto": "Marcou,",
+   "de": 40.718,
+   "ate": 41.214
+  },
+  {
+   "texto": "tá",
+   "de": 41.416,
+   "ate": 41.518
+  },
+  {
+   "texto": "marcado.",
+   "de": 41.529,
+   "ate": 42.013
+  }
+ ]
+}

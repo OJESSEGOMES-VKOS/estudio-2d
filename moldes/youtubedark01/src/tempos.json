@@ -1,0 +1,35 @@
+{
+  "fps": 30,
+  "duracao_q": 912,
+  "fade_q": [897, 912],
+  "cenas": [
+    {"id": "S1", "de_q": 0, "ate_q": 92, "o_que": "editando na mesa: tela com a linha do tempo e a barra que chega a 100%"},
+    {"id": "S2", "de_q": 92, "ate_q": 202, "o_que": "ele apresenta três cartões de edição diferentes, cada um sob um foco"},
+    {"id": "S3", "de_q": 202, "ate_q": 321, "o_que": "segura o cartão verde aceso; em volta, os tipos de vídeo (microfone, câmera, claquete, celular)"},
+    {"id": "S4", "de_q": 321, "ate_q": 377, "o_que": "na cama, de noite, rolando o feed no celular (luz azul no rosto)"},
+    {"id": "S5", "de_q": 377, "ate_q": 435, "o_que": "cinco cartões apagados, só um aceso sob o foco; ele olha pra esse"},
+    {"id": "S6", "de_q": 435, "ate_q": 514, "o_que": "parede com dois focos; as prévias entram nos quadros em 'duas'; ele olha pra cima"},
+    {"id": "S7", "de_q": 514, "ate_q": 600, "o_que": "mesma parede; ele aponta pra cima em 'aqui', três setas verdes de avanço"},
+    {"id": "S8", "de_q": 600, "ate_q": 657, "o_que": "porta fechada com luz vazando; ele com a mão na maçaneta"},
+    {"id": "S9", "de_q": 657, "ate_q": 743, "o_que": "porta aberta: a sala cheia de cartões verdes acesos; ele em contraluz"},
+    {"id": "S10", "de_q": 743, "ate_q": 803, "o_que": "sentado com o livro aberto brilhando, um cartão de vídeo flutuando em cima"},
+    {"id": "S11", "de_q": 803, "ate_q": 912, "o_que": "ele aponta pra baixo, para a caixa de comentário com comenta \"EDIÇÃO\""}
+  ],
+  "previas": {"de_q": 470, "ate_q": 600},
+  "texto": {"83": "COMENTA", "84": "“EDIÇÃO”"},
+  "legenda": {"fs": 66, "y0": 1217, "passo": 78},
+  "blocos": [
+    {"id": "B1", "cena": "S1", "linhas": [[0, 1, 2], [3, 4, 5], [6, 7]]},
+    {"id": "B2", "cena": "S2", "linhas": [[8, 9, 10], [11, 12, 13], [14, 15, 16], [17, 18, 19]]},
+    {"id": "B3", "cena": "S3", "linhas": [[20, 21, 22, 23], [24, 25, 26], [27, 28, 29], [30, 31, 32, 33]]},
+    {"id": "B4", "cena": "S4", "linhas": [[34, 35, 36], [37, 38, 39], [40]]},
+    {"id": "B5", "cena": "S5", "linhas": [[41, 42, 43], [44, 45, 46], [47]]},
+    {"id": "B6", "cena": "S6", "linhas": [[48, 49, 50, 51], [52, 53, 54]]},
+    {"id": "B7", "cena": "S7", "linhas": [[55, 56, 57], [58], [59, 60, 61]]},
+    {"id": "B8", "cena": "S8", "linhas": [[62, 63, 64, 65], [66, 67]]},
+    {"id": "B9", "cena": "S9", "linhas": [[68, 69], [70, 71, 72, 73], [74, 75]], "verde": [68, 69, 70, 71]},
+    {"id": "B10", "cena": "S10", "linhas": [[76, 77, 78, 79], [80, 81, 82]]},
+    {"id": "B11", "cena": "S11", "linhas": [[85, 86, 87, 88], [89, 90, 91, 92], [93, 94, 95]]}
+  ],
+  "fixo": {"cena": "S11", "linhas": [{"ids": [83], "fs": 64, "y": 948}, {"ids": [84], "fs": 128, "y": 1042}]}
+}

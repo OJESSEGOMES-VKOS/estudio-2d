@@ -1,0 +1,20 @@
+// Fotos de conferência.  node scripts/quadros.mjs [--previas] [--pasta=conferencia/x] 1 13.8 ...  -> <pasta>/q_1.00.png (ESCALA=1 tamanho cheio)
+import {bundle} from '@remotion/bundler';
+import {renderStill, selectComposition} from '@remotion/renderer';
+import path from 'node:path';
+import fs from 'node:fs';
+
+const args = process.argv.slice(2);
+const previas = args.includes('--previas');
+const pastaArg = args.find((a) => a.startsWith('--pasta='));
+const pasta = pastaArg ? pastaArg.slice(8) : 'conferencia/q';
+const tempos = args.filter((a) => !a.startsWith('--')).map(Number);
+fs.mkdirSync(pasta, {recursive: true});
+const serve = await bundle({entryPoint: path.resolve('src/index.ts')});
+const props = {previas, nomesPrevias: ['superpodcast01', 'youtubeedition01'], musica: false, efeitos: false};
+const comp = await selectComposition({serveUrl: serve, id: 'VitrineYoutubeDark01', inputProps: props});
+for (const t of tempos) {
+	const out = `${pasta}/q_${t.toFixed(2)}${previas ? '_previas' : ''}.png`;
+	await renderStill({composition: comp, serveUrl: serve, output: out, frame: Math.min(comp.durationInFrames - 1, Math.round(t * 30)), inputProps: props, imageFormat: 'png', scale: process.env.ESCALA ? Number(process.env.ESCALA) : 0.5});
+	console.log(out);
+}
