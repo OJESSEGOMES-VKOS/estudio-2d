@@ -3,12 +3,18 @@ import {loadFont as loadInter} from '@remotion/google-fonts/Inter';
 import {loadFont as loadScript} from '@remotion/google-fonts/PinyonScript';
 import {loadFont as loadSerif} from '@remotion/google-fonts/InstrumentSerif';
 import {loadFont as loadMono} from '@remotion/google-fonts/GeistMono';
-import P from '../d1/palavras.json';
+import PALAVRAS from './palavras.json'; // entrada padrão: [{text,start,end}]
 
-/** modelodinamico02 (../../modelos/modelodinamico02/MODELO.md). Nada daqui vale pro 01 nem pro padrão. */
-export {P};
+/** modelodinamico02 (../../modelos/modelodinamico02/MODELO.md). Nada daqui vale pro 01 nem pro padrão.
+ * 2026-10-13 (teste do estúdio aberto): lê a entrada padrão (src/palavras.json, public/voz.wav); a duração vem das
+ * palavras; palavra do plano que a fala não tem para o molde com a mensagem do que refazer. */
+const palavras = (PALAVRAS as {text: string; start: number; end: number}[]).map((p) => ({texto: p.text, de: p.start, ate: p.end}));
+if (!palavras.length) throw new Error('src/palavras.json está vazio: este molde precisa da narração transcrita (tools/preparar.py ou tools/novo-video.py).');
+export const P = {palavras};
 export const FPS = 30;
-export const DURACAO = P.duracao + 0.9;
+/** a última tela segura 1,24 s depois da última palavra (na vitrine: 44,06 + 1,24 = 45,30 s, 1359 quadros) */
+export const QUADROS = Math.round((palavras[palavras.length - 1].ate + 1.24) * FPS);
+export const DURACAO = QUADROS / FPS;
 
 /** um mundo de cor, dois fundos que se alternam (MODELO §2): preto quente ↔ laranja Claude */
 export const C = {
@@ -43,11 +49,14 @@ export const tw = (t: number, a: number, b: number, v0: number, v1: number, e = 
 export const mola = (t: number, at: number, cfg: Partial<{damping: number; stiffness: number; mass: number}> = {}) =>
 	t < at ? 0 : spring({frame: (t - at) * FPS, fps: FPS, config: {damping: 14, stiffness: 180, mass: 0.8, ...cfg}});
 
-const limpa = (s: string) => s.toLowerCase().replace(/[.,!?]/g, '');
+/** a palavra sem maiúscula, acento e pontuação (o Whisper varia nisso) */
+export const limpa = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9%]/g, '');
+const REFAZER = 'Refaça CENAS e os heróis de src/Cenas.tsx para a fala nova (LEIA.md, "Vídeo novo") e rode node scripts/cobertura.mjs, que lista tudo o que falta.';
+/** início da n-ésima vez que a palavra é dita; se a fala não tem, para com o que refazer */
 export const w = (texto: string, n = 1) => {
 	let k = 0;
 	for (const p of P.palavras) if (limpa(p.texto) === limpa(texto) && ++k === n) return p.de;
-	throw new Error(`palavra não achada: ${texto} #${n}`);
+	throw new Error(`O plano não bate com a fala de src/palavras.json: \`${n > 1 ? `w('${texto}', ${n})` : `w('${texto}')`}\` pede a ${n}ª vez que se diz "${texto}", e a fala ${k ? `só tem ${k}` : 'não tem nenhuma'}.\n${REFAZER}`);
 };
 
 /**
@@ -65,5 +74,5 @@ export const tempoDe = (token: string): number => {
 			ultimo = P.palavras[i].de;
 			return ultimo;
 		}
-	throw new Error(`token fora de ordem: ${token} (cursor ${cursor})`);
+	throw new Error(`O plano não bate com a fala de src/palavras.json: a palavra \`${token}\` das CENAS não aparece na fala depois da palavra ${cursor} ("${P.palavras[cursor - 1]?.texto ?? 'início'}"); as linhas de cada tela são as palavras ditas, na ordem.\n${REFAZER}`);
 };

@@ -1,0 +1,36 @@
+{
+ "modelo": "pregacaodinamica01",
+ "gerado_de": "vitrine-pregacaodinamica01.mp4",
+ "entrada": {
+  "segundos": 30.0,
+  "formato": "1080x1920",
+  "brilho": 88.67,
+  "contraste": 155.0,
+  "saturacao": 64.34,
+  "temperatura": 2.77,
+  "tom": 4.2,
+  "rosto_aberto": 0.2689,
+  "rosto_fechado": 0.292,
+  "rosto_cy": 0.351,
+  "rosto_cx": 0.5021,
+  "cabeca_cortada": 0.0,
+  "com_rosto": 1.0
+ },
+ "saida": {
+  "video": "vitrine-pregacaodinamica01.mp4",
+  "segundos": 30.2,
+  "formato": "1080x1920",
+  "brilho": 86.45,
+  "contraste": 161.0,
+  "saturacao": 68.1,
+  "temperatura": 2.93,
+  "tom": 4.54,
+  "cortes_min": 9.9,
+  "rosto_aberto": 0.2818,
+  "rosto_fechado": 0.3166,
+  "rosto_cy": 0.3524,
+  "rosto_cx": 0.5044,
+  "cabeca_cortada": 0.0,
+  "com_rosto": 0.884
+ }
+}

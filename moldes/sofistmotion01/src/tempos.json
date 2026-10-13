@@ -1,6 +1,10 @@
 {
+  "fala": "Esse vídeo está sendo 100% editado pelo Claude. Ele foi criado justamente para te mostrar a diferença entre vários modelos que eu criei e melhorei para editar qualquer tipo de vídeo usando o Claude. Inclusive, se você estiver no Instagram agora, você está vendo apenas um desses modelos. Eu posso até colocar duas prévias rápidas aqui em cima, aceleradas em três vezes. Mas se você quiser realmente ver outros modelos de edição como esse e aprender a como usar isso nos seus vídeos, comenta edição aqui embaixo que eu vou te mandar na sua DM agora.",
   "fps": 30,
   "duracao_q": 951,
+  "escurece_q": [918, 932],
+  "virada": "C7",
+  "acordes": [0.0, 3.07, 6.0, 8.1, 10.7, 12.57, "C7", 17.14, 20.0, 24.0, "C10"],
   "cenas": [
     {"id": "C1", "de_q": 0, "ate_q": 92, "tela": "T1+T3", "entrada": "corte"},
     {"id": "C2", "de_q": 92, "ate_q": 137, "tela": "T2", "entrada": "flash-branco"},
@@ -22,10 +26,33 @@
     {"q": 803, "cor": "quente"}
   ],
   "previas": {"de_q": 470, "ate_q": 600},
+  "marcas": {
+    "contador": [4, "100%"],
+    "editor": [10, "criado"],
+    "cartao1": [16, "diferença"],
+    "cartao2": [18, "vários"],
+    "cartao3": [19, "modelos"],
+    "cartao4": [22, "criei"],
+    "melhorei": [24, "melhorei"],
+    "roleta1": [27, "qualquer"],
+    "roleta2": [28, "tipo"],
+    "roleta3": [29, "de"],
+    "roleta4": [30, "vídeo"],
+    "coracao": [39, "Instagram"],
+    "apenas": [44, "apenas"],
+    "setas": [55, "aqui"],
+    "tres": [60, "três"],
+    "clique": [75, "aprender"],
+    "icone1": [76, "a"],
+    "icone2": [77, "como"],
+    "icone3": [78, "usar"],
+    "icone4": [79, "isso"],
+    "seta_baixo": [85, "aqui"]
+  },
   "texto": {"84": "“EDIÇÃO”"},
   "blocos": [
     {"id": "B1", "cena": "C1", "pos": "centro", "linhas": [
-      {"ids": [0, 1, 2, 3], "fs": 68, "y": 770},
+      {"ids": [0, 1, 2, 3], "fs": 68, "y": 770, "tipo": "gigante", "gigante": [0, 1]},
       {"ids": [4], "fs": 210, "y": 960, "tipo": "contador"},
       {"ids": [5, 6, 7], "fs": 68, "y": 1150, "ouro": [7]}
     ]},

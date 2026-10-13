@@ -1,6 +1,6 @@
 import React from 'react';
-import {AbsoluteFill, Audio, staticFile} from 'remotion';
-import {C, DURACAO, E, FPS, T, tw, useT} from './tema';
+import {AbsoluteFill, Audio, getStaticFiles, staticFile} from 'remotion';
+import {C, DURACAO, E, FPS, T, pare, tw, useT} from './tema';
 import {Texto} from './texto';
 import * as S from './cenas';
 
@@ -13,6 +13,22 @@ export type Props = {previas: boolean; nomesPrevias: [string, string]; musica: b
 const TB = 0.22; // borrão
 const TI = 0.42; // íris
 const CENAS = T.cenas.map((c) => ({...c, de: c.de_q / FPS, ate: c.ate_q / FPS}));
+/* as telas desenhadas em src/cenas.tsx; o plano só usa estas */
+const TELAS = ['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9', 'S10'];
+for (const c of T.cenas) if (!TELAS.includes(c.id)) pare(`a cena "${c.id}" de src/tempos.json não está desenhada em src/cenas.tsx. Use uma de ${TELAS.join(', ')} ou desenhe a nova (e ponha no Quadro do Reel.tsx).`);
+/* som e prévias ligados pedem os arquivos: para logo, dizendo como fazer */
+const ARQUIVOS = new Set(getStaticFiles().map((a) => a.name.replace(/\\/g, '/')));
+const COMO: Record<string, string> = {
+	'voz.wav': 'rode tools/novo-video.py com a gravação da narração',
+	'trilha.wav': 'rode ../../.venv/Scripts/python.exe scripts/som.py (ou musica: false)',
+	'efeitos.wav': 'rode ../../.venv/Scripts/python.exe scripts/som.py (ou efeitos: false)',
+	'previa1.mp4': 'faça com tools/previa.py a partir de um vídeo seu pronto (da raiz: .venv/Scripts/python.exe tools/previa.py <video.mp4> videos/<pasta> 1, e depois 2) ou previas: false',
+	'previa2.mp4': 'faça com tools/previa.py a partir de um vídeo seu pronto (da raiz: .venv/Scripts/python.exe tools/previa.py <video.mp4> videos/<pasta> 2) ou previas: false',
+};
+const precisa = (nome: string) => {
+	if (!ARQUIVOS.has(nome)) pare(`falta public/${nome}: ${COMO[nome]}.`);
+};
+precisa('voz.wav');
 type Cena = (typeof CENAS)[number];
 
 const Camera: React.FC<{c: Cena; children: React.ReactNode}> = ({c, children}) => {
@@ -35,7 +51,8 @@ const Quadro: React.FC<{c: Cena; p: Props}> = ({c, p}) => {
 			case 'S7': return <S.S7 previas={p.previas} nomes={p.nomesPrevias} />;
 			case 'S8': return <S.S8 />;
 			case 'S9': return <S.S9 />;
-			default: return <S.S10 />;
+			case 'S10': return <S.S10 />;
+			default: return null;
 		}
 	})();
 	return (
@@ -47,6 +64,9 @@ const Quadro: React.FC<{c: Cena; p: Props}> = ({c, p}) => {
 };
 
 export const VitrineAnuncioMotion01: React.FC<Props> = (p) => {
+	if (p.musica) precisa('trilha.wav');
+	if (p.efeitos) precisa('efeitos.wav');
+	if (p.previas && T.previas) (precisa('previa1.mp4'), precisa('previa2.mp4'));
 	const {t} = useT();
 	let i = CENAS.findIndex((c) => t >= c.de && t < c.ate);
 	if (i < 0) i = CENAS.length - 1;
@@ -90,8 +110,8 @@ export const VitrineAnuncioMotion01: React.FC<Props> = (p) => {
 	return (
 		<AbsoluteFill style={{background: C.preto, overflow: 'hidden'}}>
 			{camada}
-			{/* fecho: vai ao preto nos últimos 0,4 s, depois da voz */}
-			<div style={{position: 'absolute', inset: 0, background: '#000', opacity: tw(t, DURACAO - 0.45, DURACAO - 0.05, 0, 1, E.inOut)}} />
+			{/* fecho (opcional, "escurece" no src/tempos.json): vai ao preto nos últimos 0,4 s, depois da voz */}
+			{T.escurece && <div style={{position: 'absolute', inset: 0, background: '#000', opacity: tw(t, DURACAO - 0.45, DURACAO - 0.05, 0, 1, E.inOut)}} />}
 			<Audio src={staticFile('voz.wav')} />
 			{p.musica && <Audio src={staticFile('trilha.wav')} />}
 			{p.efeitos && <Audio src={staticFile('efeitos.wav')} />}

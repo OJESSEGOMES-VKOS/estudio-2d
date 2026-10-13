@@ -1,9 +1,12 @@
 """Som do sofistmotion01 (vitrine): trilha sintetizada + efeitos nas trocas, tudo calculado dos tempos do vídeo.
 Gera public/trilha.wav (pulso grave + pad quente + brilho, com ducking pela voz, ~16 dB abaixo dela) e
 public/efeitos.wav (whoosh, estalo, impacto, tiques, brilho metálico). Cauda de ~2 s no fim (MODELO §9).
+Tudo vem do plano (src/tempos.json): a duração, as cenas (o efeito de cada tela vai com o id dela: C2 notebook, C3
+atravessar, C5 celular, C6 corte vermelho, C7 portas), os flashes, as prévias, "virada", "acordes" (segundos ou id de
+cena; sem a lista, um acorde por cena) e as marcas. O que o plano não tem não toca.
 uso: ../../.venv/Scripts/python.exe scripts/som.py   (SAIDA=<pasta> grava fora de public/)
 """
-import json, os, re, subprocess
+import json, os, re, subprocess, sys, unicodedata
 from pathlib import Path
 
 import numpy as np
@@ -22,6 +25,15 @@ tt = np.arange(N) / SR
 rng = np.random.default_rng(11)
 q2s = lambda q: q / FPS
 ini = lambda i: round(PS[i]['start'] * FPS) / FPS
+limpa = lambda s: re.sub(r'[^a-z0-9]', '', ''.join(c for c in unicodedata.normalize('NFD', s.lower()) if unicodedata.category(c) != 'Mn'))
+if [w for w in map(limpa, T.get('fala', '').split()) if w] != [w for w in (limpa(p['text']) for p in PS) if w]:
+    sys.exit('O plano (src/tempos.json) não é desta fala: rode scripts/conferir.py, que diz o que refazer.')
+MARCAS = T.get('marcas') or {}
+marca = lambda nome: ini(MARCAS[nome][0]) if nome in MARCAS else None  # sem a marca, o efeito dela não toca
+CQ = {c['id']: c['de_q'] for c in T['cenas']}
+cen = lambda i: q2s(CQ[i]) if i in CQ else None  # início da cena (s), ou None se o plano não a tem
+LINHAS = [l for b in T['blocos'] for l in b['linhas']]
+tipo = lambda t: next((l for l in LINHAS if l.get('tipo') == t), None)
 hz = lambda m: 440 * 2 ** ((m - 69) / 12)
 lp = lambda x, f: sosfilt(butter(2, f, 'low', fs=SR, output='sos'), x)
 hp = lambda x, f: sosfilt(butter(2, f, 'high', fs=SR, output='sos'), x)
@@ -46,16 +58,14 @@ def env_ad(n, a, d):
 
 
 # ---------------- trilha ----------------
-CEN = {c['id']: q2s(c['de_q']) for c in T['cenas']}
-VIRADA = CEN['C7']   # clarão com portas
-FECHO = CEN['C10']
-# acordes (Ré menor): Dm, Bb, F, C ... virada: Bb, F, Gm, A ... fecho: Dm(add9)
-ACORDES = [
-    (0.0, [38, 50, 57, 62, 65]), (3.07, [34, 46, 53, 58, 62]), (6.0, [41, 53, 57, 60, 65]), (8.1, [36, 48, 55, 60, 64]),
-    (10.7, [38, 50, 57, 62, 65]), (12.57, [37, 49, 56, 61, 64]),
-    (VIRADA, [34, 46, 53, 58, 62, 65]), (17.14, [41, 53, 57, 60, 65, 69]), (20.0, [31, 43, 50, 55, 58, 62]), (24.0, [33, 45, 52, 57, 61, 64]),
-    (FECHO, [38, 50, 57, 62, 64, 65, 69]),
-]
+VIRADA = cen(T['virada']) if T.get('virada') in CQ else float('inf')   # clarão com portas (sem "virada": o pulso não sobe)
+FECHO = q2s(T['cenas'][-1]['de_q'])                                     # a última cena
+# acordes (Ré menor): Dm, Bb, F, C ... virada: Bb, F, Gm, A ... fecho: Dm(add9); o último é sempre o do fecho
+NOTAS = [[38, 50, 57, 62, 65], [34, 46, 53, 58, 62], [41, 53, 57, 60, 65], [36, 48, 55, 60, 64], [38, 50, 57, 62, 65], [37, 49, 56, 61, 64],
+         [34, 46, 53, 58, 62, 65], [41, 53, 57, 60, 65, 69], [31, 43, 50, 55, 58, 62], [33, 45, 52, 57, 61, 64]]
+NOTAS_FECHO = [38, 50, 57, 62, 64, 65, 69]
+inicios = [cen(x) if isinstance(x, str) else x for x in T.get('acordes') or [c['de_q'] / FPS for c in T['cenas']]]
+ACORDES = [(t0, NOTAS_FECHO if k == len(inicios) - 1 else NOTAS[k % len(NOTAS)]) for k, t0 in enumerate(inicios)]
 pad = np.zeros(N)
 baixo = np.zeros(N)
 for k, (t0, notas) in enumerate(ACORDES):
@@ -82,7 +92,7 @@ t = 0.0
 k = 0
 while t < FECHO:
     g = (0.55 if k % 2 == 0 else 0.25) * (1.0 if t >= VIRADA else 0.7)
-    if not (CEN['C5'] - 0.25 < t < CEN['C5']):  # respira no preto seco
+    if not any(q2s(c['de_q']) - 0.25 < t < q2s(c['de_q']) for c in T['cenas'] if c.get('entrada') == 'preto-seco'):  # respira no preto seco
         add(pulso, t, kick, g)
     t += passo; k += 1
 # brilho: arpejo agudo discreto
@@ -98,7 +108,7 @@ while t < FECHO + 1.0:
     t += passo; k += 1
 # subida antes da virada e antes do fecho
 sub = np.zeros(N)
-for alvo, dur in ((VIRADA, 1.6), (FECHO, 1.0)):
+for alvo, dur in [x for x in ((VIRADA, 1.6), (FECHO, 1.0)) if x[0] != float('inf')]:
     n = int(dur * SR)
     x = np.linspace(0, 1, n)
     ruido = bp(rng.standard_normal(n), 800, 7000) * x ** 2
@@ -163,39 +173,57 @@ def metal(dur=1.4):
     return s * np.sin(np.pi * np.clip(tb / dur, 0, 1)) ** 2 * 0.5
 
 
-add(fx, ini(0) - 0.05, whoosh(0.5, 500, 4000), 0.5)                     # palavra gigante entrando
-for k in range(9):                                                      # contador 0 -> 100
-    add(fx, ini(4) + (k / 9) ** 1.6 * 0.5, tique(2400 + k * 80), 0.25)
-add(fx, ini(4) + 0.53, sino(1568), 0.22)
+# cada efeito preso a uma marca, a uma linha especial ou a uma cena do plano; o que o plano não tem, não toca (ordem fixa)
+if tipo('gigante') and tipo('gigante').get('gigante'):
+    add(fx, ini(tipo('gigante')['gigante'][0]) - 0.05, whoosh(0.5, 500, 4000), 0.5)   # palavra gigante entrando
+if marca('contador') is not None:
+    for k in range(9):                                                  # contador 0 -> 100
+        add(fx, marca('contador') + (k / 9) ** 1.6 * 0.5, tique(2400 + k * 80), 0.25)
+    add(fx, marca('contador') + 0.53, sino(1568), 0.22)
 for fl in T['flashes']:                                                 # flashes
     t0 = q2s(fl['q'])
     add(fx, t0 - 0.35, whoosh(0.4, 400, 9000), 0.55)
     add(fx, t0, estalo(), 0.28)
     if fl['cor'] != 'branco':
         add(fx, t0, impacto(44 if fl['cor'] == 'sol' else 58, 1.8 if fl['cor'] == 'sol' else 1.0), 0.8 if fl['cor'] == 'sol' else 0.45)
-add(fx, CEN['C3'] - 0.3, whoosh(0.35, 6000, 300, sobe=False), 0.55)     # atravessar
-add(fx, q2s(441), whoosh(0.5, 200, 3000), 0.45)                         # portas abrindo
-add(fx, CEN['C5'], whoosh(0.45, 300, 5000), 0.4)                        # celular girando
-add(fx, CEN['C6'], impacto(40, 1.2), 0.65)                              # corte para o vermelho
-add(fx, CEN['C2'] + 0.02, whoosh(0.45, 300, 5000), 0.35)                # notebook girando
-for n in (137, round(PS[16]['start'] * FPS), round(PS[18]['start'] * FPS), round(PS[19]['start'] * FPS), round(PS[22]['start'] * FPS)):
-    add(fx, q2s(n), tique(1800), 0.3)                                   # cartões chegando
-add(fx, ini(24), sino(1760, 0.9), 0.15)                                 # "melhorei": o cartão acende
-for i in (27, 28, 29, 30):                                              # roleta: um gomo por palavra
-    add(fx, ini(i), tique(3200), 0.4); add(fx, ini(i) + 0.03, tique(2100), 0.25)
-add(fx, ini(39), sino(2093, 0.5), 0.12)                                 # coração
-de = q2s(T['previas']['de_q'])
-add(fx, de - 0.2, whoosh(0.45, 300, 6000), 0.45); add(fx, de - 0.1, whoosh(0.45, 300, 6000), 0.35)   # prévias voando
-add(fx, ini(55), whoosh(0.3, 1500, 5000), 0.2)                          # setas
-for k in range(3):
-    add(fx, ini(60) + k * 0.1, tique(2000 + 400 * k), 0.4)              # selo 1x 2x 3x
-add(fx, ini(60) + 0.22, sino(1760, 1.0), 0.18)
-add(fx, ini(75), tique(1500), 0.55); add(fx, ini(75) + 0.02, whoosh(0.4, 400, 3000), 0.3)          # clique + pasta abrindo
-for i in (76, 77, 78, 79):
-    add(fx, ini(i), sino(1320 * 2 ** ((i - 76) * 4 / 12), 0.6), 0.12)   # ícones saltando
-add(fx, ini(84) - 0.05, metal(1.6), 0.25)                               # "EDIÇÃO" em ouro, luz passando
-add(fx, ini(84), impacto(55, 2.0), 0.35)
-add(fx, ini(85), whoosh(0.3, 3000, 600, sobe=False), 0.18)              # seta para baixo
+if 'C3' in CQ:
+    add(fx, cen('C3') - 0.3, whoosh(0.35, 6000, 300, sobe=False), 0.55) # atravessar
+if 'C7' in CQ:
+    add(fx, q2s(CQ['C7'] + 6), whoosh(0.5, 200, 3000), 0.45)           # portas abrindo
+if 'C5' in CQ:
+    add(fx, cen('C5'), whoosh(0.45, 300, 5000), 0.4)                    # celular girando
+if 'C6' in CQ:
+    add(fx, cen('C6'), impacto(40, 1.2), 0.65)                          # corte para o vermelho
+if 'C2' in CQ:
+    add(fx, cen('C2') + 0.02, whoosh(0.45, 300, 5000), 0.35)            # notebook girando
+for t0 in ([cen('C3')] if 'C3' in CQ else []) + [marca(m) for m in ('cartao1', 'cartao2', 'cartao3', 'cartao4') if m in MARCAS]:
+    add(fx, t0, tique(1800), 0.3)                                       # cartões chegando
+if marca('melhorei') is not None:
+    add(fx, marca('melhorei'), sino(1760, 0.9), 0.15)                   # "melhorei": o cartão acende
+for t0 in [marca(m) for m in ('roleta1', 'roleta2', 'roleta3', 'roleta4') if m in MARCAS]:   # roleta: um gomo por palavra
+    add(fx, t0, tique(3200), 0.4); add(fx, t0 + 0.03, tique(2100), 0.25)
+if marca('coracao') is not None:
+    add(fx, marca('coracao'), sino(2093, 0.5), 0.12)                    # coração
+if T.get('previas'):
+    de = q2s(T['previas']['de_q'])
+    add(fx, de - 0.2, whoosh(0.45, 300, 6000), 0.45); add(fx, de - 0.1, whoosh(0.45, 300, 6000), 0.35)   # prévias voando
+if marca('setas') is not None:
+    add(fx, marca('setas'), whoosh(0.3, 1500, 5000), 0.2)               # setas
+if marca('tres') is not None:
+    for k in range(3):
+        add(fx, marca('tres') + k * 0.1, tique(2000 + 400 * k), 0.4)    # selo 1x 2x 3x
+    add(fx, marca('tres') + 0.22, sino(1760, 1.0), 0.18)
+if marca('clique') is not None:
+    add(fx, marca('clique'), tique(1500), 0.55); add(fx, marca('clique') + 0.02, whoosh(0.4, 400, 3000), 0.3)   # clique + pasta abrindo
+for k, m in enumerate(('icone1', 'icone2', 'icone3', 'icone4')):
+    if m in MARCAS:
+        add(fx, marca(m), sino(1320 * 2 ** (k * 4 / 12), 0.6), 0.12)   # ícones saltando
+if tipo('assinatura'):
+    a = ini(tipo('assinatura')['ids'][0])
+    add(fx, a - 0.05, metal(1.6), 0.25)                                 # "EDIÇÃO" em ouro, luz passando
+    add(fx, a, impacto(55, 2.0), 0.35)
+if marca('seta_baixo') is not None:
+    add(fx, marca('seta_baixo'), whoosh(0.3, 3000, 600, sobe=False), 0.18)   # seta para baixo
 
 trilha = lp(trilha, 12000)
 

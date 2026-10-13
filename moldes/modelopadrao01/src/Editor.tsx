@@ -12,7 +12,7 @@ import {Faisca} from './ui';
  *   Claude -> o cursor do Claude passa a lâmina no clipe; criado -> a palavra vira legenda e a faixa de legenda
  *   nasce; mostrar -> uma tela se monta na pré-visualização. Em "a diferença" o vídeo cresce para a tela dividida.
  */
-const S = T.editor;
+const S = T.editor; // null: o vídeo não tem a tela do editor
 const JAN = {x: 60, y: 430, w: 960, h: 1010}; // desce além da zona segura: a parte de baixo é só a linha do tempo
 const TL = {x0: 200, x1: 990, regua: 1108, v: 1130, l: 1238, tt: 1316, hv: 92, hl: 60};
 const PH = 1920 * (PREVIA.w / 1080);
@@ -26,7 +26,7 @@ const CLIPES: [number, number][] = [
 ];
 
 /** quanto o editor ainda está na tela (some enquanto o vídeo cresce) */
-const vida = (t: number) => Math.min(tw(t, S.de - 0.35, S.de + 0.05, 0, 1, E.inOut), 1 - tw(t, S.devolve - 0.05, S.devolve + 0.2, 0, 1, E.in)); // as camadas saem antes do vídeo crescer
+export const vida = (t: number) => (S ? Math.min(tw(t, S.de - 0.35, S.de + 0.05, 0, 1, E.inOut), 1 - tw(t, S.devolve - 0.05, S.devolve + 0.2, 0, 1, E.in)) : 0); // as camadas saem antes do vídeo crescer
 
 export const EditorFundo: React.FC = () => {
 	const {t} = useT();
@@ -53,9 +53,8 @@ export const paginasDe = (inicio: number, grupos: number[]): Pagina[] => {
 	}
 	return out;
 };
-const idx = (texto: string) => P.palavras.findIndex((w) => w.texto.replace(/[.,]$/, '') === texto);
-// "pelo Claude." "Ele foi criado" "justamente para" "te mostrar a"
-const PAGINAS = paginasDe(idx('pelo'), [2, 3, 2, 3]);
+// "pelo Claude." "Ele foi criado" "justamente para" "te mostrar a" (scripts/gerar_tempos.py, titulos.editor)
+export const PAGINAS = T.titulos.editor ? paginasDe(T.titulos.editor.i0, T.titulos.editor.grupos) : [];
 
 const Palavra: React.FC<{texto: string; de: number; t: number}> = ({texto, de, t}) => {
 	const limpo = texto.replace(/[.,]$/, '');
@@ -94,8 +93,10 @@ const Palavra: React.FC<{texto: string; de: number; t: number}> = ({texto, de, t
 	);
 };
 
+/** a página de título no tempo t (-1: nenhuma) */
+export const paginaEm = (t: number, paginas: Pagina[]) => paginas.findIndex((p, i) => t >= p.de - 0.05 && (i === paginas.length - 1 || t < paginas[i + 1].de - 0.05));
 export const Titulo: React.FC<{t: number; paginas: Pagina[]}> = ({t, paginas}) => {
-	const idx = paginas.findIndex((p, i) => t >= p.de - 0.05 && (i === paginas.length - 1 || t < paginas[i + 1].de - 0.05));
+	const idx = paginaEm(t, paginas);
 	if (idx < 0) return null;
 	const pg = paginas[idx];
 	return (
@@ -108,13 +109,16 @@ export const Titulo: React.FC<{t: number; paginas: Pagina[]}> = ({t, paginas}) =
 };
 
 /** o cursor do Claude: vai de ponto em ponto, chegando no instante de cada ação */
-const ROTA: [number, number, number][] = [
-	[0, 900, 1176],
-	[S.corte - 0.05, 480, 1176],
-	[S.legenda, 560, 1268],
-	[S.tela, 600, 1346],
-];
+const ROTA: [number, number, number][] = S
+	? [
+			[0, 900, 1176],
+			[S.corte - 0.05, 480, 1176],
+			[S.legenda, 560, 1268],
+			[S.tela, 600, 1346],
+		]
+	: [];
 const cursor = (t: number) => {
+	if (!ROTA.length) return {x: 0, y: 0};
 	let x = ROTA[0][1], y = ROTA[0][2];
 	for (let i = 1; i < ROTA.length; i++) {
 		const [ti, xi, yi] = ROTA[i];
@@ -128,7 +132,7 @@ const cursor = (t: number) => {
 export const EditorFrente: React.FC = () => {
 	const {t} = useT();
 	const v = vida(t);
-	if (v <= 0) return null;
+	if (v <= 0 || !S) return null;
 	// faixa V: aparas nos cliques, o arquivo novo chega, a lâmina corta
 	const apara1 = 0;
 	const apara2 = 0;

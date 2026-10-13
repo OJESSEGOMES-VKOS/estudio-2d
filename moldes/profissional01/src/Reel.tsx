@@ -1,9 +1,10 @@
 import React from 'react';
-import {AbsoluteFill, Easing, Img, OffthreadVideo, Sequence, interpolate, spring, staticFile, useCurrentFrame} from 'remotion';
+import {AbsoluteFill, Easing, Img, OffthreadVideo, Sequence, getStaticFiles, interpolate, spring, staticFile, useCurrentFrame} from 'remotion';
 import {loadFont as loadPoppins} from '@remotion/google-fonts/Poppins';
 import {loadFont as loadSerif} from '@remotion/google-fonts/DMSerifDisplay';
 import {loadFont as loadScript} from '@remotion/google-fonts/GreatVibes';
 import P from './palavras_voz.json'; // scripts/palavras.py: src/palavras.json com o começo ancorado no ataque da voz
+import ROSTO_T from './rosto.json'; // entrada padrão: [[t,cx,cy,h]] a cada 0,25 s, em fração do quadro
 
 /**
  * Molde do profissional01 (../../modelos/profissional01/MODELO.md), feito na vitrine dos modelos.
@@ -43,10 +44,28 @@ const mola = (t: number, de: number, d = 18) => (t < de ? 0 : spring({frame: (t 
 
 type Pal = {texto: string; de: number; ate: number};
 const PS: Pal[] = P.palavras;
-const de = (i: number) => PS[i].de;
+if (!PS.length) throw new Error('src/palavras_voz.json está vazio: rode tools/novo-video.py e depois scripts/palavras.py.');
+/** texto do plano x fala: sem maiúscula, acento nem pontuação (o Whisper varia) */
+export const norm = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9%]/g, '');
+/** plano que não bate com a fala: para ao carregar e diz em português qual lista refazer (nada de TypeError) */
+const errPlano = (lista: string, oque: string) =>
+	new Error(`O plano de src/Reel.tsx não bate com a fala de src/palavras_voz.json (${PS.length} palavras, de 0 a ${PS.length - 1}). Na lista ${lista}: ${oque}. Refaça o plano para a fala nova (LEIA.md, seção "Vídeo novo").`);
+const de = (i: number, lista = 'T') => {
+	if (!PS[i]) throw errPlano(lista, `a palavra nº ${i} não existe`);
+	return PS[i].de;
+};
+/** confere se as palavras escritas no plano são as da fala a partir do índice i0 */
+const confere = (lista: string, i0: number, txt: string) =>
+	txt.split(' ').filter((x) => x && x !== '/').forEach((x, k) => {
+		const f = PS[i0 + k];
+		if (!f) throw errPlano(lista, `"${txt}" passa da última palavra da fala`);
+		if (norm(f.texto) !== norm(x)) throw errPlano(lista, `em "${txt}", "${x}" não bate com a palavra ${i0 + k} da fala ("${f.texto}")`);
+	});
 const c = (t: number) => t - 0.06; // corte 2 quadros antes da palavra
 
-/* ---------------------------------------------------------------- trechos (índices de src/palavras.json) */
+/* ================================================================ O PLANO (preso à fala; num vídeo novo, refazer T,
+ * trechos, CAM, MARCAS, ENTRADAS, PEDACOS, TELAS, CTA, FLASH e TITULOS). Os números são índices de palavras de
+ * src/palavras_voz.json (0 = a 1ª). Lista vazia ou null desliga a parte. */
 type Modo = 'video' | 'tela' | 'celular' | 'previas' | 'lista';
 export const T = {
 	ele: de(7) + 0.43, // "Ele foi criado justamente para" (a legenda entra quando "Claude." já ficou 0,43 s)
@@ -61,6 +80,23 @@ export const T = {
 	aprender: c(de(74)), // "e aprender a como usar isso nos seus vídeos," (tela 4)
 	comenta: c(de(83)), // "comenta edição aqui embaixo que eu vou te mandar na sua DM agora." (fecho)
 };
+/* as palavras que fazem cada peça agir (índices); cada peça lê as suas na ordem */
+const MARCAS = {
+	cartoes: [18], // "vários": os outros dois cartões saem de trás
+	barras: [22, 24], // "criei" nascem as barras, "melhorei" a última sobe
+	linhaTempo: [26], // "editar": a lâmina corta
+	player: [78, 82], // "usar": o vídeo toca; "vídeos": ganha a legenda
+	celular: [39, 46], // "Instagram": a interface acende; "desses": os outros celulares saem de trás
+	lista: [68, 71, 72], // "outros" até "edição": os vistos; "como": este modelo acende
+};
+Object.entries(MARCAS).forEach(([k, is]) => is.forEach((i) => de(i, `MARCAS.${k}`)));
+/* páginas da legenda com entrada própria (índice da 1ª palavra -> tempo); as outras entram com a voz */
+const ENTRADAS: Record<number, number> = {8: T.ele};
+/* fecho: o campo de comentário recebe Comenta “PALAVRA” (i = índice de "comenta"; a palavra é a seguinte); null desliga */
+const CTA = {i: 83, comando: 'Comenta', palavra: '“EDIÇÃO”'} as {i: number; comando: string; palavra: string} | null;
+if (CTA) confere('CTA', CTA.i, `${CTA.comando} ${CTA.palavra}`);
+/* flash na ênfase (tempo do corte); null desliga. Sem public/flash.mp4, o molde desenha um flash branco no lugar */
+const FLASH = T.mas as number | null;
 const trechos = (previas: boolean): [number, Modo][] => [
 	[0, 'video'],
 	[T.telas, 'tela'],
@@ -103,7 +139,12 @@ const zoomEm = (t: number) => {
 	return tw(t, a, prox[0], z0, prox[1], E.io);
 };
 
-const ROSTO = {x: 590, y: 620}; // entre os olhos, medido à mão (src/rosto.json + quadro de 5 s); muda a cada vídeo
+/* o ponto entre os olhos, origem do zoom e da metade de baixo da dividida. Na vitrine, medido à mão (src/rosto.json +
+   quadro de 5 s); num vídeo novo, null = a mediana de src/rosto.json (olhos ~0,09 da altura do rosto acima do centro) */
+const ROSTO_MEDIDO = {x: 590, y: 620} as {x: number; y: number} | null;
+const med = (v: number[]) => [...v].sort((a, b) => a - b)[v.length >> 1];
+const RT = ROSTO_T as number[][];
+const ROSTO = ROSTO_MEDIDO ?? (RT.length ? {x: Math.round(med(RT.map((r) => r[1])) * 1080), y: Math.round((med(RT.map((r) => r[2])) - 0.09 * med(RT.map((r) => r[3]))) * 1920)} : {x: 540, y: 620});
 const COR = 'contrast(1.06) saturate(0.94) brightness(0.98)';
 const Fala: React.FC<{zoom: number}> = ({zoom}) => (
 	<AbsoluteFill style={{transform: `scale(${zoom})`, transformOrigin: `${ROSTO.x}px ${ROSTO.y}px`, filter: COR}}>
@@ -144,11 +185,12 @@ const PAGINAS: Pagina[] = (() => {
 		}
 		const qtd = p.split(' ').filter((w) => w !== '/').length;
 		// entra com a voz, mas nunca antes de a palavra anterior ter ficado 0,4 s na tela (nem antes do fim do título)
-		const d = k === 8 ? T.ele : Math.max(c(PS[k].de), PS[k - 1].de + 0.4); // entra no quadro do corte (2 quadros antes da voz)
+		confere('PEDACOS', k, p.replace(/\*/g, ''));
+		const d = ENTRADAS[k] ?? Math.max(c(PS[k].de), k ? PS[k - 1].de + 0.4 : 0); // entra no quadro do corte (2 quadros antes da voz)
 		out.push({txt: p.replace(/,(\*?)$/, '$1'), i0: k, n: qtd, de: d, ate: PS[k + qtd - 1].ate});
 		k += qtd;
 	}
-	if (k !== PS.length) throw new Error(`pedaços somam ${k}, fala tem ${PS.length}`);
+	if (k !== PS.length) throw errPlano('PEDACOS', `as páginas e os saltos '#n' cobrem ${k} palavras e a fala tem ${PS.length}`);
 	return out.flatMap((g, i) => {
 		if (!g) return [];
 		const prox = out[i + 1];
@@ -241,7 +283,7 @@ const Sombra: React.FC = () => <AbsoluteFill style={{background: 'linear-gradien
 /* ================================================================ TELA CHEIA (modelodinamico02) */
 type Fundo = 'E' | 'L';
 type LT = {txt: string; tam: number; fonte?: 'script' | 'serif' | 'ancora'; acento?: boolean};
-type Heroi = React.FC<{t: number; de: number; fg: string; ac: string}>;
+type Heroi = React.FC<{t: number; de: number; fim: number; fg: string; ac: string}>;
 type Tela = {de: number; fundo: Fundo; topo: number; linhas: LT[]; primeira: number; heroi: Heroi};
 const Ptela: React.FC<{t: number; de: number; children: React.ReactNode; first: boolean}> = ({t, de: d, children, first}) => {
 	const k = tw(t, d - 0.04, d + 0.16, 0, 1);
@@ -280,7 +322,7 @@ const entra = (k: number): React.CSSProperties => ({opacity: Math.min(1, k * 2),
 /* "a diferença entre vários modelos": o mesmo quadro dele em três cartões 9:16, cada um com uma edição diferente */
 const Cartoes: Heroi = ({t, de: d, fg, ac}) => {
 	const k = mola(t, d + 0.05);
-	const abre = mola(t, de(18) - 0.04, 16); // "vários": os outros dois saem de trás
+	const abre = mola(t, de(MARCAS.cartoes[0]) - 0.04, 16); // "vários": os outros dois saem de trás
 	const W = 280;
 	const H = (W * 16) / 9;
 	const cartao = (i: number) => {
@@ -329,14 +371,15 @@ const Cartoes: Heroi = ({t, de: d, fg, ac}) => {
 
 /* "que eu criei e melhorei": as barras nascem em "criei" e a última sobe com a seta em "melhorei" */
 const Barras: Heroi = ({t, fg, ac}) => {
-	const k = mola(t, de(22) - 0.04);
-	const sobe = mola(t, de(24) - 0.04, 14);
+	const [criei, melhorei] = MARCAS.barras.map((i) => de(i));
+	const k = mola(t, criei - 0.04);
+	const sobe = mola(t, melhorei - 0.04, 14);
 	const alturas = [150, 230, 310, 360];
 	const base = 1600;
 	return (
 		<svg width="1080" height="1920" viewBox="0 0 1080 1920" style={{position: 'absolute', inset: 0, overflow: 'visible'}}>
 			{alturas.map((h0, i) => {
-				const kk = tw(t, de(22) - 0.04 + i * 0.08, de(22) + 0.5 + i * 0.08, 0, 1);
+				const kk = tw(t, criei - 0.04 + i * 0.08, criei + 0.5 + i * 0.08, 0, 1);
 				const h = (h0 + (i === 3 ? 170 * sobe : 0)) * kk;
 				const x = 250 + i * 150;
 				return <rect key={i} x={x} y={base - h} width="110" height={h} rx="18" fill={i === 3 ? ac : fg} opacity={i === 3 ? 1 : 0.55 + i * 0.12} />;
@@ -350,10 +393,11 @@ const Barras: Heroi = ({t, fg, ac}) => {
 };
 
 /* "para editar qualquer tipo de vídeo": a linha do tempo de um editor, a agulha anda e a lâmina corta em "editar" */
-const LinhaTempo: Heroi = ({t, de: d, fg, ac}) => {
+const LinhaTempo: Heroi = ({t, de: d, fim, fg, ac}) => {
 	const k = mola(t, d + 0.05);
-	const corta = tw(t, de(26) - 0.04, de(26) + 0.3, 0, 1);
-	const agulha = tw(t, d + 0.1, T.celular, 0.12, 0.9, (x) => x);
+	const ed = de(MARCAS.linhaTempo[0]);
+	const corta = tw(t, ed - 0.04, ed + 0.3, 0, 1);
+	const agulha = tw(t, d + 0.1, fim, 0.12, 0.9, (x) => x);
 	const X0 = 130;
 	const LW = 820;
 	const blocos: [number, number][] = [
@@ -379,7 +423,7 @@ const LinhaTempo: Heroi = ({t, de: d, fg, ac}) => {
 					return <rect key={i} x={30 + i * (LW / 54) + 2} y={262 - h / 2} width={LW / 54 - 6} height={h} rx="4" fill={ac} opacity="0.85" />;
 				})}
 				{/* lâmina */}
-				{corta > 0 && <line x1={30 + cx * LW} x2={30 + cx * LW} y1={40} y2={40 + 150 * corta} stroke={ac} strokeWidth="8" strokeLinecap="round" opacity={1 - tw(t, de(26) + 0.4, de(26) + 0.8, 0, 1)} />}
+				{corta > 0 && <line x1={30 + cx * LW} x2={30 + cx * LW} y1={40} y2={40 + 150 * corta} stroke={ac} strokeWidth="8" strokeLinecap="round" opacity={1 - tw(t, ed + 0.4, ed + 0.8, 0, 1)} />}
 				{/* agulha */}
 				<g transform={`translate(${30 + agulha * LW} 0)`}>
 					<line x1="0" x2="0" y1="30" y2="340" stroke="#fff" strokeWidth="5" />
@@ -391,11 +435,12 @@ const LinhaTempo: Heroi = ({t, de: d, fg, ac}) => {
 };
 
 /* "aprender a como usar isso nos seus vídeos": o vídeo toca em "usar" e ganha a legenda em "vídeos" */
-const Player: Heroi = ({t, de: d, fg, ac}) => {
+const Player: Heroi = ({t, de: d, fim, fg, ac}) => {
 	const k = mola(t, d + 0.05);
-	const usa = tw(t, de(78) - 0.04, de(78) + 0.3, 0, 1);
-	const prog = tw(t, de(78), T.comenta, 0, 1, (x) => x);
-	const ed = mola(t, de(82) - 0.04);
+	const [usar, videos] = MARCAS.player.map((i) => de(i));
+	const usa = tw(t, usar - 0.04, usar + 0.3, 0, 1);
+	const prog = tw(t, usar, fim, 0, 1, (x) => x);
+	const ed = mola(t, videos - 0.04);
 	const W = 330;
 	const H = (W * 16) / 9;
 	return (
@@ -422,7 +467,7 @@ const TELAS: Tela[] = [
 	{de: T.tela3, fundo: 'E', topo: 530, primeira: 25, linhas: [{txt: 'para editar qualquer', tam: 66}, {txt: 'tipo de vídeo', tam: 124}, {txt: 'usando o Claude.', tam: 100, fonte: 'serif', acento: true}], heroi: LinhaTempo},
 	{de: T.aprender, fundo: 'L', topo: 480, primeira: 74, linhas: [{txt: 'e aprender a como', tam: 66}, {txt: 'usar isso', tam: 170}, {txt: 'nos seus vídeos,', tam: 130, fonte: 'script', acento: true}], heroi: Player},
 ];
-const TelaCheia: React.FC<{t: number}> = ({t}) => {
+const TelaCheia: React.FC<{t: number; fim: number}> = ({t, fim}) => {
 	const i = TELAS.filter((s) => t >= s.de).length - 1;
 	const s = TELAS[Math.max(0, i)];
 	const escuro = s.fundo === 'E';
@@ -436,7 +481,7 @@ const TelaCheia: React.FC<{t: number}> = ({t}) => {
 		<AbsoluteFill style={{background: fundo, overflow: 'hidden'}}>
 			<AbsoluteFill style={{backgroundImage: `radial-gradient(${escuro ? 'rgba(235,203,159,0.07)' : 'rgba(255,255,255,0.08)'} 2px, transparent 2px)`, backgroundSize: '44px 44px'}} />
 			<AbsoluteFill style={{transform: `scale(${z})`, transformOrigin: '540px 960px'}}>
-				<H t={t} de={s.de} fg={fg} ac={escuro ? C.clara : C.creme} />
+				<H t={t} de={s.de} fim={fim} fg={fg} ac={escuro ? C.clara : C.creme} />
 				<BlocoTela t={t} s={s} fg={fg} sub={sub} ac={ac} />
 			</AbsoluteFill>
 		</AbsoluteFill>
@@ -491,10 +536,10 @@ const Pilula: React.FC<{txt: string; tam?: number; style?: React.CSSProperties}>
 
 /* "se você estiver no Instagram agora, você está vendo apenas um desses modelos": o vídeo dele num celular (interface
    genérica, sem logotipo); o nome deste modelo entra na pílula em "apenas"; os outros celulares saem de trás em "desses" */
-const Celular: React.FC<{t: number; a: number}> = ({t, a}) => {
+const Celular: React.FC<{t: number; a: number; arroba: string}> = ({t, a, arroba}) => {
 	const k = mola(t, a + 0.05);
-	const ui = tw(t, de(39) - 0.06, de(39) + 0.3, 0, 1); // "Instagram"
-	const outros = mola(t, de(46) - 0.04, 18); // "desses"
+	const ui = tw(t, de(MARCAS.celular[0]) - 0.06, de(MARCAS.celular[0]) + 0.3, 0, 1); // "Instagram"
+	const outros = mola(t, de(MARCAS.celular[1]) - 0.04, 18); // "desses"
 	const W = 380;
 	const H = 790;
 	const top = 70;
@@ -514,10 +559,12 @@ const Celular: React.FC<{t: number; a: number}> = ({t, a}) => {
 							<path d="M50 110 a20 20 0 1 1 -8 -16 L50 92 Z" transform="translate(-10 0)" />
 							<path d="M12 170 L50 156 L38 194 L30 176 Z M30 176 L50 156" />
 						</svg>
-						<div style={{position: 'absolute', left: 22, bottom: 64, display: 'flex', alignItems: 'center', gap: 12}}>
-							<span style={{width: 40, height: 40, borderRadius: 20, background: C.cor, border: '2px solid #fff'}} />
-							<span style={{fontFamily: SANS, fontWeight: 600, fontSize: 22, color: '#fff'}}>@ojessegomes</span>
-						</div>
+						{arroba && (
+							<div style={{position: 'absolute', left: 22, bottom: 64, display: 'flex', alignItems: 'center', gap: 12}}>
+								<span style={{width: 40, height: 40, borderRadius: 20, background: C.cor, border: '2px solid #fff'}} />
+								<span style={{fontFamily: SANS, fontWeight: 600, fontSize: 22, color: '#fff'}}>{arroba}</span>
+							</div>
+						)}
 						<div style={{position: 'absolute', left: 22, bottom: 40, width: 200, height: 10, borderRadius: 5, background: 'rgba(255,255,255,0.7)'}} />
 					</div>
 				)}
@@ -566,9 +613,10 @@ const Previas: React.FC<{t: number; a: number; nomes: [string, string]}> = ({t, 
    ganha o visto a partir de "outros" e este modelo acende na cor de destaque em "como esse" */
 const MODELOS = ['modelodinamico01', 'modelopadrao01', 'modelodinamico03', 'pregacaodinamica01', 'storypodcast01', 'superpodcast01', 'youtubeedition01', 'profissional01'];
 const Lista: React.FC<{t: number; a: number}> = ({t, a}) => {
-	const t0 = de(68) - 0.04; // "outros"
-	const passo = (de(71) - t0) / (MODELOS.length - 1);
-	const esse = tw(t, de(72) - 0.04, de(72) + 0.25, 0, 1); // "como"
+	const [outros, ultima, como] = MARCAS.lista.map((i) => de(i));
+	const t0 = outros - 0.04; // "outros"
+	const passo = (ultima - t0) / (MODELOS.length - 1);
+	const esse = tw(t, como - 0.04, como + 0.25, 0, 1); // "como"
 	return (
 		<FundoPainel t={t} a={a}>
 			{/* 2026-10-12: cartão a 85% e com o topo em 262 (com a câmera lenta do painel não passa de 250) para todo o texto ficar na zona segura (y >= 250, x 60-940) */}
@@ -602,8 +650,8 @@ const Lista: React.FC<{t: number; a: number}> = ({t, a}) => {
 /* ---------------------------------------------------------------- fecho: o campo de comentário que recebe EDIÇÃO */
 /* fecho entre o queixo (~1000 na gravação aberta) e a legenda na 2ª posição: Comenta 64 + 22 + campo 170 */
 export const FECHO = {top: 1040, altura: 64 + 22 + 170, larg: 750};
-const Comenta: React.FC<{t: number}> = ({t}) => {
-	const b = de(84); // "edição"
+const Comenta: React.FC<{t: number; cta: NonNullable<typeof CTA>}> = ({t, cta}) => {
+	const b = de(cta.i + 1); // a palavra a comentar
 	const k = mola(t, T.comenta + 0.04, 20);
 	const acende = tw(t, b - 0.05, b + 0.25, 0, 1);
 	const toque = tw(t, b - 0.05, b + 0.55, 0, 1);
@@ -611,18 +659,24 @@ const Comenta: React.FC<{t: number}> = ({t}) => {
 	return (
 		<div style={{position: 'absolute', left: ZONA.esq, width: ZW, top: FECHO.top, textAlign: 'center', opacity: Math.min(1, k * 2), transform: `translateY(${(1 - k) * 30}px)`}}>
 			{/* 2026-10-12: em destaque fixo só o comando, Comenta "EDIÇÃO"; o resto da fala vai na legenda, abaixo */}
-			<div style={{fontFamily: SANS, fontWeight: 600, fontSize: 64, lineHeight: 1, height: 64, marginBottom: 22, color: '#fff', textShadow: '0 2px 6px rgba(0,0,0,0.35), 0 6px 26px rgba(0,0,0,0.4)', ...suave(t, de(83))}}>Comenta</div>
+			<div style={{fontFamily: SANS, fontWeight: 600, fontSize: 64, lineHeight: 1, height: 64, marginBottom: 22, color: '#fff', textShadow: '0 2px 6px rgba(0,0,0,0.35), 0 6px 26px rgba(0,0,0,0.4)', ...suave(t, de(cta.i))}}>{cta.comando}</div>
 			<div style={{position: 'relative', display: 'inline-flex', alignItems: 'center', gap: 26, minWidth: 600, height: 170, padding: '0 60px', boxSizing: 'border-box', borderRadius: 999, border: `3px solid ${acende > 0.5 ? C.cor2 : '#fff'}`, background: `rgba(143,95,51,${acende})`, boxShadow: `0 14px 40px rgba(0,0,0,${0.12 + 0.18 * acende})`, transform: `scale(${1 + 0.04 * Math.sin(Math.PI * toque)})`, overflow: 'hidden'}}>
 				{toque > 0 && toque < 1 && <span style={{position: 'absolute', left: '50%', top: '50%', width: 700 * toque, height: 700 * toque, marginLeft: -350 * toque, marginTop: -350 * toque, borderRadius: '50%', background: `rgba(255,255,255,${0.35 * (1 - toque)})`}} />}
 				<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink: 0, position: 'relative'}}>
 					<path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3 20.5l1.6-5.2A8.5 8.5 0 1 1 21 11.5z" />
 				</svg>
 				<span style={{position: 'relative', display: 'inline-block', width: 470, textAlign: 'left', fontFamily: SANS, fontWeight: 800, fontSize: 84, color: '#fff', letterSpacing: '0.01em', lineHeight: 1}}>
-					{t >= b - 0.06 ? <span style={{display: 'inline-block', ...suave(t, b)}}>“EDIÇÃO”</span> : <span style={{display: 'inline-block', width: 6, height: 84, background: '#fff', opacity: cursor ? 0.9 : 0, verticalAlign: 'middle'}} />}
+					{t >= b - 0.06 ? <span style={{display: 'inline-block', ...suave(t, b)}}>{cta.palavra}</span> : <span style={{display: 'inline-block', width: 6, height: 84, background: '#fff', opacity: cursor ? 0.9 : 0, verticalAlign: 'middle'}} />}
 				</span>
 			</div>
 		</div>
 	);
+};
+
+/* plano B do flash: branco que estoura no corte e some em 4 quadros */
+const FlashDesenhado: React.FC = () => {
+	const f = useCurrentFrame();
+	return <AbsoluteFill style={{background: 'radial-gradient(ellipse 80% 70% at 50% 45%, #fff 0%, rgba(255,250,240,0.85) 45%, rgba(255,240,220,0.5) 100%)', opacity: [0.45, 1, 0.5, 0.15][f] ?? 0}} />;
 };
 
 /* ---------------------------------------------------------------- títulos */
@@ -633,22 +687,35 @@ const TITULOS: Tit[] = [
 	{de: T.previas, ate: T.mas, primeira: 52, linhas: [[['base', 60, 'duas prévias rápidas']], [['base', 60, 'aqui em cima,'], ['script', 86, 'aceleradas']], [['base', 60, 'em'], ['ancora', 116, 'três vezes.']]], marca: undefined},
 ];
 
-export type Props = {previas: boolean; nomesPrevias: [string, string]};
-export const Reel: React.FC<Props> = ({previas = false, nomesPrevias = ['', '']}) => {
+TELAS.forEach((s) => confere('TELAS', s.primeira, s.linhas.map((l) => l.txt).join(' ')));
+TITULOS.forEach((q) => confere('TITULOS', q.primeira, q.linhas.map((l) => l.map((x) => x[2]).join(' ')).join(' ')));
+
+/* mídia que não vem com a gravação: se faltar, para com o comando que a faz (e não com um erro de rede) */
+const tem = (arq: string) => {
+	const lista = getStaticFiles();
+	return !lista.length || lista.some((f) => f.name === arq);
+};
+const QUADRO = 'public/quadro.jpg (um quadro da gravação, para os cartões): ffmpeg -ss 5 -i public/fala.mp4 -frames:v 1 -q:v 3 public/quadro.jpg';
+
+export type Props = {previas: boolean; nomesPrevias: [string, string]; arroba?: string};
+export const Reel: React.FC<Props> = ({previas = false, nomesPrevias = ['', ''], arroba = ''}) => {
 	const t = useCurrentFrame() / FPS;
 	const {a, fim, modo} = trecho(t, previas);
 	const zoom = zoomEm(t);
 	const tit = modo === 'video' ? TITULOS.find((q) => t >= q.de - 0.1 && t < q.ate) : undefined;
-	const cta = t >= T.comenta;
+	const cta = CTA !== null && t >= T.comenta;
 	const dividida = modo === 'celular' || modo === 'previas' || modo === 'lista';
+	if ((modo === 'tela' || modo === 'celular') && !tem('quadro.jpg')) throw new Error(`Falta ${QUADRO}`);
+	if (modo === 'previas' && !(tem('previa1.mp4') && tem('previa2.mp4')))
+		throw new Error('Falta public/previa1.mp4 ou previa2.mp4: faça com tools/previa.py (LEIA.md, "Vídeo novo") ou renderize com "previas": false.');
 	return (
 		<AbsoluteFill style={{background: '#000'}}>
 			{modo === 'video' && <Fala zoom={zoom} />}
 			{modo === 'video' && (tit || cta) && <Sombra />}
-			{modo === 'tela' && <TelaCheia t={t} />}
+			{modo === 'tela' && <TelaCheia t={t} fim={fim} />}
 			{modo === 'celular' && (
 				<Dividida t={t} a={a} fim={fim}>
-					<Celular t={t} a={a} />
+					<Celular t={t} a={a} arroba={arroba} />
 				</Dividida>
 			)}
 			{modo === 'previas' && (
@@ -663,7 +730,7 @@ export const Reel: React.FC<Props> = ({previas = false, nomesPrevias = ['', '']}
 			)}
 
 			{modo === 'video' && TITULOS.map((q, i) => <Titulo key={i} t={t} {...q} top={q.linhas.length > 2 ? TOP - 110 : TOP} />)}
-			{cta && <Comenta t={t} />}
+			{cta && CTA && <Comenta t={t} cta={CTA} />}
 
 			{modo === 'video' && !tit && !cta && <AbsoluteFill style={{background: 'linear-gradient(180deg, rgba(0,0,0,0) 52%, rgba(0,0,0,0.16) 59%, rgba(0,0,0,0.16) 66%, rgba(0,0,0,0) 73%)'}} />}
 			{modo === 'video' && !tit && !cta && <Legenda t={t} y={LEG_Y} />}
@@ -671,12 +738,15 @@ export const Reel: React.FC<Props> = ({previas = false, nomesPrevias = ['', '']}
 			{(dividida || cta) && <Legenda t={t} y={LEG_Y2} destaque={dividida} />}
 
 
-			{/* flash clean na ênfase, como no vídeo do dentista: Flash 5 do Jessé em screen, pico no corte */}
-			<Sequence from={Math.round(T.mas * FPS) - 1} durationInFrames={4}>
-				<AbsoluteFill style={{mixBlendMode: 'screen', opacity: 0.8}}>
-					<OffthreadVideo muted src={staticFile('flash.mp4')} style={{width: 1080, height: 1920}} />
-				</AbsoluteFill>
-			</Sequence>
+			{/* flash clean na ênfase, como no vídeo do dentista: public/flash.mp4 em screen, pico no corte; sem o arquivo,
+			    um flash branco desenhado aqui (4 quadros) */}
+			{FLASH !== null && (
+				<Sequence from={Math.round(FLASH * FPS) - 1} durationInFrames={4}>
+					<AbsoluteFill style={{mixBlendMode: 'screen', opacity: 0.8}}>
+						{tem('flash.mp4') ? <OffthreadVideo muted src={staticFile('flash.mp4')} style={{width: 1080, height: 1920}} /> : <FlashDesenhado />}
+					</AbsoluteFill>
+				</Sequence>
+			)}
 		</AbsoluteFill>
 	);
 };
@@ -688,11 +758,11 @@ type Caixa = {nome: string; tipo: 'legenda' | 'titulo' | 'tela' | 'fecho' | 'rot
 const nasceu = (t: number, i: number) => t >= PS[i].de - 0.02; // a palavra conta a partir de quando nasce
 const centro = (cx: number, larg: number) => ({x0: cx - larg / 2, x1: cx + larg / 2});
 const vozLT = (l: LT): keyof typeof FATOR => l.fonte ?? 'base';
-export const textos = (t: number, previas: boolean): Caixa[] => {
+export const textos = (t: number, previas: boolean, arroba = ''): Caixa[] => {
 	const {a, modo} = trecho(t, previas);
 	const out: Caixa[] = [];
 	const tit = modo === 'video' ? TITULOS.find((q) => t >= q.de - 0.1 && t < q.ate) : undefined;
-	const cta = t >= T.comenta;
+	const cta = CTA !== null && t >= T.comenta;
 	const dividida = modo === 'celular' || modo === 'previas' || modo === 'lista';
 	if (modo === 'video')
 		TITULOS.forEach((q) => {
@@ -714,7 +784,7 @@ export const textos = (t: number, previas: boolean): Caixa[] => {
 		const c = centro(500, larg);
 		out.push({nome: 'tela ' + s.primeira, tipo: 'tela', palavras: Array.from({length: n}, (_, k) => s.primeira + k).filter((i) => nasceu(t, i)), x0: 540 + (c.x0 - 540) * z, x1: 540 + (c.x1 - 540) * z, y0: esc(s.topo), y1: esc(s.topo + alt)});
 	}
-	if (cta) out.push({nome: 'fecho Comenta “EDIÇÃO”', tipo: 'fecho', palavras: [83, 84].filter((i) => nasceu(t, i)), ...centro(500, FECHO.larg), y0: FECHO.top, y1: FECHO.top + FECHO.altura});
+	if (cta && CTA) out.push({nome: `fecho ${CTA.comando} ${CTA.palavra}`, tipo: 'fecho', palavras: [CTA.i, CTA.i + 1].filter((i) => nasceu(t, i)), ...centro(500, FECHO.larg), y0: FECHO.top, y1: FECHO.top + FECHO.altura});
 	const pg = PAGINAS.find((g) => t >= g.de && t < g.ate);
 	const legY = modo === 'video' && !tit && !cta ? LEG_Y : dividida || cta ? LEG_Y2 : null;
 	if (pg && legY !== null) {
@@ -723,9 +793,9 @@ export const textos = (t: number, previas: boolean): Caixa[] => {
 		const larg = Math.max(...pg.txt.split(' / ').map((l) => larguraTxt(l, 'base', tam) + (l.split('*').length - 1) * 16));
 		out.push({nome: pg.txt, tipo: 'legenda', palavras: Array.from({length: pg.n}, (_, k) => pg.i0 + k), ...centro(500, larg), y0: legY, y1: legY + legAltura(pg.txt, base)});
 	}
-	if (modo === 'celular') out.push({nome: '@ojessegomes', tipo: 'rotulo', palavras: [], x0: 360, x1: 640, y0: 720, y1: 790});
+	if (modo === 'celular' && arroba) out.push({nome: arroba, tipo: 'rotulo', palavras: [], x0: 360, x1: 640, y0: 720, y1: 790});
 	if (modo === 'lista') { const z = 1 + (t - a) * 0.012; out.push({nome: 'painel Modelos de edição', tipo: 'rotulo', palavras: [], x0: 540 + (134 - 540) * z, x1: 540 + (866 - 540) * z, y0: 480 + (262 - 480) * z, y1: 480 + (262 + 0.85 * 772 - 480) * z}); }
 	if (modo === 'previas') out.push({nome: 'nomes das prévias', tipo: 'rotulo', palavras: [], x0: 100, x1: 980 - 100, y0: 760, y1: 830});
 	return out;
 };
-export {PS as PALAVRAS, LEG_TAM, LEG_TAM2};
+export {PS as PALAVRAS, LEG_TAM, LEG_TAM2, PEDACOS, TITULOS, TELAS};

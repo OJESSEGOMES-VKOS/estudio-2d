@@ -59,9 +59,9 @@ export const Rosto: React.FC = () => {
 	const ed = T.editor;
 	const ce = T.celular;
 	let q = mix(cheio(k), dividido(k), pDividido(t, previas));
-	const pe = Math.min(tw(t, ed.de - 0.4, ed.de + 0.05, 0, 1, E.inOut), 1 - tw(t, ed.devolve, ed.devolve + 0.55, 0, 1, E.inOut));
+	const pe = ed ? Math.min(tw(t, ed.de - 0.4, ed.de + 0.05, 0, 1, E.inOut), 1 - tw(t, ed.devolve, ed.devolve + 0.55, 0, 1, E.inOut)) : 0;
 	q = mix(q, janela(PREVIA.x, PREVIA.y, PREVIA.w, 16), pe);
-	const pc = Math.min(tw(t, ce.de, ce.de + 0.45, 0, 1, E.inOut), 1 - tw(t, ce.devolve, ce.devolve + 0.55, 0, 1, E.inOut));
+	const pc = ce ? Math.min(tw(t, ce.de, ce.de + 0.45, 0, 1, E.inOut), 1 - tw(t, ce.devolve, ce.devolve + 0.55, 0, 1, E.inOut)) : 0;
 	q = mix(q, janela(CEL.x, CEL.y, CEL.w, 34), pc);
 	const z = zoom(t);
 	const r = R.trechos[k];

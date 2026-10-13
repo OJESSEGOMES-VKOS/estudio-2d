@@ -34,13 +34,18 @@ while True:
                                  largura=float(w * k), queixo=float((y + h) * k)))
     f += 1
 
+if not amostras:
+    sys.exit('nenhum rosto achado em public/fala.mp4: este molde precisa da pessoa na gravação.')
 cortes = T['blocos'] + [T['duracao']]
 trechos = []
+mediana = lambda s: {k: round(float(np.median([x[k] for x in s])), 1) for k in ('cx', 'olhos', 'largura', 'queixo')}
 for a, b in zip(cortes, cortes[1:]):
     s = [x for x in amostras if a <= x['t'] < b]
-    med = {k: round(float(np.median([x[k] for x in s])), 1) for k in ('cx', 'olhos', 'largura', 'queixo')} if s else None
-    trechos.append(dict(de=a, ate=b, amostras=len(s), **(med or {})))
+    # trecho sem rosto achado: usa a mediana do vídeo inteiro
+    trechos.append(dict(de=a, ate=b, amostras=len(s), **mediana(s or amostras)))
 saida = Path(sys.argv[sys.argv.index('--saida') + 1]) if '--saida' in sys.argv else AQUI / 'src' / 'rosto_med.json'
-saida.write_text(json.dumps(dict(trechos=trechos), indent=1), encoding='utf-8')
+_pal = json.loads((AQUI / 'src' / 'palavras.json').read_text(encoding='utf-8'))
+# de qual fala é este enquadramento (src/tema.ts confere ao carregar: gravação ou blocos novos pedem rodar de novo)
+saida.write_text(json.dumps(dict(trechos=trechos, fala=dict(palavras=len(_pal), fim=_pal[-1]['end'] if _pal else 0)), indent=1), encoding='utf-8')
 for t in trechos:
     print(t)

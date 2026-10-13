@@ -1,8 +1,10 @@
-"""modelodinamico02: cama + efeitos no tempo das palavras do decupado (src/d1/palavras.json).
-Os instantes repetem as âncoras de src/d2/Cenas.tsx (mesmas palavras). Saída: public/d2/trilha.wav.
-uso (de dentro do molde): ../../.venv/Scripts/python.exe d2/som.py
+"""modelodinamico02: efeitos no tempo das palavras (src/palavras.json) e, com --cama, a cama de acordes.
+Os instantes repetem as âncoras de src/Cenas.tsx (mesmas palavras, w('palavra', n)): num vídeo novo, refazer junto.
+Saída: public/trilha.wav (a duração é a de public/voz.wav + 1,2 s). Se a fala não tem uma palavra, para e diz a linha.
+uso (de dentro do molde): ../../.venv/Scripts/python.exe scripts/som.py [--cama] [--saida arquivo.wav]
+--cama: liga a música (desligada por padrão, REGRAS §6; a vitrine saiu com ela). Os efeitos saem no mesmo nível com ou sem.
 """
-import json
+import json, re, sys, unicodedata, wave
 from pathlib import Path
 
 import numpy as np
@@ -10,7 +12,12 @@ from scipy.io import wavfile
 from scipy.signal import butter, sosfilt
 
 AQUI = Path(__file__).resolve().parent.parent
-P = json.loads((AQUI / 'src' / 'd1' / 'palavras.json').read_text(encoding='utf-8'))
+_ps = json.loads((AQUI / 'src' / 'palavras.json').read_text(encoding='utf-8'))
+if not _ps:
+    sys.exit('src/palavras.json está vazio: este molde precisa da narração transcrita.')
+with wave.open(str(AQUI / 'public' / 'voz.wav')) as _v:
+    _dur = round(_v.getnframes() / _v.getframerate(), 3)
+P = {'duracao': _dur, 'palavras': [{'texto': p['text'], 'de': p['start'], 'ate': p['end']} for p in _ps]}
 SR = 48000
 D = P['duracao'] + 1.2
 N = int(D * SR)
@@ -19,15 +26,22 @@ rng = np.random.default_rng(11)
 
 
 def limpa(s):
-    return s.lower().strip('.,!?')
+    """sem maiúscula, acento e pontuação (o Whisper varia nisso)"""
+    s = unicodedata.normalize('NFD', s)
+    return re.sub(r'[^a-z0-9%]', '', ''.join(c for c in s if not unicodedata.combining(c)).lower())
 
 
 def w(txt, n=1):
+    """início da n-ésima vez que a palavra é dita; se a fala não tem, para e diz a linha a refazer"""
     k = 0
     for p in P['palavras']:
-        if limpa(p['texto']) == txt and (k := k + 1) == n:
+        if limpa(p['texto']) == limpa(txt) and (k := k + 1) == n:
             return p['de']
-    raise KeyError(txt)
+    chamada = f"w('{txt}', {n})" if n > 1 else f"w('{txt}')"
+    linhas = [str(i + 1) for i, l in enumerate(Path(__file__).read_text(encoding='utf-8').splitlines()) if chamada in l]
+    sys.exit(f'O som não bate com a fala de src/palavras.json: {chamada} pede a {n}ª vez que se diz "{txt}", e a fala '
+             f'{"só tem " + str(k) if k else "não tem nenhuma"}.\nscripts/som.py:{",".join(linhas) or "?"}: refaça os eventos '
+             'junto com as CENAS de src/Cenas.tsx (LEIA.md, "Vídeo novo").')
 
 
 def env(n, a, r):
@@ -116,8 +130,11 @@ add(fx, w('teste') + 0.15, pop(140), 0.8)
 add(fx, w('calibrando'), whoosh(0.4), 0.3)
 add(fx, w('aqui', 3), pop(1300), 0.4)
 
-mix = cama + fx
-mix /= np.max(np.abs(mix)) + 1e-9
+# a mesma régua de volume com ou sem a cama: os efeitos saem no mesmo nível nos dois casos
+ref = cama + fx
+mix = ref if '--cama' in sys.argv else fx
+mix = mix / (np.max(np.abs(ref)) + 1e-9)
 mix *= 10 ** (-9 / 20)
-wavfile.write(AQUI / 'public' / 'd2' / 'trilha.wav', SR, (np.stack([mix, mix], 1) * 32767).astype(np.int16))
-print('public/d2/trilha.wav', round(D, 2), 's; cortes', [round(c, 2) for c in cortes])
+saida = Path(sys.argv[sys.argv.index('--saida') + 1]) if '--saida' in sys.argv else AQUI / 'public' / 'trilha.wav'
+wavfile.write(saida, SR, (np.stack([mix, mix], 1) * 32767).astype(np.int16))
+print(saida, round(D, 2), 's;', 'com a cama' if '--cama' in sys.argv else 'só efeitos', '; cortes', [round(c, 2) for c in cortes])

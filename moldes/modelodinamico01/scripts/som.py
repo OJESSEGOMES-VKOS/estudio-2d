@@ -2,8 +2,9 @@
 editado pelo Claude). Cada som nasce de um evento visual de src/Cenas.tsx (corte, clique, item que entra, ✓, tecla).
 Saída: public/sfx.wav (sem prévias) ou public/sfx_previas.wav (com --previas).
 uso (de dentro do molde): ../../.venv/Scripts/python.exe scripts/som.py [--previas] [--saida arquivo.wav]
+Os eventos usam as mesmas palavras das cenas (w('palavra', n)): num vídeo novo, refazer junto com src/Cenas.tsx.
 """
-import json, sys, wave
+import json, re, sys, unicodedata
 from pathlib import Path
 
 import numpy as np
@@ -11,11 +12,11 @@ from scipy.io import wavfile
 from scipy.signal import butter, fftconvolve, sosfilt
 
 AQUI = Path(__file__).resolve().parent.parent
-# entrada padrão: src/palavras.json [{text,start,end}]; a duração é a de public/voz.wav
+# entrada padrão: src/palavras.json [{text,start,end}]; a duração é a do vídeo (src/tema.ts: fim da última palavra + 0,73 s)
 _ps = json.loads((AQUI / 'src' / 'palavras.json').read_text(encoding='utf-8'))
-with wave.open(str(AQUI / 'public' / 'voz.wav')) as _v:
-    _dur = round(_v.getnframes() / _v.getframerate(), 2)
-P = {'duracao': _dur, 'palavras': [{'texto': p['text'], 'de': p['start'], 'ate': p['end']} for p in _ps]}
+if not _ps:
+    sys.exit('src/palavras.json está vazio: este molde precisa da fala transcrita.')
+P = {'duracao': round(_ps[-1]['end'] + 0.73, 2), 'palavras': [{'texto': p['text'], 'de': p['start'], 'ate': p['end']} for p in _ps]}
 PREVIAS = '--previas' in sys.argv
 SR = 48000
 D = P['duracao']
@@ -24,15 +25,22 @@ rng = np.random.default_rng(7)
 
 
 def limpa(s):
-    return s.lower().strip('.,!?')
+    """sem maiúscula, acento e pontuação (o Whisper varia nisso)"""
+    s = unicodedata.normalize('NFD', s)
+    return re.sub(r'[^a-z0-9%]', '', ''.join(c for c in s if not unicodedata.combining(c)).lower())
 
 
 def w(txt, n=1):
+    """início da n-ésima vez que a palavra é dita; se a fala não tem, para e diz a linha a refazer"""
     k = 0
     for p in P['palavras']:
-        if limpa(p['texto']) == txt and (k := k + 1) == n:
+        if limpa(p['texto']) == limpa(txt) and (k := k + 1) == n:
             return p['de']
-    raise KeyError(txt)
+    chamada = f"w('{txt}', {n})" if n > 1 else f"w('{txt}')"
+    linhas = [str(i + 1) for i, l in enumerate(Path(__file__).read_text(encoding='utf-8').splitlines()) if chamada in l]
+    sys.exit(f'O som não bate com a fala de src/palavras.json: {chamada} pede a {n}ª vez que se diz "{txt}", e a fala '
+             f'{"só tem " + str(k) if k else "não tem nenhuma"}.\nscripts/som.py:{",".join(linhas) or "?"}: refaça os eventos '
+             'junto com as cenas de src/Cenas.tsx (LEIA.md, "Vídeo novo").')
 
 
 def add(buf, t, s, g=1.0):

@@ -1,0 +1,36 @@
+{
+ "modelo": "modelopadrao01",
+ "gerado_de": "vitrine-modelopadrao01.mp4",
+ "entrada": {
+  "segundos": 30.0,
+  "formato": "1080x1920",
+  "brilho": 88.67,
+  "contraste": 155.0,
+  "saturacao": 64.34,
+  "temperatura": 2.77,
+  "tom": 4.2,
+  "rosto_aberto": 0.2689,
+  "rosto_fechado": 0.292,
+  "rosto_cy": 0.351,
+  "rosto_cx": 0.5021,
+  "cabeca_cortada": 0.0,
+  "com_rosto": 1.0
+ },
+ "saida": {
+  "video": "vitrine-modelopadrao01.mp4",
+  "segundos": 30.2,
+  "formato": "1080x1920",
+  "brilho": 162.61,
+  "contraste": 212.0,
+  "saturacao": 38.85,
+  "temperatura": 3.67,
+  "tom": 2.31,
+  "cortes_min": 21.8,
+  "rosto_aberto": 0.2925,
+  "rosto_fechado": 0.3234,
+  "rosto_cy": 0.7302,
+  "rosto_cx": 0.4849,
+  "cabeca_cortada": 0.0,
+  "com_rosto": 0.76
+ }
+}

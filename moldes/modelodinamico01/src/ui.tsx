@@ -2,10 +2,11 @@ import React from 'react';
 import {Freeze, OffthreadVideo, staticFile} from 'remotion';
 import {C, E, R, SANS, SERIF, SOMBRA, mola, rostoX, tw, useT} from './tema';
 
-/** public/fala.mp4 tem 906 quadros (30,2 s); a voz vai a 30,36 s: o vídeo congela no fim */
-const ULTIMO = 904;
+/** o vídeo pode acabar antes da fala: daí em diante segura o penúltimo quadro de public/fala.mp4 (na vitrine, 906 quadros:
+ * segura o 904). A contagem vem de src/rosto_med.json, que scripts/rosto.py mede do vídeo. */
+const ULTIMO = R.quadros - 2;
 
-/** a fala do Jessé (muda: o som entra uma vez só, no Reel). Congela no último quadro na cauda. */
+/** a fala da pessoa (muda: o som entra uma vez só, no Reel). Congela no fim (ULTIMO). */
 export const Fala: React.FC<{s?: number; x?: number; y?: number}> = ({s = 1, x = 0, y = 0}) => {
 	const {f} = useT();
 	const v = <OffthreadVideo muted src={staticFile('fala.mp4')} style={{width: 1080, height: 1920}} />;

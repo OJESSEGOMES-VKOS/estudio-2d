@@ -1,7 +1,5 @@
 # anunciomotion01
 
-> **Pacote no motor:** `projetos/maquina-de-conteudo/motor/pacotes/anunciomotion01/` (versão 1), em prova até o portão do dono. A comparação com o último vídeo aprovado está em `projetos/maquina-de-conteudo/docs/etapa-7/anunciomotion01.md`.
-
 Primeiro modelo oficial do estilo **Anúncios em Motion**, montado olhando quadro a quadro 6 referências
 que o Jessé escolheu (`referencias/`). Tudo o que ele ensinar dizendo "anunciomotion01" entra **só aqui**.
 Os anúncios em motion antigos (amadores) não servem de base.
@@ -126,4 +124,5 @@ O roteiro sempre anda em três atos:
 
 | Vídeo | Base | Saída |
 |---|---|---|
-| Vitrine dos modelos (fala do Jessé, 9:16, 31 s, prévias profissional01 + sofistmotion01) | `conteudo/2026-10-06-anuncio-motion-a/` (Marcaí) | `conteudo/2026-10-10-vitrine-modelos/anunciomotion01/out/vitrine-anunciomotion01.mp4` (cor menta das refs, sem marca, telas desenhadas) |
+| Criativo "você não aparece" da VirtuoKingdom (narração ElevenLabs, 9:16, 58,8 s, telas de Google, mapa, ChatGPT e relatório desenhadas em código) | `videos/2026-10-13-anunciomotion01-vk-sites/` | `modelos/anunciomotion01/exemplos/vk-sites-criativo-01.mp4` |
+| Vitrine dos modelos (fala do Jessé, 9:16, 31 s, prévias profissional01 + sofistmotion01) | `modelos/anunciomotion01/aplicacoes/2026-10-06-anuncio-motion-a/` (Marcaí) | `modelos/anunciomotion01/exemplos/vitrine-anunciomotion01.mp4` (cor menta das refs, sem marca, telas desenhadas) |

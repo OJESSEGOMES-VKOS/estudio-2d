@@ -10,12 +10,15 @@ from pathlib import Path
 import cv2
 import numpy as np
 from PIL import Image
+import os as _os
+# os pesos do recorte ficam dentro do kit, nada espalhado pelo computador
+_os.environ.setdefault('U2NET_HOME', str(Path(__file__).resolve().parent / '.cache' / 'rembg'))
 from rembg import new_session, remove
 
 MODELOS = {'pessoa': 'birefnet-portrait', 'geral': 'birefnet-general'}
 EXTS = {'.jpg', '.jpeg', '.png', '.webp'}
 # preenchimento por IA (LaMa), o mesmo da máquina de conteúdo; sem ele, cai no inpaint do OpenCV
-LAMA_ONNX = Path(__file__).resolve().parents[2] / 'maquina-de-conteudo' / 'tools' / 'modelos' / 'lama_fp32.onnx'
+LAMA_ONNX = Path(__file__).resolve().parents[1] / 'tools' / 'modelos' / 'lama_fp32.onnx'
 LAMA = None
 
 

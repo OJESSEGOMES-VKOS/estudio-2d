@@ -1,7 +1,7 @@
 import React from 'react';
-import {AbsoluteFill, Audio, Img, staticFile} from 'remotion';
-import {C, DURACAO, E as EZ, P as PAL, SANS, mola, rnd, seq, tw, useT, w, wf} from './tema';
-import {Bolha, Celular, G, Glitch, IconeVidro, Linha, MarcaTexto, Notif, Pilula, Risco, Simbolo, Wordmark, brilho, hexA} from './ui';
+import {AbsoluteFill, Audio, staticFile} from 'remotion';
+import {C, DURACAO, E as EZ, P as PAL, SANS, existe, mola, pare, rnd, seq, tw, useT, w, wf} from './tema';
+import {Bolha, Celular, G, Glitch, IconeVidro, ImgOuTela, Linha, MarcaTexto, Notif, Pilula, Risco, Simbolo, Wordmark, brilho, hexA} from './ui';
 
 /**
  * anunciocanvas01 v5 (../../modelos/anunciocanvas01/MODELO.md), tema Marcaí.
@@ -20,6 +20,22 @@ import {Bolha, Celular, G, Glitch, IconeVidro, Linha, MarcaTexto, Notif, Pilula,
 const W = 1080, H = 1920, P = 1000;
 const cl = (x: number, a = 0, b = 1) => Math.min(b, Math.max(a, x));
 
+/* ---------------------------------------------------------------- O PLANO: a fala para a qual ele foi feito (o roteiro.txt dito) */
+const FALA = 'Sua agenda ainda vive no meio das mensagens? O cliente pede horário às onze da noite. Você responde de manhã, e ele já marcou em outro lugar. Outro confirma e, no dia, não aparece. É uma hora parada que ninguém paga. Agora tem o Marcaí. Você manda o seu link e o cliente marca sozinho. Escolhe o serviço, o horário e paga o sinal no Pix. A confirmação chega na hora. Um dia antes, o lembrete vai sozinho. E quem já pagou o sinal não esquece. De manhã, você abre o painel e vê o dia inteiro. Doze atendimentos, todos confirmados. Sem parar o corte pra responder mensagem. Pra salão, barbearia e estúdio de estética. Teste grátis por catorze dias. Marcaí. Marcou, tá marcado.';
+{
+	const limpa = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+	const plano = FALA.split(/\s+/).map(limpa).filter(Boolean);
+	const fala = PAL.palavras.map((p) => limpa(p.texto)).filter(Boolean);
+	const k = plano.findIndex((x, i) => x !== fala[i]);
+	if (k >= 0 || plano.length !== fala.length) {
+		const j = k >= 0 ? k : Math.min(plano.length, fala.length);
+		pare(
+			`O plano não bate com a fala. src/Canvas.tsx foi feito para outra fala: na palavra ${j + 1} o plano tem "${plano[j] ?? '(fim)'}" e src/palavras.json tem "${fala[j] ?? '(fim)'}". ` +
+				'Refaça FRASES e a Coreografia em src/Canvas.tsx sobre a fala nova (LEIA, "Vídeo novo") e cole o texto dela em FALA (linha 24).',
+		);
+	}
+}
+
 /* ---------------------------------------------------------------- as frases (índices de palavras.json) */
 type Tom = 'marca' | 'dor' | 'noite' | 'claro';
 const FRASES: [number, number, Tom][] = [
@@ -27,6 +43,12 @@ const FRASES: [number, number, Tom][] = [
 	[45, 54, 'claro'], [55, 65, 'marca'], [66, 70, 'claro'], [71, 77, 'marca'], [78, 85, 'claro'], [86, 96, 'marca'],
 	[97, 100, 'marca'], [101, 107, 'claro'], [108, 114, 'marca'], [115, 119, 'marca'], [120, 123, 'marca'],
 ];
+FRASES.forEach(([a, b], k) => {
+	const antes = k ? FRASES[k - 1][1] + 1 : 0;
+	if (a !== antes || b < a || b >= PAL.palavras.length)
+		pare(`FRASES[${k}] em src/Canvas.tsx vai da palavra ${a} à ${b}, mas tem de começar em ${antes} e ficar dentro da fala (0 a ${PAL.palavras.length - 1}): as frases cobrem a fala inteira, em ordem.`);
+});
+if (FRASES[FRASES.length - 1][1] !== PAL.palavras.length - 1) pare(`FRASES em src/Canvas.tsx acaba na palavra ${FRASES[FRASES.length - 1][1]}, e a fala vai até ${PAL.palavras.length - 1}: a última frase tem de fechar a fala.`);
 const ini = (k: number) => PAL.palavras[FRASES[k][0]].de;
 const fim = (k: number) => PAL.palavras[FRASES[k][1]].ate;
 /** o keyframe de cada frase fica no meio dela (o grupo passa pelo centro do quadro enquanto é lido) */
@@ -222,7 +244,7 @@ const PainelImg: React.FC = () => {
 	return (
 		<div style={{perspective: 2000}}>
 			<div style={{width: L2, height: L2 * (1440 / 2160), transform: `rotateX(${22 - 8 * k}deg) rotateY(${-14 + Math.sin(t * 0.5) * 3}deg) rotateZ(-5deg)`, opacity: Math.min(1, k * 2), borderRadius: 24, overflow: 'hidden', boxShadow: `0 0 0 3px ${hexA(C.vClaro, 0.5)}, 0 0 100px ${hexA(C.v, 0.45)}, 0 50px 100px rgba(0,0,0,0.6)`}}>
-				<Img src={staticFile('painel.png')} style={{width: '100%', height: '100%', display: 'block'}} />
+				<ImgOuTela src="painel.png" larg={L2} alt={L2 * (1440 / 2160)} />
 			</div>
 		</div>
 	);
@@ -284,7 +306,7 @@ const Marca: React.FC = () => {
 			<div style={{opacity: Math.min(1, k * 2), transform: `rotate(${(1 - k) * -200}deg) scale(${0.2 + 0.8 * k})`, filter: `drop-shadow(0 0 40px ${hexA(C.v, 0.8)})`}}>
 				<Simbolo tam={250} check={tw(t, m + 0.15, m + 0.5, 0, 1, EZ.inOut)} />
 			</div>
-			<Wordmark tam={170} letras={tw(t, m + 0.05, m + 0.45, 0, 6, (x) => x)} />
+			<Wordmark tam={170} texto="marcaı" letras={tw(t, m + 0.05, m + 0.45, 0, 6, (x) => x)} />
 		</div>
 	);
 };
@@ -328,7 +350,7 @@ const Coreografia: React.FC = () => {
 			{/* 5. Agora tem o Marcaí. */}
 			<El k={5} x={0} y={-300}><L de={13.4} txt="Agora tem o" tam={64} cor="#E4DEF2" peso={400} /></El>
 			<El k={5} x={0} y={-20}>{(() => { const m = w('marcaí.'); const kk = mola(t, m - 0.12, {damping: 12, stiffness: 110, mass: 0.9}); return <div style={{opacity: Math.min(1, kk * 1.8), transform: `scale(${0.3 + 0.7 * kk})`}}><IconeVidro tam={300} giroY={(1 - kk) * -140 + Math.sin(t * 1.4) * 10}>{G.cal(170)}</IconeVidro></div>; })()}</El>
-			<El k={5} x={0} y={280}><div style={{filter: `drop-shadow(0 0 30px ${hexA(C.v, 0.6)})`}}><Wordmark tam={150} letras={tw(t, w('marcaí.'), w('marcaí.') + 0.4, 0, 6, (x) => x)} /></div></El>
+			<El k={5} x={0} y={280}><div style={{filter: `drop-shadow(0 0 30px ${hexA(C.v, 0.6)})`}}><Wordmark tam={150} texto="marcaı" letras={tw(t, w('marcaí.'), w('marcaí.') + 0.4, 0, 6, (x) => x)} /></div></El>
 
 			{/* 6. Você manda o seu link e o cliente marca sozinho. */}
 			<El k={6} x={-120} y={-420}><L de={14.8} txt="Você manda o seu" tam={62} cor={T} peso={600} /></El>
@@ -420,7 +442,10 @@ const Fundo: React.FC<{mx: number; my: number}> = ({mx, my}) => {
 	);
 };
 
+/** o som: o mix pronto (som.m4a) ou, sem ele, só a narração (voz.wav ou voz.mp3) */
+const SOM = ['som.m4a', 'voz.wav', 'voz.mp3'].find(existe);
 export const Canvas: React.FC<{voz: boolean}> = ({voz}) => {
+	if (voz && !SOM) pare('voz: true pede public/som.m4a (voz + trilha mixadas) ou só a narração em public/voz.wav ou public/voz.mp3 (o kit/voz.py grava o .mp3; LEIA, "Vídeo novo"). Ou renderize com voz: false.');
 	const {t} = useT();
 	const c = camera(t);
 	const c2 = camera(t + 1 / 60), c0 = camera(t - 1 / 60);
@@ -435,7 +460,7 @@ export const Canvas: React.FC<{voz: boolean}> = ({voz}) => {
 					<Coreografia />
 				</div>
 			</AbsoluteFill>
-			{voz && <Audio src={staticFile('som.m4a')} />}
+			{voz && SOM && <Audio src={staticFile(SOM)} />}
 		</AbsoluteFill>
 	);
 };

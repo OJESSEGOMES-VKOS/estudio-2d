@@ -1,0 +1,15 @@
+{
+ "modelo": "modelodinamico02",
+ "gerado_de": "reel-editado-pelo-claude.mp4",
+ "saida": {
+  "video": "reel-editado-pelo-claude.mp4",
+  "segundos": 45.2,
+  "formato": "1080x1920",
+  "brilho": 38.25,
+  "contraste": 58.0,
+  "saturacao": 174.28,
+  "temperatura": 9.22,
+  "tom": 9.97,
+  "cortes_min": 26.5
+ }
+}

@@ -10,7 +10,8 @@ const pasta = (args.find((a) => a.startsWith('--pasta=')) ?? '--pasta=conferenci
 const tempos = args.filter((a) => !a.startsWith('--')).map(Number);
 fs.mkdirSync(pasta, {recursive: true});
 const serve = await bundle({entryPoint: path.resolve('src/index.ts')});
-const props = {previas, nomesPrevias: ['storypodcast01', 'youtubeedition01'], musica: false, efeitos: false};
+// as props são as padrão do vídeo; PROPS=<arquivo.json> usa as mesmas do render, e --previas liga as prévias por cima
+const props = {...(process.env.PROPS ? JSON.parse(fs.readFileSync(process.env.PROPS, 'utf-8')) : {}), ...(previas ? {previas: true} : {})};
 const comp = await selectComposition({serveUrl: serve, id: 'VitrineIlustrations01', inputProps: props});
 for (const t of tempos) {
 	const out = `${pasta}/q_${t.toFixed(2)}${previas ? '_previas' : ''}.png`;

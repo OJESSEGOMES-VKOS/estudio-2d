@@ -1,9 +1,11 @@
 """Som do anunciomotion01 (vitrine; adaptado do sofistmotion01): trilha sintetizada + efeitos nas trocas, tudo calculado dos tempos do vídeo.
 Gera public/trilha.wav (pulso grave + pad quente + brilho, com ducking pela voz, ~16 dB abaixo dela) e
 public/efeitos.wav (whoosh, estalo, impacto, tiques, brilho metálico). Cauda de ~2 s no fim (MODELO §9).
+Tudo vem do plano (src/tempos.json): a duração, as entradas das cenas, as prévias, "virada", "acordes" (segundos ou id
+de cena; sem a lista, um acorde por cena) e as marcas. O que o plano não tem não toca.
 uso: ../../.venv/Scripts/python.exe scripts/som.py   (SAIDA=<pasta> grava fora de public/)
 """
-import json, os, re, subprocess
+import json, os, re, subprocess, sys, unicodedata
 from pathlib import Path
 
 import numpy as np
@@ -22,6 +24,12 @@ tt = np.arange(N) / SR
 rng = np.random.default_rng(11)
 q2s = lambda q: q / FPS
 ini = lambda i: round(PS[i]['start'] * FPS) / FPS
+limpa = lambda s: re.sub(r'[^a-z0-9]', '', ''.join(c for c in unicodedata.normalize('NFD', s.lower()) if unicodedata.category(c) != 'Mn'))
+if [w for w in map(limpa, T.get('fala', '').split()) if w] != [w for w in (limpa(p['text']) for p in PS) if w]:
+    sys.exit('O plano (src/tempos.json) não é desta fala: rode scripts/conferir.py, que diz o que refazer.')
+MARCAS = T.get('marcas') or {}
+marca = lambda nome: ini(MARCAS[nome][0]) if nome in MARCAS else None  # sem a marca, o efeito dela não toca
+tem = lambda *nomes: [marca(m) for m in nomes if m in MARCAS]
 hz = lambda m: 440 * 2 ** ((m - 69) / 12)
 lp = lambda x, f: sosfilt(butter(2, f, 'low', fs=SR, output='sos'), x)
 hp = lambda x, f: sosfilt(butter(2, f, 'high', fs=SR, output='sos'), x)
@@ -47,11 +55,13 @@ def env_ad(n, a, d):
 
 # ---------------- trilha ----------------
 CEN = {c['id']: q2s(c['de_q']) for c in T['cenas']}
-VIRADA = CEN['S7']
-FECHO = CEN['S10']
-# eletrônica baixa (MODELO §6): pad em Lá menor, baixo, bumbo em semínimas 120 bpm e hi-hat nas colcheias
-ACORDES = [(0.0, [45, 57, 60, 64]), (CEN['S3'], [41, 53, 57, 60]), (CEN['S5'], [48, 55, 60, 64]), (CEN['S6'], [43, 55, 59, 62]),
-           (VIRADA, [41, 53, 57, 60, 64]), (CEN['S8'], [45, 57, 60, 64, 67]), (CEN['S9'], [43, 55, 59, 62]), (FECHO, [45, 57, 60, 64, 71])]
+VIRADA = CEN[T['virada']] if T.get('virada') in CEN else float('inf')  # sem "virada": o pulso não sobe
+FECHO = q2s(T['cenas'][-1]['de_q'])                                   # a última cena
+# eletrônica baixa (MODELO §6): pad em Lá menor, baixo, bumbo em semínimas 120 bpm e hi-hat nas colcheias; o último acorde é o do fecho
+NOTAS = [[45, 57, 60, 64], [41, 53, 57, 60], [48, 55, 60, 64], [43, 55, 59, 62], [41, 53, 57, 60, 64], [45, 57, 60, 64, 67], [43, 55, 59, 62]]
+NOTAS_FECHO = [45, 57, 60, 64, 71]
+inicios = [CEN[x] if isinstance(x, str) else x for x in T.get('acordes') or [c['de_q'] / FPS for c in T['cenas']]]
+ACORDES = [(t0, NOTAS_FECHO if k == len(inicios) - 1 else NOTAS[k % len(NOTAS)]) for k, t0 in enumerate(inicios)]
 pad = np.zeros(N); baixo = np.zeros(N)
 for k, (t0, notas) in enumerate(ACORDES):
     t1 = ACORDES[k + 1][0] if k + 1 < len(ACORDES) else D + 2
@@ -73,7 +83,7 @@ while t < D - 1.0:
     else: add(pulso, t, hat, 0.12)
     t += passo / 2; k += 1
 sub = np.zeros(N)
-for alvo, dur in ((VIRADA, 1.2), (FECHO, 0.9)):
+for alvo, dur in [x for x in ((VIRADA, 1.2), (FECHO, 0.9)) if x[0] != float('inf')]:
     n = int(dur * SR); x = np.linspace(0, 1, n)
     add(sub, alvo - dur, bp(rng.standard_normal(n), 800, 7000) * x ** 2, 0.35)
 trilha = 0.5 * pad / (np.max(np.abs(pad)) + 1e-9) + 0.5 * baixo / (np.max(np.abs(baixo)) + 1e-9) + pulso + sub
@@ -137,23 +147,27 @@ for c in T['cenas'][1:]:
     add(fx, t0 - 0.2, whoosh(0.3, 400, 8000), 0.45)
     if c['entrada'] == 'corte': add(fx, t0, estalo(), 0.3)
     if c['entrada'] == 'iris': add(fx, t0, impacto(50, 1.2), 0.5)
-add(fx, ini(0) - 0.05, whoosh(0.4, 500, 4000), 0.4)
-for k in range(9): add(fx, ini(4) + (k / 9) ** 1.6 * 0.45, tique(2400 + k * 80), 0.25)   # contador
-add(fx, ini(4) + 0.45, sino(1568), 0.2)
-for i in (8, 9, 10, 11, 12): add(fx, ini(i), tique(1800), 0.3)                          # clipes caindo
-for i in (16, 18, 19): add(fx, ini(i), whoosh(0.25, 600, 5000), 0.25)                     # placas
-add(fx, ini(24), sino(1760, 0.9), 0.18)                                                   # melhorei
-for i in (27, 28, 30, 31): add(fx, ini(i), tique(3000), 0.35)                            # ícones orbitando
-add(fx, ini(39), sino(2093, 0.6), 0.18)                                                   # coração
-add(fx, ini(44), whoosh(0.3, 5000, 400, sobe=False), 0.25); add(fx, ini(45), sino(1320, 0.7), 0.2)
-de = q2s(T['previas']['de_q'])
-add(fx, de - 0.15, whoosh(0.4, 300, 6000), 0.45)
-add(fx, ini(55), whoosh(0.3, 1500, 5000), 0.2)
-add(fx, ini(58), whoosh(0.6, 300, 9000), 0.35)                                            # aceleradas
-for i in (68, 69, 70, 71): add(fx, ini(i), tique(2600), 0.3)                             # pílulas escrevendo
-add(fx, ini(78), tique(1500), 0.55); add(fx, ini(78) + 0.03, sino(1760, 0.6), 0.15)        # interruptor
-add(fx, ini(84) - 0.05, metal(1.4), 0.22); add(fx, ini(84), impacto(55, 1.6), 0.35)       # EDIÇÃO
-add(fx, ini(86), whoosh(0.3, 3000, 600, sobe=False), 0.18)
+# cada efeito preso a uma marca do plano (src/tempos.json → "marcas"); o que o plano não tem, não toca (ordem fixa)
+for t0 in tem('inicio'): add(fx, t0 - 0.05, whoosh(0.4, 500, 4000), 0.4)
+for t0 in tem('cem'):
+    for k in range(9): add(fx, t0 + (k / 9) ** 1.6 * 0.45, tique(2400 + k * 80), 0.25)  # contador
+    add(fx, t0 + 0.45, sino(1568), 0.2)
+for t0 in tem('clipe1', 'clipe2', 'clipe3', 'clipe4', 'clipe5'): add(fx, t0, tique(1800), 0.3)   # clipes caindo
+for t0 in tem('placa1', 'placa2', 'placa3'): add(fx, t0, whoosh(0.25, 600, 5000), 0.25)          # placas
+for t0 in tem('melhorei'): add(fx, t0, sino(1760, 0.9), 0.18)                                     # melhorei
+for t0 in tem('orbita1', 'orbita2', 'orbita3', 'orbita4'): add(fx, t0, tique(3000), 0.35)        # ícones orbitando
+for t0 in tem('coracao'): add(fx, t0, sino(2093, 0.6), 0.18)                                      # coração
+for t0 in tem('apenas'): add(fx, t0, whoosh(0.3, 5000, 400, sobe=False), 0.25)
+for t0 in tem('um'): add(fx, t0, sino(1320, 0.7), 0.2)
+if T.get('previas'):
+    de = q2s(T['previas']['de_q'])
+    add(fx, de - 0.15, whoosh(0.4, 300, 6000), 0.45)
+for t0 in tem('setas'): add(fx, t0, whoosh(0.3, 1500, 5000), 0.2)
+for t0 in tem('aceleradas'): add(fx, t0, whoosh(0.6, 300, 9000), 0.35)                            # aceleradas
+for t0 in tem('outros', 'pilula1', 'pilula2', 'pilula3'): add(fx, t0, tique(2600), 0.3)           # pílulas escrevendo
+for t0 in tem('usar'): add(fx, t0, tique(1500), 0.55); add(fx, t0 + 0.03, sino(1760, 0.6), 0.15)  # interruptor
+for t0 in tem('edicao'): add(fx, t0 - 0.05, metal(1.4), 0.22); add(fx, t0, impacto(55, 1.6), 0.35)   # EDIÇÃO
+for t0 in tem('embaixo'): add(fx, t0, whoosh(0.3, 3000, 600, sobe=False), 0.18)
 
 trilha = lp(trilha, 12000)
 

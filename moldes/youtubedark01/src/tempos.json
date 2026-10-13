@@ -1,4 +1,5 @@
 {
+  "fala": "Esse vídeo está sendo 100% editado pelo Claude. Ele foi criado justamente para te mostrar a diferença entre vários modelos que eu criei e melhorei para editar qualquer tipo de vídeo usando o Claude. Inclusive, se você estiver no Instagram agora, você está vendo apenas um desses modelos. Eu posso até colocar duas prévias rápidas aqui em cima, aceleradas em três vezes. Mas se você quiser realmente ver outros modelos de edição como esse e aprender a como usar isso nos seus vídeos, comenta edição aqui embaixo que eu vou te mandar na sua DM agora.",
   "fps": 30,
   "duracao_q": 912,
   "fade_q": [897, 912],
@@ -16,6 +17,12 @@
     {"id": "S11", "de_q": 803, "ate_q": 912, "o_que": "ele aponta pra baixo, para a caixa de comentário com comenta \"EDIÇÃO\""}
   ],
   "previas": {"de_q": 470, "ate_q": 600},
+  "marcas": {
+    "barra_cheia": [4, "100%"],
+    "barra_fim": [5, "editado"],
+    "caixa": [83, "comenta"],
+    "risco": [84, "edição"]
+  },
   "texto": {"83": "COMENTA", "84": "“EDIÇÃO”"},
   "legenda": {"fs": 66, "y0": 1217, "passo": 78},
   "blocos": [

@@ -74,11 +74,22 @@
    25.99,
    26.19
   ],
+  "textos": [
+   "aprender",
+   "a",
+   "como",
+   "usar",
+   "isso",
+   "nos",
+   "seus",
+   "vídeos"
+  ],
   "sai": 26.683
  },
  "fecho": {
   "comenta": 26.75,
   "edicao": 27.35,
+  "palavra": "EDIÇÃO",
   "aqui": 27.91,
   "embaixo": 28.09,
   "mandar": 28.69,
@@ -87,5 +98,30 @@
  "silencio": {
   "de": 19.873,
   "ate": 20.423
+ },
+ "titulos": {
+  "editor": {
+   "i0": 6,
+   "grupos": [
+    2,
+    3,
+    2,
+    3
+   ]
+  },
+  "celular": {
+   "i0": 34,
+   "grupos": [
+    1,
+    3,
+    3,
+    3,
+    4
+   ]
+  }
+ },
+ "fala": {
+  "palavras": 96,
+  "fim": 29.63
  }
 }

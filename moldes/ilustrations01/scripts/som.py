@@ -7,11 +7,15 @@
   modelo, subindo), brilho no "um desses modelos", sopro subindo/descendo nas prévias, impacto + acorde na virada,
   varredura verde do último, baque no apagão, toques na digitação da moral.
 Os níveis já saem no arquivo, relativos à voz (scripts/mixar.sh soma tudo a 0 dB e normaliza em -14 LUFS).
+Tudo vem do plano (src/plano.json, o mesmo que o vídeo lê): duração, chegadas, edições, prévias, virada, apagão e moral.
+O que o plano não tem não toca; sem "virada", a trilha fica só na parte calma.
 uso: ../../.venv/Scripts/python.exe scripts/som.py [ganho trilha dB] [ganho efeitos dB]   (SAIDA=<pasta> grava fora de public/)
 """
 import json
 import os
+import re
 import sys
+import unicodedata
 from pathlib import Path
 
 import numpy as np
@@ -21,9 +25,21 @@ from scipy.signal import butter, sosfilt
 AQUI = Path(__file__).resolve().parent.parent
 SAIDA = Path(os.environ.get('SAIDA', AQUI / 'public'))
 PS = json.loads((AQUI / 'src' / 'palavras.json').read_text(encoding='utf-8'))
-w = lambda i: PS[i]['start']
+PL = json.loads((AQUI / 'src' / 'plano.json').read_text(encoding='utf-8'))
+limpa = lambda s: re.sub(r'[^a-z0-9]', '', ''.join(c for c in unicodedata.normalize('NFD', s.lower()) if unicodedata.category(c) != 'Mn'))
+if [x for x in map(limpa, PL.get('fala', '').split()) if x] != [x for x in (limpa(p['text']) for p in PS) if x]:
+    sys.exit('O plano (src/plano.json) não é desta fala: rode node scripts/checar.mjs, que diz o que refazer.')
+
+
+def tempo(x):
+    """o mesmo tempo do src/Reel.tsx: segundos, [índice, "palavra"] ou [índice, "palavra", mais segundos]"""
+    if x is None or isinstance(x, (int, float)):
+        return x
+    return PS[x[0]]['start'] if len(x) < 3 else PS[x[0]]['start'] + x[2]
+
+
 SR = 48000
-D = 30.33
+D = round((PS[-1]['end'] + PL['cauda']) * 100) / 100  # o DURACAO do vídeo
 N = int(D * SR)
 tt = np.arange(N) / SR
 rng = np.random.default_rng(11)
@@ -33,11 +49,14 @@ bp = lambda x, a, b: sosfilt(butter(2, [a, b], 'band', fs=SR, output='sos'), x)
 hz = lambda m: 440 * 2 ** ((m - 69) / 12)
 db = lambda g: 10 ** (g / 20)
 
-# relógio igual ao de src/Reel.tsx
-EDICOES = [w(7), w(16), w(24), w(33)]
-APENAS_UM, SOBE, DESCE, VIRADA, ED_VOCE, APAGAO = w(45), w(53), w(62), w(68), w(78), 26.55
-MORAL = [(w(83), 0.4, len('COMENTA “EDIÇÃO”')), (w(85), 0.35, len('AQUI EMBAIXO'))]
-CHEGADAS = [(360, 810, -0.2, 2.4), (-70, 660, 2.95, 2.23), (-70, 510, w(16), 2.2), (-70, 360, w(24), 2.0), (-70, 210, w(62), 2.0)]
+# relógio igual ao de src/Reel.tsx (src/plano.json)
+EDICOES = [tempo(c['edita']) for c in PL['chegadas'] if not c.get('voce') and c.get('edita') is not None]
+VOCE = [tempo(c['edita']) for c in PL['chegadas'] if c.get('voce') and c.get('edita') is not None]
+APENAS_UM, VIRADA, APAGAO = tempo(PL.get('apenasUm')), tempo(PL.get('virada')), tempo(PL.get('apagao'))
+SOBE = tempo(PL['previas']['sobe']) if PL.get('previas') else None
+DESCE = tempo(PL['previas']['desce']) if PL.get('previas') else None
+MORAL = [(tempo(m['de']), m['dig'], len(m['txt'])) for m in PL['moral']]
+CHEGADAS = [(c['x0'], c['x1'], tempo(c['t0']), c['d']) for c in PL['chegadas']]
 PASSO, K = 62, 1.8
 VARRE = 0.28
 
@@ -60,7 +79,7 @@ def env(n, a, r):
 
 # ------------------------------------------------------------------ trilha
 BEAT = 0.73
-b0 = VIRADA - round(VIRADA / BEAT) * BEAT  # um tempo cai exatamente na virada
+b0 = VIRADA - round(VIRADA / BEAT) * BEAT if VIRADA is not None else 0.0  # um tempo cai exatamente na virada
 batidas = [b0 + k * BEAT for k in range(int(D / BEAT) + 2) if b0 + k * BEAT >= -0.01]
 ACORDES = [[45, 52, 57, 60, 64], [41, 48, 57, 60, 65], [48, 55, 60, 64, 67], [43, 50, 59, 62, 67]]  # Am F C G
 acorde = lambda t: ACORDES[int(np.floor((t - b0) / (4 * BEAT))) % 4]
@@ -90,7 +109,7 @@ for bt in batidas:
     x = np.arange(n) / SR
     pl = np.sin(2 * np.pi * hz(nota[2]) * x) * env(n, 0.004, 0.12)
     add(pulso, bt, lp(pl, 1500))
-    if bt >= VIRADA - 0.01:
+    if VIRADA is not None and bt >= VIRADA - 0.01:
         nk = int(0.45 * SR)
         xk = np.arange(nk) / SR
         f = 48 + 90 * np.exp(-xk / 0.03)
@@ -105,8 +124,8 @@ for bt in batidas:
             m = nota[[2, 3, 4, 3][q]] + 12
             add(arpejo, bt + q * BEAT / 4, (np.sin(2 * np.pi * hz(m) * xa) + 0.2 * np.sin(6 * np.pi * hz(m) * xa)) * env(na, 0.003, 0.07))
 
-forte = (tt >= VIRADA).astype(float)
-sobe_moral = 1 + 0.25 * np.clip((tt - MORAL[0][0]) / 0.6, 0, 1)
+forte = (tt >= VIRADA).astype(float) if VIRADA is not None else np.zeros(N)
+sobe_moral = 1 + 0.25 * np.clip((tt - MORAL[0][0]) / 0.6, 0, 1) if MORAL else 1
 trilha = (0.55 * pad_fechado * (1 - forte) + 0.5 * pad_aberto * forte) / (np.max(np.abs(pad)) + 1e-9) * 0.5
 trilha += pulso / (np.max(np.abs(pulso)) + 1e-9) * 0.22 * (1 - 0.35 * forte)
 trilha += forte * (kick / (np.max(np.abs(kick)) + 1e-9) * 0.55 + baixo / (np.max(np.abs(baixo)) + 1e-9) * 0.3 + arpejo / (np.max(np.abs(arpejo)) + 1e-9) * 0.16)
@@ -145,7 +164,8 @@ def varredura(f0, f1, dur=0.28, brilho=1.0):
 
 
 NOTAS = [72, 76, 79, 83]  # dó, mi, sol, si: cada modelo uma nota acima
-for t, m in zip(EDICOES, NOTAS):
+for k, t in enumerate(EDICOES):
+    m = NOTAS[k % len(NOTAS)]
     add(fx, t, varredura(hz(m) * 0.5, hz(m)), 0.33)
 
 
@@ -156,7 +176,8 @@ def sino(m, dur=1.6):
     return (np.sin(2 * np.pi * f * x) + 0.4 * np.sin(2 * np.pi * 2.76 * f * x) * np.exp(-x / 0.15)) * env(n, 0.003, dur / 4)
 
 
-add(fx, APENAS_UM, sino(88, 1.4), 0.10)  # brilho branco em B1
+if APENAS_UM is not None:
+    add(fx, APENAS_UM, sino(88, 1.4), 0.10)  # brilho branco no destaque
 
 
 def sopro(f0, f1, dur):
@@ -172,25 +193,29 @@ def sopro(f0, f1, dur):
     return out * np.sin(np.pi * x) ** 1.5
 
 
-add(fx, SOBE - 0.05, sopro(300, 2800, 0.7), 0.16)
-add(fx, DESCE - 0.02, sopro(2600, 260, 0.55), 0.12)
+if SOBE is not None:
+    add(fx, SOBE - 0.05, sopro(300, 2800, 0.7), 0.16)
+    add(fx, DESCE - 0.02, sopro(2600, 260, 0.55), 0.12)
 
 # virada: impacto grave + acorde aceso (dó maior aberto)
 nv = int(1.6 * SR)
 xv = np.arange(nv) / SR
 impacto = np.sin(2 * np.pi * np.cumsum(42 + 70 * np.exp(-xv / 0.05)) / SR) * env(nv, 0.002, 0.35)
 impacto += lp(rng.standard_normal(nv), 900) * env(nv, 0.001, 0.06) * 0.5
-add(fx, VIRADA, impacto, 0.55)
-for m in (72, 76, 79, 84):
-    add(fx, VIRADA + 0.01, sino(m, 2.2), 0.06)
+if VIRADA is not None:
+    add(fx, VIRADA, impacto, 0.55)
+    for m in (72, 76, 79, 84):
+        add(fx, VIRADA + 0.01, sino(m, 2.2), 0.06)
 
-add(fx, ED_VOCE, varredura(hz(84) * 0.5, hz(84)), 0.33)  # a sua tela sai editada, verde
-for m in (79, 84, 88):
-    add(fx, ED_VOCE + VARRE, sino(m, 1.4), 0.05)
+for ED_VOCE in VOCE:
+    add(fx, ED_VOCE, varredura(hz(84) * 0.5, hz(84)), 0.33)  # a sua tela sai editada, verde
+    for m in (79, 84, 88):
+        add(fx, ED_VOCE + VARRE, sino(m, 1.4), 0.05)
 
 nt = int(0.7 * SR)
 xt = np.arange(nt) / SR
-add(fx, APAGAO, np.sin(2 * np.pi * 46 * xt) * env(nt, 0.004, 0.18), 0.35)  # apagão
+if APAGAO is not None:
+    add(fx, APAGAO, np.sin(2 * np.pi * 46 * xt) * env(nt, 0.004, 0.18), 0.35)  # apagão
 
 for t0, dig, n_letras in MORAL:  # um toque a cada 2 letras digitadas
     for k in range(0, n_letras, 2):

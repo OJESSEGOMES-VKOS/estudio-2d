@@ -23,7 +23,7 @@ O Jessé mandou 2 referências (`referencias/`; folhas em `analise/`):
 
 ## v3 (2026-10-10): a v2 ficou "robótica e previsível"
 
-O Jessé pediu movimento fluido, quase aleatório e bem suave. Os itens 2 e 3 da v2 foram trocados (código em `conteudo/2026-10-10-anuncio-canvas-marcai/src/`; a v2 ficou em `versoes/v2/`):
+O Jessé pediu movimento fluido, quase aleatório e bem suave. Os itens 2 e 3 da v2 foram trocados (código em `modelos/anunciocanvas01/aplicacoes/2026-10-10-anuncio-canvas-marcai/src/`; a v2 ficou em `versoes/v2/`):
 
 1. **Nada de grade.** Cada estação nasce numa direção sorteada a partir da anterior: 1900 a 2300 px de distância, profundidade entre -350 e +350, giro de até 7 graus. O sorteio é fixo, então o filme sai sempre igual. Os 3 atos só puxam o rumo geral (dor para a direita, virada para baixo, produto de volta, fecho descendo) e nenhuma estação fica a menos de 1800 px de outra.
 2. **A viagem volta a ser longa e macia**, cada uma com a sua duração: sigma 0,26 + até 0,16 sorteado + dist/25000 s. Ela faz **curva**: um desvio lateral (até 35% da distância, para um lado ou para o outro) e de profundidade, que cresce antes do meio e volta depois.
@@ -75,7 +75,7 @@ Ainda das referências, para as próximas cenas escritas direto neste modelo:
 
 As cenas do Marcaí vieram prontas do anunciomotion01 e ainda são mais cheias que isso.
 
-- **Implementação de referência:** `conteudo/2026-10-10-anuncio-canvas-marcai/`. O motor do canvas está em `src/Mundo.tsx` e a montagem em `src/Anuncio.tsx`.
+- **Implementação de referência:** `modelos/anunciocanvas01/aplicacoes/2026-10-10-anuncio-canvas-marcai/`. O motor do canvas está em `src/Mundo.tsx` e a montagem em `src/Anuncio.tsx`.
 
 ## 1. A ideia central
 
@@ -140,9 +140,9 @@ Os três atos do anúncio viram a forma do caminho no canvas:
 
 | Data | Vídeo | Notas |
 |---|---|---|
-| 2026-10-10 | `conteudo/2026-10-10-anuncio-canvas-marcai/out/marcai-anuncio-canvas.mp4` (44,4 s) | v1: o anúncio do Marcaí (produto fictício), mesmas 18 cenas e voz do anunciomotion01, em 18 estações. **Recusada: muito poluída.** Código em `versoes/v1/` |
-| 2026-10-10 | `conteudo/2026-10-10-anuncio-canvas-marcai/out/marcai-anuncio-canvas-v2.mp4` (44,4 s) | v2: uma ideia por quadro, chicote com borrão, ambiente que muda de cor, sem enfeite. Recusada: robótica e previsível. Código em `versoes/v2/` |
-| 2026-10-10 | `conteudo/2026-10-10-anuncio-canvas-marcai/out/marcai-anuncio-canvas-v3.mp4` (44,4 s) | v3: estações espalhadas, viagens em curva com duração própria, câmera que flutua. Render de 1 min 38 s. Pedido de ajuste: texto que não dava pra ler. Código em `versoes/v3/` |
-| 2026-10-10 | `conteudo/2026-10-10-anuncio-canvas-marcai/out/marcai-anuncio-canvas-v4.mp4` (44,4 s) | v4: viagem dentro do silêncio entre as falas, deriva e giro menores; conferido o início e o fim das 18 cenas. Pedido de ajuste: transição seca e cara de grid. Código em `versoes/v4/` |
-| 2026-10-10 | `conteudo/2026-10-10-anuncio-canvas-marcai/out/marcai-anuncio-canvas-v5.mp4` (44,4 s) | v5: sem estações; elementos soltos no canvas; câmera em keyframes com auto bezier e easy ease, rumo que vira aos poucos e wiggle macio. Render de 1 min 25 s. Pedido: mesclar com v4, v3 e v2. Código em `versoes/v5/` |
-| 2026-10-10 | `conteudo/2026-10-10-anuncio-canvas-marcai/out/marcai-anuncio-canvas-v6.mp4` (44,4 s) | v6: a base da v5 com passagens sorteadas entre fluxo, curva e chicote. Aguardando o olho do Jessé |
+| 2026-10-10 | `modelos/anunciocanvas01/exemplos/marcai-anuncio-canvas.mp4` (44,4 s) | v1: o anúncio do Marcaí (produto fictício), mesmas 18 cenas e voz do anunciomotion01, em 18 estações. **Recusada: muito poluída.** Código em `versoes/v1/` |
+| 2026-10-10 | `modelos/anunciocanvas01/exemplos/marcai-anuncio-canvas-v2.mp4` (44,4 s) | v2: uma ideia por quadro, chicote com borrão, ambiente que muda de cor, sem enfeite. Recusada: robótica e previsível. Código em `versoes/v2/` |
+| 2026-10-10 | `modelos/anunciocanvas01/exemplos/marcai-anuncio-canvas-v3.mp4` (44,4 s) | v3: estações espalhadas, viagens em curva com duração própria, câmera que flutua. Render de 1 min 38 s. Pedido de ajuste: texto que não dava pra ler. Código em `versoes/v3/` |
+| 2026-10-10 | `modelos/anunciocanvas01/exemplos/marcai-anuncio-canvas-v4.mp4` (44,4 s) | v4: viagem dentro do silêncio entre as falas, deriva e giro menores; conferido o início e o fim das 18 cenas. Pedido de ajuste: transição seca e cara de grid. Código em `versoes/v4/` |
+| 2026-10-10 | `modelos/anunciocanvas01/exemplos/marcai-anuncio-canvas-v5.mp4` (44,4 s) | v5: sem estações; elementos soltos no canvas; câmera em keyframes com auto bezier e easy ease, rumo que vira aos poucos e wiggle macio. Render de 1 min 25 s. Pedido: mesclar com v4, v3 e v2. Código em `versoes/v5/` |
+| 2026-10-10 | `modelos/anunciocanvas01/exemplos/marcai-anuncio-canvas-v6.mp4` (44,4 s) | v6: a base da v5 com passagens sorteadas entre fluxo, curva e chicote. Aguardando o olho do Jessé |

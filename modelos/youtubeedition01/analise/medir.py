@@ -43,8 +43,8 @@ if len(list(tmp.glob('*.jpg'))) < int(dur / passo) - 1:
                     str(tmp / '%05d.jpg')], check=True)
 quadros = sorted(tmp.glob('*.jpg'))
 
-# 3. rosto (A-roll): YuNet (modelo da Máquina); rosto com altura > 12% do quadro = pessoa falando pra câmera
-YUNET = Path(__file__).resolve().parents[4] / 'maquina-de-conteudo/tools/modelos/face_detection_yunet_2023mar.onnx'
+# 3. rosto (A-roll): YuNet (tools/modelos do estúdio); rosto com altura > 12% do quadro = pessoa falando pra câmera
+YUNET = Path(__file__).resolve().parents[3] / 'tools/modelos/face_detection_yunet_2023mar.onnx'
 rostos, det = [], None
 for q in quadros:
     im = cv2.imread(str(q))

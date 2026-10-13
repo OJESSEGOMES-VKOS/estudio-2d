@@ -17,6 +17,7 @@ const NOMES = ['modelodinamico01', 'modelopadrao01', 'modelodinamico03', 'pregac
 export const Modelos: React.FC = () => {
 	const {t} = useT();
 	const S = T.modelos;
+	if (!S) return null;
 	const passo = (S.modelos - S.de - 0.12) / (NOMES.length - 1);
 	const saiCartoes = tw(t, S.editar, S.editar + 0.35, 0, 1, E.inOut);
 	const usando = S.formatos[2] + 0.18;
@@ -84,17 +85,15 @@ export const Modelos: React.FC = () => {
  * no celular (o rosto mora na tela do celular, como na pré-visualização do editor). Em "Instagram" a interface do
  * Reel aparece; em "um" o NOME do modelo; em "desses" os outros modelos saem de trás. Devolve o rosto em "posso".
  */
-const S_C = T.celular;
-const vidaCel = (t: number) => Math.min(tw(t, S_C.de - 0.05, S_C.de + 0.3, 0, 1, E.inOut), 1 - tw(t, S_C.devolve - 0.05, S_C.devolve + 0.2, 0, 1, E.in));
-const PAG_CEL = paginasDe(
-	P.palavras.findIndex((w) => w.texto.startsWith('Inclusive')),
-	[1, 3, 3, 3, 4], // "Inclusive," "se você estiver" "no Instagram agora," "você está vendo" "apenas um desses modelos."
-);
+const S_C = T.celular; // null: o vídeo não tem a tela do celular
+export const vidaCel = (t: number) => (S_C ? Math.min(tw(t, S_C.de - 0.05, S_C.de + 0.3, 0, 1, E.inOut), 1 - tw(t, S_C.devolve - 0.05, S_C.devolve + 0.2, 0, 1, E.in)) : 0);
+// "Inclusive," "se você estiver" "no Instagram agora," "você está vendo" "apenas um desses modelos." (scripts/gerar_tempos.py, titulos.celular)
+export const PAG_CEL = T.titulos.celular ? paginasDe(T.titulos.celular.i0, T.titulos.celular.grupos) : [];
 
 export const CelularFundo: React.FC = () => {
 	const {t} = useT();
 	const v = vidaCel(t);
-	if (v <= 0) return null;
+	if (v <= 0 || !S_C) return null;
 	const sai = tw(t, S_C.desses - 0.1, S_C.desses + 0.4, 0, 1, E.out);
 	return (
 		<AbsoluteFill style={{...fundoClaro, opacity: Math.min(1, v * 1.4)}}>
@@ -121,8 +120,9 @@ const Icone: React.FC<{d: string}> = ({d}) => (
 
 export const CelularFrente: React.FC = () => {
 	const {t} = useT();
+	const {arroba, foto} = usePrevias();
 	const v = vidaCel(t);
-	if (v <= 0) return null;
+	if (v <= 0 || !S_C) return null;
 	const ig = mola(t, S_C.instagram, {damping: 14, stiffness: 200});
 	const nome = mola(t, S_C.nome, {damping: 13, stiffness: 220});
 	const marca = tw(t, S_C.nome + 0.3, S_C.nome + 0.7, 0, 1, E.inOut);
@@ -139,9 +139,9 @@ export const CelularFrente: React.FC = () => {
 						<Icone d="M21 3L10 14M21 3l-7 18-4-7-7-4z" />
 					</div>
 					<div style={{position: 'absolute', left: 18, bottom: 40, display: 'flex', alignItems: 'center', gap: 12, transform: `translateY(${(1 - ig) * 40}px)`}}>
-						<Img src={staticFile('foto.jpg')} style={{width: 46, height: 46, borderRadius: 23, border: '2px solid #fff', objectFit: 'cover'}} />
-						<div style={{color: '#fff', fontFamily: '-apple-system, "Segoe UI", ' + DISPLAY, fontWeight: 700, fontSize: 24, textShadow: '0 1px 3px rgba(0,0,0,0.5)'}}>ojessegomes</div>
-						<div style={{color: '#fff', fontFamily: '-apple-system, "Segoe UI", ' + DISPLAY, fontWeight: 700, fontSize: 20, border: '2px solid rgba(255,255,255,0.85)', borderRadius: 10, padding: '3px 12px 5px'}}>Seguir</div>
+						{foto ? <Img src={staticFile(foto)} style={{width: 46, height: 46, borderRadius: 23, border: '2px solid #fff', objectFit: 'cover'}} /> : null}
+						{arroba ? <div style={{color: '#fff', fontFamily: '-apple-system, "Segoe UI", ' + DISPLAY, fontWeight: 700, fontSize: 24, textShadow: '0 1px 3px rgba(0,0,0,0.5)'}}>{arroba}</div> : null}
+						{arroba ? <div style={{color: '#fff', fontFamily: '-apple-system, "Segoe UI", ' + DISPLAY, fontWeight: 700, fontSize: 20, border: '2px solid rgba(255,255,255,0.85)', borderRadius: 10, padding: '3px 12px 5px'}}>Seguir</div> : null}
 					</div>
 					<div style={{position: 'absolute', left: 0, bottom: 0, height: 5, width: `${progresso * 100}%`, background: 'rgba(255,255,255,0.9)'}} />
 				</div>
@@ -169,8 +169,8 @@ export const CelularFrente: React.FC = () => {
 export const PreviasCena: React.FC = () => {
 	const {t} = useT();
 	const {previas, nomesPrevias} = usePrevias();
-	if (!previas) return null;
 	const S = T.previas;
+	if (!previas || !S) return null;
 	const x3 = mola(t, S.x3, {damping: 10, stiffness: 300, mass: 0.6});
 	return (
 		<Painel de={S.de} ate={S.sai}>
@@ -196,6 +196,7 @@ export const PreviasCena: React.FC = () => {
 export const Outros: React.FC = () => {
 	const {t} = useT();
 	const S = T.outros;
+	if (!S) return null;
 	const p = presenca(t, S.de, S.sai);
 	if (p <= 0) return null;
 	return (
@@ -215,7 +216,8 @@ export const Outros: React.FC = () => {
 export const Prompt: React.FC = () => {
 	const {t} = useT();
 	const S = T.prompt;
-	const txt = ['aprender', 'a', 'como', 'usar', 'isso', 'nos', 'seus', 'vídeos'];
+	if (!S || !S.palavras.length) return null;
+	const txt = S.textos; // as palavras ditas, sem a pontuação (scripts/gerar_tempos.py)
 	const caixa = mola(t, S.de + 0.15);
 	const ultima = S.palavras[S.palavras.length - 1];
 	const envia = mola(t, ultima, {damping: 10, stiffness: 300, mass: 0.6});
@@ -245,19 +247,20 @@ export const Prompt: React.FC = () => {
  */
 export const Fecho: React.FC = () => {
 	const {t} = useT();
+	const {arroba, foto} = usePrevias();
 	const S = T.fecho;
-	if (t < S.comenta) return null;
+	if (!S || t < S.comenta) return null;
 	const card = mola(t, S.comenta + 0.3, {damping: 15, stiffness: 170}); // espera o painel do prompt subir
-	const PALAVRA = 'EDIÇÃO';
+	const PALAVRA = S.palavra; // a palavra a comentar, em caixa alta (scripts/gerar_tempos.py)
 	const n = Math.floor(tw(t, S.edicao, S.edicao + 0.42, 0, PALAVRA.length + 0.999, E.lin));
 	const marca = tw(t, S.edicao + 0.45, S.edicao + 0.85, 0, 1, E.inOut);
 	const aperta = mola(t, S.embaixo, {damping: 10, stiffness: 300, mass: 0.6});
 	const dm = mola(t, S.mandar, {damping: 15, stiffness: 170});
 	const voa = tw(t, S.dm, S.dm + 0.5, 0, 1, E.out);
 	const fonte = '-apple-system, "Segoe UI", ' + DISPLAY;
-	const avatar = (lado: number) => (
+	const avatar = (lado: number) => foto && (
 		<div style={{width: lado, height: lado, flex: 'none', borderRadius: lado / 2, padding: 4, background: 'linear-gradient(45deg,#F9CE34,#EE2A7B,#6228D7)'}}>
-			<Img src={staticFile('foto.jpg')} style={{width: lado - 8, height: lado - 8, borderRadius: (lado - 8) / 2, border: '3px solid #fff', objectFit: 'cover', display: 'block'}} />
+			<Img src={staticFile(foto)} style={{width: lado - 8, height: lado - 8, borderRadius: (lado - 8) / 2, border: '3px solid #fff', objectFit: 'cover', display: 'block'}} />
 		</div>
 	);
 	return (
@@ -281,7 +284,7 @@ export const Fecho: React.FC = () => {
 				<div style={{position: 'absolute', left: 170, right: 200, top: 200, opacity: Math.min(1, dm * 1.5), transform: `translateY(${(1 - dm) * -60}px)`}}>
 					<div style={{background: C.branco, borderRadius: 32, boxShadow: SOMBRA, padding: '16px 26px 16px 16px', display: 'flex', alignItems: 'center', gap: 18, fontFamily: fonte}}>
 						{avatar(72)}
-						<div style={{flex: 1, fontWeight: 700, fontSize: 36, color: '#000'}}>ojessegomes</div>
+						<div style={{flex: 1, fontWeight: 700, fontSize: 36, color: '#000'}}>{arroba}</div>
 						<svg width={46} height={46} viewBox="0 0 24 24" fill={voa > 0 ? '#0095F6' : 'none'} stroke={voa > 0 ? '#0095F6' : '#000'} strokeWidth={2} strokeLinejoin="round" style={{transform: `translate(${voa * 14}px, ${-voa * 10}px) rotate(${-voa * 12}deg)`}}>
 							<path d="M21 3L10 14M21 3l-7 18-4-7-7-4z" />
 						</svg>

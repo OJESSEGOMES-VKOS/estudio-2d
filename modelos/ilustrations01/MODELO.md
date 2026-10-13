@@ -211,7 +211,7 @@ Tirada das referências, não da paleta do dono nem do cliente:
 
 ## 9. Como produzir com o que a casa tem
 
-- **Remotion + SVG desenhado no código.** Precedente direto: `conteudo/2026-10-06-youtubedark-hoje/src/` (boneco e cenários
+- **Remotion + SVG desenhado no código.** Precedente direto: `modelos/youtubedark01/aplicacoes/2026-10-06-youtubedark-hoje/src/` (boneco e cenários
   vetoriais animados, `Boneco.tsx`, `Cenarios.tsx`). Peças a montar como componentes:
   - `Palco`: fundo preto 1080x1920, linha de chão invisível, marca d'água.
   - `Reflexo`: o filho espelhado (`scaleY(-1)`), `blur`, opacidade 0,15 a 0,25 e máscara em degradê de ~9% da altura.
@@ -222,7 +222,7 @@ Tirada das referências, não da paleta do dono nem do cliente:
   - `Chegada` / `Saida`: posição com desaceleração longa (1,9 a 2,7 s) e aceleração (2 s).
   - `DeslizeCamera`: um grupo inteiro anda de lado em ~1 s.
 - Sombreado de volume com `linearGradient`/`radialGradient` do SVG, nunca imagem raster no personagem (precisa animar).
-- **Kit** (`projetos/estudio-2d/kit/`): `gerar.py` só pra referência de desenho de um objeto difícil (gerar, olhar e
+- **Kit** (`kit/`): `gerar.py` só pra referência de desenho de um objeto difícil (gerar, olhar e
   redesenhar em SVG); `audio_ia.py efeito` pros efeitos de ação (tiro, impacto) e `trilha`/`plano` pra música com a parte
   forte entrando no segundo da virada; `voz.py` pra vozes de personagem.
 - Conferência por medição, como nas decupagens: tirar quadros cheios do render com ffmpeg e medir cor, posição e o topo do
@@ -278,12 +278,12 @@ A fala entra inteira: ~30 s já é a duração nativa do estilo, e o site compar
 
 | Vídeo | Forma | Saída |
 |---|---|---|
-| Vitrine dos modelos (2026-10-12), a fala comum de 30 s, só a voz | C, corrente com virada: bonecos idênticos chegam com a mesma tela crua e cada um sai editado de um jeito; virada verde em "outros modelos de edição" (72%); moral COMENTA “EDIÇÃO” | `conteudo/2026-10-10-vitrine-modelos/ilustrations01/out/vitrine-ilustrations01.mp4` (hardlink em `exemplos/`); projeto e notas no `LEIA.md` de lá |
+| Vitrine dos modelos (2026-10-12), a fala comum de 30 s, só a voz | C, corrente com virada: bonecos idênticos chegam com a mesma tela crua e cada um sai editado de um jeito; virada verde em "outros modelos de edição" (72%); moral COMENTA “EDIÇÃO” | `modelos/ilustrations01/exemplos/vitrine-ilustrations01.mp4` (hardlink em `exemplos/`); projeto e notas no `LEIA.md` de lá |
 
 Aprendido no 1º vídeo (vale pros próximos):
 - **Fonte**: a das frases das refs é a **Didact Gothic** (I com serifa, O redondo), não a Quicksand. Corpo 34 px a 1920
   (maiúscula ~24 px; na ref4 medida 22 a 23 px), espaçamento 0,1 em, peso único.
-- Componentes prontos em `conteudo/2026-10-10-vitrine-modelos/ilustrations01/src/Reel.tsx`: `Digitado` (digitação com a
+- Componentes prontos em `moldes/ilustrations01/src/Reel.tsx`: `Digitado` (digitação com a
   letra crescendo), `Palito` (andar com a fase presa à distância, freio longo, olhar pra cima), `Tela` (varredura que
   edita), reflexo (cópia espelhada + desfoque 4 px + máscara de 173 px), `Halo`, chegada `posX` com freio de potência 1,8.
 - Som sintetizado (`scripts/som.py`): pulso a cada 0,73 s ancorado para cair um tempo na virada; trilha -16 dB da voz

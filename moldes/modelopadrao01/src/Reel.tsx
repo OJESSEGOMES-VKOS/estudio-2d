@@ -7,11 +7,12 @@ import {Legenda} from './Legenda';
 import {EditorFrente, EditorFundo} from './Editor';
 import {CelularFrente, CelularFundo, Fecho, Modelos, Outros, PreviasCena, Prompt} from './Cenas';
 
-export type Props = {voz: boolean; previas: boolean; nomesPrevias: [string, string]};
+/** arroba: o @ sem o "@" no Reel do celular e no fecho (vazio esconde); foto: arquivo em public/ do avatar (vazio esconde) */
+export type Props = {voz: boolean; previas: boolean; nomesPrevias: [string, string]; arroba?: string; foto?: string};
 
 /** camadas: fundo/editor/celular (embaixo do vídeo) -> vídeo -> telas -> legenda. A voz entra uma vez só (voz.wav). */
-export const Vitrine: React.FC<Props> = ({voz = true, previas = false, nomesPrevias = ['', '']}) => (
-	<PreviasCtx.Provider value={{previas, nomesPrevias}}>
+export const Vitrine: React.FC<Props> = ({voz = true, previas = false, nomesPrevias = ['', ''], arroba = '', foto = ''}) => (
+	<PreviasCtx.Provider value={{previas, nomesPrevias, arroba, foto}}>
 		<AbsoluteFill style={{...fundoClaro, overflow: 'hidden'}}>
 			<EditorFundo />
 			<CelularFundo />

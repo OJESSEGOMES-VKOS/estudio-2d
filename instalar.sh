@@ -22,6 +22,7 @@ kit/.venv/bin/python -m pip install -r requirements-kit.txt
 
 echo '3/4 Remotion (node_modules)'
 npm ci
+npx remotion browser ensure   # o navegador do render, dentro de node_modules
 
 echo '4/4 Modelos de visão (tools/modelos)'
 baixa() { [ -f "tools/modelos/$1" ] || curl -fL "$2" -o "tools/modelos/$1"; }

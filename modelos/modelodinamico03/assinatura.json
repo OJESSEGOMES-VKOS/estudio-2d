@@ -1,0 +1,36 @@
+{
+ "modelo": "modelodinamico03",
+ "gerado_de": "vitrine-modelodinamico03.mp4",
+ "entrada": {
+  "segundos": 30.0,
+  "formato": "1080x1920",
+  "brilho": 88.67,
+  "contraste": 155.0,
+  "saturacao": 64.34,
+  "temperatura": 2.77,
+  "tom": 4.2,
+  "rosto_aberto": 0.2689,
+  "rosto_fechado": 0.292,
+  "rosto_cy": 0.351,
+  "rosto_cx": 0.5021,
+  "cabeca_cortada": 0.0,
+  "com_rosto": 1.0
+ },
+ "saida": {
+  "video": "vitrine-modelodinamico03.mp4",
+  "segundos": 30.2,
+  "formato": "1080x1920",
+  "brilho": 51.36,
+  "contraste": 134.0,
+  "saturacao": 129.94,
+  "temperatura": 10.6,
+  "tom": 5.95,
+  "cortes_min": 4.0,
+  "rosto_aberto": 0.2962,
+  "rosto_fechado": 0.364,
+  "rosto_cy": 0.3331,
+  "rosto_cx": 0.5001,
+  "cabeca_cortada": 0.223,
+  "com_rosto": 1.0
+ }
+}

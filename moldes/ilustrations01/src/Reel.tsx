@@ -1,7 +1,8 @@
 import React from 'react';
-import {AbsoluteFill, Audio, OffthreadVideo, Sequence, random, staticFile, useCurrentFrame} from 'remotion';
+import {AbsoluteFill, Audio, OffthreadVideo, Sequence, getStaticFiles, random, staticFile, useCurrentFrame} from 'remotion';
 import {loadFont as loadDidact} from '@remotion/google-fonts/DidactGothic';
 import PB from './palavras.json';
+import PLANO from './plano.json';
 
 /**
  * Vitrine no ilustrations01 (../../modelos/ilustrations01/MODELO.md), 1º vídeo do modelo.
@@ -9,9 +10,9 @@ import PB from './palavras.json';
  * quando param, uma varredura edita a tela, cada uma de um jeito. Na virada ("outros modelos de edição") todas acendem
  * verde; o último a chegar (você) tem a tela crua até "usar isso nos seus vídeos". Apagão e moral: COMENTA “EDIÇÃO”.
  * Plano frase a frase em ../plano.md. Um plano só, câmera parada, fundo #000.
+ * A história desta fala (tempos, quem chega, as frases, a moral) mora em ./plano.json; aqui só o desenho.
  */
 export const FPS = 30;
-export const DURACAO = 30.33; // 0,7 s depois de "agora." (29,63): moral segura 3,6 s
 const W = 1080;
 const H = 1920;
 export const CHAO = 1190; // linha do chão (62%), invisível: só existe pelo reflexo
@@ -31,8 +32,51 @@ export type Props = {previas: boolean; nomesPrevias: [string, string]; musica?: 
 
 type Pal = {text: string; start: number; end: number};
 const PS = PB as Pal[];
-const w = (i: number) => PS[i].start;
 const fr = (s: number) => Math.round(s * FPS);
+
+/* ---------------------------------------------------------------- o plano (src/plano.json) tem de ser desta fala: para logo ao carregar */
+const pare = (msg: string): never => {
+	throw new Error(`\n\n[ilustrations01] ${msg}\nO checador diz o resto: node scripts/checar.mjs\n`);
+};
+const limpa = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+if (!PS.length) pare('src/palavras.json está vazio: rode tools/novo-video.py com a gravação da narração.');
+{
+	const plano = String(PLANO.fala ?? '').split(/\s+/).map(limpa).filter(Boolean);
+	const fala = PS.map((p) => limpa(p.text)).filter(Boolean);
+	const k = plano.findIndex((x, i) => x !== fala[i]);
+	if (k >= 0 || plano.length !== fala.length) {
+		const j = k >= 0 ? k : Math.min(plano.length, fala.length);
+		pare(
+			`O plano não bate com a fala. src/plano.json foi feito para outra fala: na palavra ${j + 1} o plano tem "${plano[j] ?? '(fim)'}" e src/palavras.json tem "${fala[j] ?? '(fim)'}". ` +
+				'Refaça a história sobre a fala nova em src/plano.json ("chegadas", "frases", "moral", "apenasUm", "previas", "virada", "apagao"; LEIA, "Vídeo novo") e cole o texto da fala nova no campo "fala" (linha 2).',
+		);
+	}
+}
+/** um tempo do plano: segundos, ou [índice, "palavra"] (o início dela, conferida) ou [índice, "palavra", mais segundos] */
+type Tempo = number | (number | string)[];
+const tempo = (x: Tempo, onde: string): number => {
+	if (typeof x === 'number') return x;
+	const [i, palavra, mais] = x as [number, string, number?];
+	const p = PS[i];
+	if (!p) return pare(`src/plano.json, ${onde}: a palavra ${i} não existe (a fala tem ${PS.length}, de 0 a ${PS.length - 1}).`);
+	if (limpa(p.text) !== limpa(palavra)) return pare(`src/plano.json, ${onde}: espera "${palavra}" na palavra ${i}, e a fala tem "${p.text}" em ${p.start.toFixed(2)} s.`);
+	return mais === undefined ? p.start : p.start + mais;
+};
+const talvez = (x: Tempo | null | undefined, onde: string) => (x === undefined || x === null ? null : tempo(x, onde));
+type PlanoJson = {
+	cauda: number;
+	apenasUm?: Tempo | null;
+	previas?: {ergue: Tempo; sobe: Tempo; desce: Tempo} | null;
+	virada?: Tempo | null;
+	apagao?: Tempo | null;
+	chegadas: {x0: number; x1: number; t0: Tempo; d: number; edita?: Tempo | null; previa?: number; destaque?: boolean; voce?: boolean}[];
+	frases: {txt: string; de: Tempo; dig: number; ate: Tempo}[];
+	moral: {txt: string; de: Tempo; dig: number}[];
+};
+const PL = PLANO as unknown as PlanoJson;
+
+/** o fim: `cauda` s depois da última palavra (a moral segura até aqui) */
+export const DURACAO = Math.round((PS[PS.length - 1].end + PL.cauda) * 100) / 100;
 
 const c01 = (x: number) => Math.max(0, Math.min(1, x));
 const lerp = (a: number, b: number, k: number) => a + (b - a) * k;
@@ -53,29 +97,21 @@ const mistura = (a: string, b: string, k: number) => {
 };
 const DEG = Math.PI / 180;
 
-/* ---------------------------------------------------------------- relógio da história (palavras de src/palavras.json) */
+/* ---------------------------------------------------------------- relógio da história (src/plano.json; null desliga a parte) */
+const PV = PL.previas ? {ergue: tempo(PL.previas.ergue, 'previas.ergue'), sobe: tempo(PL.previas.sobe, 'previas.sobe'), desce: tempo(PL.previas.desce, 'previas.desce')} : null;
 export const T = {
-	edicoes: [w(7), w(16), w(24), w(33)], // varredura em B1..B4: "Claude", "diferença", "melhorei", "Claude"
-	apenasUm: w(45), // "um desses modelos": B1 acende branco, os outros apagam
-	ergue: w(52), // "duas": B2 e B3 erguem as telas, todos olham pra cima
-	sobe: w(53), // "prévias": as telas sobem para o alto
-	desce: w(62), // "Mas": voltam para as mãos
-	virada: w(68), // "outros modelos de edição": tudo verde (72% do vídeo)
-	edicaoVoce: w(78), // "usar isso nos seus vídeos": a tela do último sai editada
-	apagao: 26.55,
-	moral: [w(83), w(85)], // "comenta edição" / "aqui embaixo"
+	apenasUm: talvez(PL.apenasUm, 'apenasUm'), // "um desses modelos": o destaque acende branco, os outros apagam
+	previas: PV, // ergue ("duas"): as telas sobem um pouco e todos olham pra cima; sobe ("prévias"): vão para o alto; desce ("Mas"): voltam
+	virada: talvez(PL.virada, 'virada'), // "outros modelos de edição": tudo verde (alvo 60 a 76% do vídeo)
+	apagao: talvez(PL.apagao, 'apagao'), // apagão antes da moral
 };
 const VARRE = 0.28; // duração da varredura
 
-/* chegadas: entra pela esquerda e freia longo (MODELO §3: 1,9 a 2,7 s) */
-type Chegada = {x0: number; x1: number; t0: number; d: number};
-export const CHEGADAS: Chegada[] = [
-	{x0: 360, x1: 810, t0: -0.2, d: 2.4}, // B1, já andando no quadro 0 (a premissa na tela no 1º segundo)
-	{x0: -70, x1: 660, t0: 2.95, d: 2.23}, // B2, "Ele foi criado"
-	{x0: -70, x1: 510, t0: w(16), d: 2.2}, // B3, "diferença entre vários modelos"
-	{x0: -70, x1: 360, t0: w(24), d: 2.0}, // B4, "melhorei para editar"
-	{x0: -70, x1: 210, t0: w(62), d: 2.0}, // você, "Mas se você quiser"
-];
+/* chegadas: entra pela esquerda e freia longo (MODELO §3: 1,9 a 2,7 s). `edita`: a varredura na tela dele; `previa` (0
+   esquerda, 1 direita): a tela que sobe com a prévia; `destaque`: o que acende no apenasUm; `voce`: o último, que só
+   fica verde quando edita */
+type Chegada = {x0: number; x1: number; t0: number; d: number; edita: number | null; previa?: number; destaque?: boolean; voce?: boolean};
+export const CHEGADAS: Chegada[] = PL.chegadas.map((c, k) => ({...c, t0: tempo(c.t0, `chegadas[${k}].t0`), edita: talvez(c.edita, `chegadas[${k}].edita`)}));
 const K_FREIO = 1.8;
 export const posX = (c: Chegada, t: number) => c.x0 + (c.x1 - c.x0) * (1 - Math.pow(1 - c01((t - c.t0) / c.d), K_FREIO));
 const velX = (c: Chegada, t: number) => {
@@ -86,20 +122,27 @@ export const PASSO = 62; // px por meia passada
 
 /* frases: digitação com a letra crescendo, uma por vez, some em 0,1 s 0,4 s antes da próxima (MODELO §3) */
 type Frase = {txt: string; de: number; dig: number; ate: number};
-export const FRASES: Frase[] = [
-	{txt: '“100% EDITADO PELO CLAUDE”', de: w(4), dig: 0.6, ate: w(15) - 0.4},
-	{txt: '“A DIFERENÇA ENTRE VÁRIOS MODELOS”', de: w(15), dig: 0.4, ate: w(27) - 0.4},
-	{txt: '“QUALQUER TIPO DE VÍDEO”', de: w(27), dig: 0.35, ate: w(44) - 0.4},
-	{txt: '“APENAS UM DESSES MODELOS”', de: w(44), dig: 0.35, ate: 15.8},
-	{txt: '“OUTROS MODELOS DE EDIÇÃO COMO ESSE”', de: w(68), dig: 0.45, ate: T.apagao},
-];
-export const MORAL: Frase[] = [
-	{txt: 'COMENTA “EDIÇÃO”', de: T.moral[0], dig: 0.4, ate: DURACAO + 1},
-	{txt: 'AQUI EMBAIXO', de: T.moral[1], dig: 0.35, ate: DURACAO + 1},
-];
-/* prévias: as telas de B3 (esquerda) e B2 (direita) sobem para o alto e crescem */
-export const JANELA_PREVIAS = {de: T.sobe, ate: T.desce + 0.5};
-const PREV = {cx: [335, 745], cy: 470, s: 2.42, rotulo: T.sobe + 0.62, rotuloAte: T.desce - 0.04};
+export const FRASES: Frase[] = PL.frases.map((f, k) => ({...f, de: tempo(f.de, `frases[${k}].de`), ate: tempo(f.ate, `frases[${k}].ate`)}));
+/** a moral, depois do apagão, fica até o fim ([] desliga) */
+export const MORAL: Frase[] = PL.moral.map((f, k) => ({...f, de: tempo(f.de, `moral[${k}].de`), ate: DURACAO + 1}));
+/* prévias: as telas marcadas com `previa` sobem para o alto e crescem */
+export const JANELA_PREVIAS = PV ? {de: PV.sobe, ate: PV.desce + 0.5} : null;
+const PREV = {cx: [335, 745], cy: 470, s: 2.42, rotulo: PV ? PV.sobe + 0.62 : 0, rotuloAte: PV ? PV.desce - 0.04 : 0};
+/** as chegadas cujas telas viram prévias, na ordem de desenho (esquerda primeiro) */
+const COM_PREVIA = CHEGADAS.map((c, i) => ({c, i})).filter((x) => x.c.previa !== undefined).sort((a, b) => a.c.previa! - b.c.previa!).map((x) => x.i);
+/* o som e as prévias ligados pedem os arquivos: para logo, dizendo como fazer */
+const ARQUIVOS = new Set(getStaticFiles().map((a) => a.name.split(String.fromCharCode(92)).join('/')));
+const COMO: Record<string, string> = {
+	'voz.wav': 'rode tools/novo-video.py com a gravação da narração',
+	'trilha.wav': 'rode ../../.venv/Scripts/python.exe scripts/som.py (ou musica: false)',
+	'efeitos.wav': 'rode ../../.venv/Scripts/python.exe scripts/som.py (ou efeitos: false)',
+	'previa1.mp4': 'faça com tools/previa.py a partir de um vídeo seu pronto (da raiz: .venv/Scripts/python.exe tools/previa.py <video.mp4> videos/<pasta> 1, e depois 2) ou previas: false',
+	'previa2.mp4': 'faça com tools/previa.py a partir de um vídeo seu pronto (da raiz: .venv/Scripts/python.exe tools/previa.py <video.mp4> videos/<pasta> 2) ou previas: false',
+};
+const precisa = (nome: string) => {
+	if (!ARQUIVOS.has(nome)) pare(`falta public/${nome}: ${COMO[nome]}.`);
+};
+precisa('voz.wav');
 
 /* ---------------------------------------------------------------- texto digitado */
 const Digitado: React.FC<{f: Frase; t: number; y: number; corpo?: number}> = ({f, t, y, corpo = CORPO}) => {
@@ -291,19 +334,16 @@ const Palito: React.FC<{p: Pose}> = ({p}) => {
 };
 
 /* ---------------------------------------------------------------- a cena */
-const MODELO_DE = [0, 1, 2, 3, 4];
 const estadoTela = (i: number, t: number): EstadoTela => {
-	if (i === 4) {
-		const varre = c01((t - T.edicaoVoce) / VARRE);
-		return {m: 4, varre, verde: varre > 0 ? 1 : 0, apaga: 0, t, i};
-	}
-	const varre = c01((t - T.edicoes[i]) / VARRE);
-	const verde = t >= T.virada ? 1 : 0;
-	const apaga = i === 0 || verde ? 0 : suave(t, T.apenasUm, T.apenasUm + 0.3);
-	return {m: MODELO_DE[i], varre, verde, apaga, t, i};
+	const c = CHEGADAS[i];
+	const varre = c.edita === null ? 0 : c01((t - c.edita) / VARRE);
+	if (c.voce) return {m: i, varre, verde: varre > 0 ? 1 : 0, apaga: 0, t, i};
+	const verde = T.virada !== null && t >= T.virada ? 1 : 0;
+	const apaga = c.destaque || verde || T.apenasUm === null ? 0 : suave(t, T.apenasUm, T.apenasUm + 0.3);
+	return {m: i, varre, verde, apaga, t, i};
 };
-const sobeTela = (i: number) => (i === 2 ? 0 : i === 1 ? 1 : -1); // B3 -> prévia da esquerda, B2 -> direita
-const voo = (t: number) => saida((t - T.sobe) / 0.6, 3) * (1 - vaiVem((t - T.desce) / 0.5));
+const sobeTela = (i: number) => CHEGADAS[i].previa ?? -1; // a tela que vira prévia: 0 esquerda, 1 direita
+const voo = (t: number) => (PV ? saida((t - PV.sobe) / 0.6, 3) * (1 - vaiVem((t - PV.desce) / 0.5)) : 0);
 
 const Elenco: React.FC<{t: number; previas: boolean; sufixo: string}> = ({t, previas, sufixo}) => (
 	<g>
@@ -311,8 +351,8 @@ const Elenco: React.FC<{t: number; previas: boolean; sufixo: string}> = ({t, pre
 			if (t < c.t0) return null;
 			const x = posX(c, t);
 			const sobe = previas && sobeTela(i) >= 0;
-			const ergue = sobe ? 18 * suave(t, T.ergue, T.ergue + 0.4) * (1 - suave(t, T.desce + 0.5, T.desce + 0.9)) : 0;
-			const olha = i < 4 ? suave(t, T.ergue, T.ergue + 0.35) * (1 - suave(t, T.desce, T.desce + 0.4)) : 0;
+			const ergue = sobe && PV ? 18 * suave(t, PV.ergue, PV.ergue + 0.4) * (1 - suave(t, PV.desce + 0.5, PV.desce + 0.9)) : 0;
+			const olha = !c.voce && PV ? suave(t, PV.ergue, PV.ergue + 0.35) * (1 - suave(t, PV.desce, PV.desce + 0.4)) : 0;
 			const fora = sobe && voo(t) > 0.001;
 			const pose: Pose = {x, v: velX(c, t), fase: ((x - c.x0) / PASSO) * Math.PI, ergue, olha, t, i, tela: fora ? null : <Tela id={`t${i}${sufixo}`} e={estadoTela(i, t)} />};
 			return <Palito key={i} p={pose} />;
@@ -325,24 +365,25 @@ const Halo: React.FC<{cx: number; cy: number; r: number; grad: string; op: numbe
 
 const Halos: React.FC<{t: number}> = ({t}) => {
 	const out: React.ReactNode[] = [];
-	const flash = t >= T.virada ? 1 + 0.6 * Math.exp(-(t - T.virada) / 0.25) : 0;
+	const virou = T.virada !== null && t >= T.virada;
+	const flash = virou ? 1 + 0.6 * Math.exp(-(t - T.virada!) / 0.25) : 0;
 	CHEGADAS.forEach((c, i) => {
 		if (t < c.t0) return;
 		const cx = posX(c, t) + 2;
 		const cy = CHAO - 319;
-		if (i === 0) out.push(<Halo key="b" cx={cx} cy={cy} r={240} grad="hBranco" op={suave(t, T.apenasUm, T.apenasUm + 0.3) * (t >= T.virada ? 0 : 1)} />);
+		if (c.destaque && T.apenasUm !== null) out.push(<Halo key="b" cx={cx} cy={cy} r={240} grad="hBranco" op={suave(t, T.apenasUm, T.apenasUm + 0.3) * (virou ? 0 : 1)} />);
 		const e = estadoTela(i, t);
-		if (e.verde > 0 && e.varre > 0) out.push(<Halo key={`v${i}`} cx={cx} cy={cy} r={300} grad="hVerde" op={0.8 * (i === 4 ? Math.min(1, e.varre * 1.5) : flash)} />);
+		if (e.verde > 0 && e.varre > 0) out.push(<Halo key={`v${i}`} cx={cx} cy={cy} r={300} grad="hVerde" op={0.8 * (c.voce ? Math.min(1, e.varre * 1.5) : flash)} />);
 	});
 	return <g style={{mixBlendMode: 'screen'}}>{out}</g>;
 };
 
 const TelasVoando: React.FC<{t: number}> = ({t}) => {
 	const k = voo(t);
-	if (k <= 0.001 || t < T.sobe) return null;
+	if (k <= 0.001 || !PV || t < PV.sobe) return null;
 	return (
 		<g>
-			{[2, 1].map((i) => {
+			{COM_PREVIA.map((i) => {
 				const c = CHEGADAS[i];
 				const x0 = posX(c, t) + 2;
 				const y0 = CHAO - 319 - 18;
@@ -363,11 +404,11 @@ const TelasVoando: React.FC<{t: number}> = ({t}) => {
 /* prévias de verdade (prop previas): o vídeo entra dentro da tela que subiu, com a etiqueta do nome embaixo */
 export const PreviasEmCima: React.FC<{t: number; nomes: [string, string]}> = ({t, nomes}) => {
 	const k = voo(t);
-	if (t < JANELA_PREVIAS.de || t >= JANELA_PREVIAS.ate || k <= 0.001) return null;
+	if (!JANELA_PREVIAS || !PV || t < JANELA_PREVIAS.de || t >= JANELA_PREVIAS.ate || k <= 0.001) return null;
 	const op = c01((k - 0.35) / 0.45);
 	return (
 		<AbsoluteFill>
-			{[2, 1].map((i) => {
+			{COM_PREVIA.map((i) => {
 				const lado = sobeTela(i);
 				const c = CHEGADAS[i];
 				const cx = lerp(posX(c, t) + 2, PREV.cx[lado], k);
@@ -377,7 +418,7 @@ export const PreviasEmCima: React.FC<{t: number; nomes: [string, string]}> = ({t
 				const bh = TH * s;
 				return (
 					<div key={i} style={{position: 'absolute', left: cx - bw / 2, top: cy - bh / 2, width: bw, height: bh, borderRadius: 8 * s, overflow: 'hidden', opacity: op, boxSizing: 'border-box', border: `${Math.max(2, 1.6 * s)}px solid ${COR.giz}`, boxShadow: '0 0 34px rgba(252,252,252,0.16)', background: '#000'}}>
-						<Sequence from={fr(T.sobe)} layout="none">
+						<Sequence from={fr(PV.sobe)} layout="none">
 							<OffthreadVideo muted src={staticFile(`previa${lado + 1}.mp4`)} style={{width: '100%', height: '100%', objectFit: 'cover', display: 'block'}} />
 						</Sequence>
 					</div>
@@ -393,9 +434,12 @@ export const PreviasEmCima: React.FC<{t: number; nomes: [string, string]}> = ({t
 };
 
 export const VitrineIlustrations01: React.FC<Props> = ({previas = false, nomesPrevias = ['', ''], musica = false, efeitos = false}) => {
+	if (musica) precisa('trilha.wav');
+	if (efeitos) precisa('efeitos.wav');
+	if (previas && PV) (precisa('previa1.mp4'), precisa('previa2.mp4'));
 	const f = useCurrentFrame();
 	const t = f / FPS;
-	const cena = 1 - suave(t, T.apagao, T.apagao + 0.15);
+	const cena = T.apagao === null ? 1 : 1 - suave(t, T.apagao, T.apagao + 0.15);
 	return (
 		<AbsoluteFill style={{background: '#000000'}}>
 			{cena > 0 && (

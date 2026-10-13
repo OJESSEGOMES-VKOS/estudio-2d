@@ -1,0 +1,15 @@
+{
+ "modelo": "anunciomotion01",
+ "gerado_de": "vitrine-anunciomotion01.mp4",
+ "saida": {
+  "video": "vitrine-anunciomotion01.mp4",
+  "segundos": 31.0,
+  "formato": "1080x1920",
+  "brilho": 21.79,
+  "contraste": 82.52,
+  "saturacao": 134.49,
+  "temperatura": 1.43,
+  "tom": -4.56,
+  "cortes_min": 17.4
+ }
+}

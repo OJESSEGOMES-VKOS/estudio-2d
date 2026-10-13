@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {AbsoluteFill, Audio, Easing, OffthreadVideo, Sequence, continueRender, delayRender, interpolate, random, staticFile, useCurrentFrame} from 'remotion';
+import {AbsoluteFill, Audio, Easing, OffthreadVideo, Sequence, continueRender, delayRender, getStaticFiles, interpolate, random, staticFile, useCurrentFrame} from 'remotion';
 import {loadFont as loadPoppins} from '@remotion/google-fonts/Poppins';
 import {loadFont as loadAnton} from '@remotion/google-fonts/Anton';
 import PB from './palavras.json';
@@ -12,7 +12,6 @@ import ROSTO_T from './rosto.json';
  * música e tratamento de fundo como props (desligados por padrão). Plano em ../plano.md, checador em scripts/cobertura.mjs.
  */
 export const FPS = 30;
-export const DURACAO = 29.83; // corte seco 0,2 s depois de "agora." (29,63)
 const W = 1080;
 const H = 1920;
 
@@ -41,15 +40,32 @@ export type Props = {previas: boolean; nomesPrevias: [string, string]; musica?: 
 
 type Pal = {texto: string; de: number; ate: number};
 const PS: Pal[] = (PB as {text: string; start: number; end: number}[]).map((p) => ({texto: p.text, de: p.start, ate: p.end}));
-const c = (i: number) => PS[i].de - 0.06;
+if (!PS.length) throw new Error('src/palavras.json está vazio: rode tools/novo-video.py (ou tools/preparar.py) na gravação.');
+/* corte seco FOLGA s depois da última palavra (na vitrine: "agora." acaba em 29,63 -> 29,83) */
+const FOLGA = 0.2;
+export const DURACAO = Number((PS[PS.length - 1].ate + FOLGA).toFixed(2));
+/** texto do plano x fala: sem maiúscula, acento nem pontuação (o Whisper varia) */
+const norm = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9%]/g, '');
+/** plano que não bate com a fala: para ao carregar e diz em português qual lista refazer (nada de TypeError) */
+const errPlano = (lista: string, oque: string) =>
+	new Error(`O plano de src/Reel.tsx não bate com a fala de src/palavras.json (${PS.length} palavras, de 0 a ${PS.length - 1}). Na lista ${lista}: ${oque}. Refaça o plano para a fala nova (LEIA.md, seção "Vídeo novo").`);
+const de = (i: number, lista = 'CORTE') => {
+	if (!PS[i]) throw errPlano(lista, `a palavra nº ${i} não existe`);
+	return PS[i].de;
+};
+const c = (i: number, lista = 'CORTE') => de(i, lista) - 0.06;
 const fr = (s: number) => Math.round(s * FPS);
 
-/* ---------------------------------------------------------------- planos: corte só com motivo */
-type Plano = {de: number; zoom: number; fx: number; fy: number; pb?: boolean};
+/* ================================================================ O PLANO (preso à fala; num vídeo novo, refazer CORTE,
+ * PLANOS, CHICOTE, PECAS e os eventos de scripts/trilha.py). Os números são índices de palavras de src/palavras.json. */
+/* ---------------------------------------------------------------- planos: corte só com motivo
+ * pb: o close extremo em P&B com clarões (uma vez, no trecho de custo); previas: o plano onde moram as prévias (com a
+ * prop previas, a câmera desce e as prévias entram em cima). Sem plano marcado, não há P&B nem janela de prévias. */
+type Plano = {de: number; zoom: number; fx: number; fy: number; pb?: boolean; previas?: boolean};
 const CORTE = {
 	b: c(20), // "que eu criei": sai do bloco da abertura para o close do destaque QUALQUER
 	c: c(34), // "Inclusive": virada
-	d: PS[40].de + 0.4, // "você está vendo" -> P&B ("agora," fica 0,4 s; o corte cai junto do "você")
+	d: de(40) + 0.4, // "você está vendo" -> P&B ("agora," fica 0,4 s; o corte cai junto do "você")
 	e: c(48), // "Eu posso até" -> prévias
 	f: c(62), // "Mas": virada
 	g: c(83), // "comenta": chamada (chicote)
@@ -59,11 +75,11 @@ const PLANOS: Plano[] = [
 	{de: CORTE.b, zoom: 1.65, fx: 0.5, fy: 0.33}, // B close (QUALQUER)
 	{de: CORTE.c, zoom: 1.0, fx: 0.5, fy: 0.34}, // C aberto
 	{de: CORTE.d, zoom: 2.3, fx: 0.58, fy: 0.4, pb: true}, // D close extremo P&B
-	{de: CORTE.e, zoom: 1.1, fx: 0.5, fy: 0.33}, // E médio aberto (prévias)
+	{de: CORTE.e, zoom: 1.1, fx: 0.5, fy: 0.33, previas: true}, // E médio aberto (prévias)
 	{de: CORTE.f, zoom: 1.45, fx: 0.72, fy: 0.31}, // F médio, rosto à direita (blocos à esquerda)
 	{de: CORTE.g, zoom: 1.25, fx: 0.5, fy: 0.3}, // G médio centrado
 ];
-const I_PREV = 4;
+const I_PREV = PLANOS.findIndex((p) => p.previas); // -1: sem janela de prévias
 export const CORTES = PLANOS.slice(1).map((p) => p.de);
 const CORTES_F = CORTES.map(fr);
 const planoEm = (f: number) => {
@@ -79,8 +95,11 @@ const ROSTO_PLANO = PLANOS.map((p, i) => {
 	const s = (ROSTO_T as number[][]).filter(([t]) => t >= p.de - 0.1 && t < fimPlano(i) / FPS);
 	return {cx: mediana(s.map((r) => r[1])), cy: mediana(s.map((r) => r[2]))};
 });
-const JANELA_PREVIAS = {de: CORTE.e, ate: CORTE.f};
+/* a janela das prévias: o plano marcado com previas, até o corte seguinte */
+const JANELA_PREVIAS = I_PREV < 0 ? null : {de: PLANOS[I_PREV].de, ate: I_PREV + 1 < PLANOS.length ? PLANOS[I_PREV + 1].de : DURACAO};
 export const PREVIAS = JANELA_PREVIAS;
+/* chicote de 1 quadro na entrada da chamada; null desliga */
+const CHICOTE = CORTE.g as number | null;
 const DESCE = 560; // com prévias, a câmera dele desce para abrir o terço de cima
 
 const camera = (f: number, previas: boolean) => {
@@ -146,9 +165,9 @@ type Peca = (Bloco | Legenda) & {prev?: Partial<Bloco> & {pos?: 1 | 2}};
 
 const p = (txt: string, voz: Voz = 'p'): Parte => ({txt, voz});
 const P = (i0: number, al: Al, ...partes: Parte[]): LinhaP => ({k: 'p', i0, al, partes});
-const K = (txt: string, i: number, cor: Tom, al: Al, o: Partial<LinhaK> = {}): LinhaK => ({k: 'chave', txt, i, t0: PS[i].de, cor, al, ...o});
-const antes = (i: number) => PS[i].de - 0.03;
-const ler = (i: number) => PS[i].de + 0.4; // a última palavra de um pedaço fica pelo menos 0,4 s
+const K = (txt: string, i: number, cor: Tom, al: Al, o: Partial<LinhaK> = {}): LinhaK => ({k: 'chave', txt, i, t0: de(i, 'PECAS'), cor, al, ...o});
+const antes = (i: number) => de(i, 'PECAS') - 0.03;
+const ler = (i: number) => de(i, 'PECAS') + 0.4; // a última palavra de um pedaço fica pelo menos 0,4 s
 
 const PECAS: Peca[] = [
 	/* A: abertura */
@@ -207,17 +226,18 @@ const PECAS: Peca[] = [
 	{tipo: 'legenda', de: antes(85), ate: DURACAO, pos: 2, linhas: [P(85, 'esq', p('aqui embaixo que eu vou')), P(90, 'dir', p('te mandar na sua'), p('DM', 'b'), p('agora.'))]},
 ];
 
-/* conferências: o texto bate com a fala; nada atravessa corte */
-const limpa = (s: string) => s.toLowerCase().replace(/[.,“”"]/g, '');
+/* conferências: o texto bate com a fala (sem maiúscula, acento nem pontuação); nada atravessa corte */
 const palavrasDe = (l: Linha) => (l.k === 'p' ? l.partes.flatMap((q) => q.txt.split(' ')) : l.txt.split(' '));
 const indicesDe = (l: Linha) => palavrasDe(l).map((_, j) => (l.k === 'p' ? l.i0 : l.i) + j);
 for (const pc of PECAS) {
-	if (CORTES_F.some((k) => k > fr(pc.de) && k < fr(pc.ate))) throw new Error(`peça de ${pc.de} atravessa corte`);
 	for (const l of pc.linhas)
 		palavrasDe(l).forEach((w, j) => {
 			const i = indicesDe(l)[j];
-			if (limpa(PS[i].texto) !== limpa(w)) throw new Error(`"${w}" não bate com a fala (${PS[i].texto})`);
+			if (!PS[i]) throw errPlano('PECAS', `"${palavrasDe(l).join(' ')}" passa da última palavra da fala`);
+			if (norm(PS[i].texto) !== norm(w)) throw errPlano('PECAS', `em "${palavrasDe(l).join(' ')}", "${w}" não bate com a palavra ${i} da fala ("${PS[i].texto}")`);
 		});
+	if (CORTES_F.some((k) => k > fr(pc.de) && k < fr(pc.ate)))
+		throw errPlano('PECAS', `a peça "${pc.linhas.flatMap(palavrasDe).join(' ')}" (${pc.de.toFixed(2)}-${pc.ate.toFixed(2)} s) atravessa um corte de PLANOS: acabe-a no corte ou divida-a`);
 }
 
 /* ---------------------------------------------------------------- animação */
@@ -427,11 +447,12 @@ const Video: React.FC<{f: number; previas: boolean; efeitoFundo: boolean}> = ({f
 		else if (f >= fim - 3) filtro = 'grayscale(1) brightness(2.8) contrast(0.55)'; // clarão saindo
 		else filtro = pbBase;
 	}
-	const chicote = f === fr(CORTE.g);
+	const chicote = CHICOTE !== null && f === fr(CHICOTE);
 	const desce = previas && i === I_PREV;
 	return (
 		<AbsoluteFill style={{filter: `${filtro}${chicote ? ' url(#chicote)' : ''}`, WebkitMaskImage: desce ? 'linear-gradient(180deg, transparent 0px, transparent 640px, #000 820px)' : undefined}}>
 			<AbsoluteFill style={{transform: `translate(${tx + (chicote ? -70 : 0)}px, ${ty}px) scale(${s})`, transformOrigin: '0 0'}}>
+				{efeitoFundo && exige('fala_grade.mp4', 'rode scripts/grade.py pela trava (LEIA.md, "Como gerar", passo 1) ou renderize com "efeitoFundo": false.')}
 				<OffthreadVideo muted src={staticFile(efeitoFundo ? 'fala_grade.mp4' : 'fala.mp4')} style={{width: W, height: H}} />
 			</AbsoluteFill>
 			<svg width="0" height="0" style={{position: 'absolute'}}>
@@ -441,6 +462,12 @@ const Video: React.FC<{f: number; previas: boolean; efeitoFundo: boolean}> = ({f
 			</svg>
 		</AbsoluteFill>
 	);
+};
+/* mídia gerada à parte: se faltar, para com o comando que a faz (e não com um erro de rede) */
+const exige = (arq: string, como: string) => {
+	const lista = getStaticFiles();
+	if (lista.length && !lista.some((f) => f.name === arq)) throw new Error(`Falta public/${arq}: ${como}`);
+	return null;
 };
 const Vinheta: React.FC = () => <AbsoluteFill style={{background: 'radial-gradient(ellipse 85% 70% at 50% 42%, rgba(0,0,0,0) 45%, rgba(4,7,8,0.6) 100%)'}} />;
 const Vazamento: React.FC<{f: number}> = ({f}) => {
@@ -452,8 +479,10 @@ const Vazamento: React.FC<{f: number}> = ({f}) => {
 /* ---------------------------------------------------------------- prévias: dois outros modelos no terço de cima, a câmera dele desce */
 const PREV = {w: 340, h: 604, y: 70, x: [160, 580]};
 export const PreviasEmCima: React.FC<{f: number; nomes: [string, string]}> = ({f, nomes}) => {
+	if (!JANELA_PREVIAS) return null;
 	const de = fr(JANELA_PREVIAS.de);
 	if (f < de || f >= fr(JANELA_PREVIAS.ate)) return null;
+	for (const arq of ['previa1.mp4', 'previa2.mp4']) exige(arq, 'faça as prévias com tools/previa.py (LEIA.md, "Vídeo novo") ou renderize com "previas": false.');
 	const t = f / FPS;
 	return (
 		<AbsoluteFill>
@@ -477,7 +506,7 @@ export const PreviasEmCima: React.FC<{f: number; nomes: [string, string]}> = ({f
 	);
 };
 
-export const VitrineStoryPodcast01: React.FC<Props> = ({previas = false, nomesPrevias = ['', ''], musica = false, efeitoFundo = false}) => {
+export const VitrineStoryPodcast01: React.FC<Props> = ({previas = false, nomesPrevias = ['', ''], musica = false, efeitoFundo = true}) => {
 	const f = useCurrentFrame();
 	const t = f / FPS;
 	const ok = useFontes();
@@ -494,6 +523,7 @@ export const VitrineStoryPodcast01: React.FC<Props> = ({previas = false, nomesPr
 			<Vazamento f={f} />
 			{/* som: a voz sempre; a trilha (pad + sopro + whoosh) só com musica. A vitrine mixa fora (scripts/mixar.sh). */}
 			<Audio src={staticFile('voz.wav')} />
+			{musica && exige('trilha.wav', 'rode scripts/trilha.py ou deixe "musica": false.')}
 			{musica && <Audio src={staticFile('trilha.wav')} volume={0.16} />}
 		</AbsoluteFill>
 	);

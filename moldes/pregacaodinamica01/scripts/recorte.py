@@ -16,7 +16,11 @@ ent = AQUI / 'public' / 'fala.mp4'
 sai = Path(sys.argv[sys.argv.index('--saida') + 1]) if '--saida' in sys.argv else AQUI / 'public' / 'pessoa.webm'
 LIMITE = int(sys.argv[sys.argv.index('--quadros') + 1]) if '--quadros' in sys.argv else None  # só para teste
 
-sess = ort.InferenceSession(str(MOD / 'rvm_mobilenetv3_fp32.onnx'), providers=['CUDAExecutionProvider', 'CPUExecutionProvider'])
+# só os provedores que este onnxruntime tem; sem placa NVIDIA (ou sem o CUDA/cuDNN instalado) roda na CPU, sem o aviso
+# longo do onnxruntime (falha de verdade continua parando o script)
+ort.set_default_logger_severity(4)
+sess = ort.InferenceSession(str(MOD / 'rvm_mobilenetv3_fp32.onnx'), providers=[p for p in ('CUDAExecutionProvider', 'CPUExecutionProvider') if p in ort.get_available_providers()])
+print('recorte da pessoa na', 'placa de vídeo (CUDA)' if 'CUDAExecutionProvider' in sess.get_providers() else 'CPU (leva alguns minutos)', flush=True)
 rec = [np.zeros((1, 1, 1, 1), np.float32)] * 4
 ratio = np.array([0.25], np.float32)
 

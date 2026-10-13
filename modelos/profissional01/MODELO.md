@@ -1,8 +1,6 @@
 # profissional01: edição para profissionais
 
-> **Renumerado em 2026-10-09.** Este era o profissional02 (o do dentista, `conteudo/2026-10-07-profissional02-dentista`). O profissional01 antigo foi descartado em 2026-10-07 e não tem pasta. Um profissional02 (clone reescrito com referências novas) foi criado e apagado no mesmo dia, a pedido do dono: o padrão de cliente segue sendo este.
-
-> **Pacote no motor:** `projetos/maquina-de-conteudo/motor/pacotes/profissional02/` (o motor ainda usa o nome antigo) (versão 1), em prova até o portão do dono. A comparação com o último vídeo aprovado está em `projetos/maquina-de-conteudo/docs/etapa-7/profissional02.md`.
+> **Renumerado em 2026-10-09.** Este era o profissional02 (o do dentista, `modelos/profissional01/aplicacoes/2026-10-07-profissional02-dentista`). O profissional01 antigo foi descartado em 2026-10-07 e não tem pasta. Um profissional02 (clone reescrito com referências novas) foi criado e apagado no mesmo dia, a pedido do dono: o padrão de cliente segue sendo este.
 
 O profissional01 antigo foi descartado em 2026-10-07; deste modelo valem só as regras abaixo. Elas vêm das referências de referencias/ e das instruções do Jessé de 2026-10-07. São 4 referências:
 - bemclean.mp4 (nova, 69 s): o profissional falando pra câmera numa tomada só, com legenda limpa;
@@ -32,7 +30,7 @@ O vídeo transmite autoridade e é muito didático. Tudo o que puder virar ilust
 - Nada de preto e branco.
 
 ## 5. Tela cheia = modelodinamico02
-Quando a tela não mostra o vídeo original, o desenho é o do modelodinamico02 (projetos/estudio-2d/modelos/modelodinamico02/MODELO.md):
+Quando a tela não mostra o vídeo original, o desenho é o do modelodinamico02 (modelos/modelodinamico02/MODELO.md):
 - dois fundos que alternam no corte (escuro e cor de destaque), com gradiente radial e uma grade de pontos sutil;
 - tipografia grande palavra a palavra, entrando do desfoque, com tamanhos misturados, até 3 linhas;
 - um objeto herói que faz o que a frase diz;
@@ -58,16 +56,16 @@ Uma cor de destaque, tirada do cenário do vídeo. No dentista foi o verde-água
 ## 9. Aplicações
 | data | peça | observação |
 |---|---|---|
-| 2026-10-09 | conteudo/um vídeo de cliente/out/marcos03-profissional01.mp4 (50,6 s) | 3ª aplicação: 2 telas cheias (dúvida, alerta), painel de lista "O que é avaliado", B-roll novo (não repete entre vídeos), faixa cinza apagada por preenchimento vertical |
-| 2026-10-09 | conteudo/um vídeo de cliente/out/marcos04-profissional01.mp4 (63,1 s) | 4ª aplicação: 3 telas cheias (barra que trava, dente com pulso, ampulheta), painel "Seu cronograma", 2 blocos de B-roll novos |
-| 2026-10-09 | conteudo/um vídeo de cliente/out/marcos-profissional01.mp4 | 2ª aplicação, mesmo cliente: telas cheias (estética, mordida, conforto), foto, 1 bloco de B-roll, legenda 72 px na gravação normal (20% maior, pedido do dono), sem música, faixa cinza do material apagada |
-| 2026-10-07 | conteudo/2026-10-07-profissional02-dentista/out/dentista-profissional02.mp4 (56,1 s) | 1ª aplicação: 3 cortes de ênfase; ilustração da arcada no gancho; 4 telas cheias no estilo dinâmico 02 (bateria, ampulheta, dente com pulso, calendário); foto; 2 blocos de B-roll; títulos de até 3 linhas; aguardando o olho do Jessé |
+| 2026-10-09 | modelos/profissional01/exemplos/cliente-03-mau-halito.mp4 (50,6 s) | 3ª aplicação: 2 telas cheias (dúvida, alerta), painel de lista "O que é avaliado", B-roll novo (não repete entre vídeos), faixa cinza apagada por preenchimento vertical |
+| 2026-10-09 | modelos/profissional01/exemplos/cliente-04-tratamento-interrompido.mp4 (63,1 s) | 4ª aplicação: 3 telas cheias (barra que trava, dente com pulso, ampulheta), painel "Seu cronograma", 2 blocos de B-roll novos |
+| 2026-10-09 | modelos/profissional01/exemplos/cliente-02-implante.mp4 | 2ª aplicação, mesmo cliente: telas cheias (estética, mordida, conforto), foto, 1 bloco de B-roll, legenda 72 px na gravação normal (20% maior, pedido do dono), sem música, faixa cinza do material apagada |
+| 2026-10-07 | modelos/profissional01/exemplos/cliente-01-sedacao.mp4 (56,1 s) | 1ª aplicação: 3 cortes de ênfase; ilustração da arcada no gancho; 4 telas cheias no estilo dinâmico 02 (bateria, ampulheta, dente com pulso, calendário); foto; 2 blocos de B-roll; títulos de até 3 linhas; aguardando o olho do Jessé |
 
 ## 2026-10-12: correção do flick da tela dividida e regras da casa (vitrine, pedido do Jessé)
 
 Valem acima do que estiver escrito antes neste arquivo.
 
-- **Flick na tela dividida (causa e correção).** O painel de cima entrava com fade de 0,3 s (opacidade + subida de 30 px) e, nesses 9 quadros, a gravação em tela cheia continuava desenhada embaixo dele. A metade de cima mostrava por transparência outra cena (o rosto em outro enquadramento; no corte da tela de cor para o celular, um rosto que nem estava na tela antes), o que parecia erro de corte. Regra: **o fundo do painel de cima é opaco desde o 1º quadro** (corte seco, como as outras trocas) e nada fica desenhado por baixo dele; quem entra animado é só o conteúdo do painel (celular, cartões, lista). Prova quadro a quadro em `conteudo/2026-10-10-vitrine-modelos/profissional01/conferencia/transicoes-antes/` e `transicoes-depois/`.
+- **Flick na tela dividida (causa e correção).** O painel de cima entrava com fade de 0,3 s (opacidade + subida de 30 px) e, nesses 9 quadros, a gravação em tela cheia continuava desenhada embaixo dele. A metade de cima mostrava por transparência outra cena (o rosto em outro enquadramento; no corte da tela de cor para o celular, um rosto que nem estava na tela antes), o que parecia erro de corte. Regra: **o fundo do painel de cima é opaco desde o 1º quadro** (corte seco, como as outras trocas) e nada fica desenhado por baixo dele; quem entra animado é só o conteúdo do painel (celular, cartões, lista). Prova quadro a quadro em `moldes/profissional01/conferencia/transicoes-antes/` e `transicoes-depois/`.
 - **Legenda conta a história** (memória `legenda-conta-historia`): todas as falas na tela, cada trecho uma vez, pedaço de legenda >= 1,5 s e palavra >= 0,4 s visível; fala rápida vira página de até 2 linhas, nunca palavra piscando. Corte que cairia no meio de uma frase rápida anda até a pausa ou leva a frase junto.
 - **No máximo 2 posições de legenda:** no peito (topo y 1150, 72 px) na gravação; na tela dividida e no fecho, a 2ª posição com o pé em 1500 (56 px, 2 linhas). Na dividida o rosto sobe (olhos a 180 px do topo da metade, antes 320) para a legenda ficar abaixo do queixo.
 - **Zona segura 9:16 para todo texto:** x 60–940, y 250–1500 (centro em x 500). Linha que passaria de 880 px encolhe só ela; o painel de lista fica a 85% com o topo em 262.

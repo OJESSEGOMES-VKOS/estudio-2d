@@ -1,0 +1,15 @@
+{
+ "modelo": "sofistmotion01",
+ "gerado_de": "vitrine-sofistmotion01.mp4",
+ "saida": {
+  "video": "vitrine-sofistmotion01.mp4",
+  "segundos": 31.8,
+  "formato": "1080x1920",
+  "brilho": 22.61,
+  "contraste": 106.0,
+  "saturacao": 164.88,
+  "temperatura": 5.69,
+  "tom": 2.43,
+  "cortes_min": 34.0
+ }
+}

@@ -12,7 +12,7 @@ R = {'ref1': next(REF.glob('*W8E.mp4')), 'ref4': next(REF.glob('*nw.mp4')), 'mar
 for p in REF.glob('*.mp4'):
     if 'y9o' in p.name or 'Iymnw' in p.name: R['ref4'] = p
 C = AQUI / 'conferencia'; (C / 'final').mkdir(parents=True, exist_ok=True)
-fo = ImageFont.truetype('C:/Windows/Fonts/arialbd.ttf', 18)
+fo = ImageFont.load_default(size=18)  # fonte embutida no Pillow: funciona em Windows, macOS e Linux
 def quadro(v, t, nome):
     out = C / 'final' / f'{nome}_{t:05.2f}.png'
     subprocess.run(['ffmpeg', '-hide_banner', '-loglevel', 'error', '-y', '-ss', f'{t}', '-i', str(v), '-frames:v', '1', str(out)], check=True)

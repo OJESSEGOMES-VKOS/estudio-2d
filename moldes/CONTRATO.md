@@ -5,7 +5,7 @@ aprovado nele. Um vídeo novo nasce copiando o molde para `videos/<AAAA-MM-DD-te
 refazendo o plano sobre a fala nova, seguindo `modelos/<modelo>/MODELO.md` e `REGRAS.md`.
 
 ## Tudo confinado no estúdio
-- Nenhum caminho para fora de `estudio-2d-local/` (nada de `conteudo/`, `maquina-de-conteudo/`, outros `.venv`).
+- Nenhum caminho para fora da pasta do estúdio (nada de pasta de outro projeto, nada de outro `.venv`).
 - Os caminhos são relativos e funcionam igual em `moldes/<m>/` e em `videos/<v>/` (as duas ficam a 2 níveis da raiz):
   - Remotion: `node_modules` é uma junção para `../../node_modules`.
   - Python: `../../.venv/Scripts/python.exe` (Whisper, OpenCV, numpy, scipy). Material de motion (rembg, kie.ai,

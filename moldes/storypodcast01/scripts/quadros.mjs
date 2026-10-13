@@ -1,4 +1,5 @@
-// Fotos de conferência.  node scripts/quadros.mjs [--previas] 1 13.8 ...  -> conferencia/q_1.00.png (ESCALA=1 para tamanho cheio)
+// Fotos de conferência.  node scripts/quadros.mjs [--previas] [--fundo] 1 13.8 ...  -> conferencia/q_1.00.png (ESCALA=1 para tamanho cheio)
+// --fundo liga o efeitoFundo (precisa de public/fala_grade.mp4); NOMES=a,b troca os nomes das prévias.
 import {bundle} from '@remotion/bundler';
 import {renderStill, selectComposition} from '@remotion/renderer';
 import path from 'node:path';
@@ -6,10 +7,11 @@ import fs from 'node:fs';
 
 const args = process.argv.slice(2);
 const previas = args.includes('--previas');
-const tempos = args.filter((a) => a !== '--previas').map(Number);
+const fundo = args.includes('--fundo');
+const tempos = args.filter((a) => !a.startsWith('--')).map(Number);
 fs.mkdirSync('conferencia', {recursive: true});
 const serve = await bundle({entryPoint: path.resolve('src/index.ts')});
-const props = {previas, nomesPrevias: ['modelopadrao01', 'profissional01'], musica: true, efeitoFundo: true};
+const props = {previas, nomesPrevias: (process.env.NOMES || 'modelopadrao01,profissional01').split(','), musica: false, efeitoFundo: fundo};
 const comp = await selectComposition({serveUrl: serve, id: 'VitrineStoryPodcast01', inputProps: props});
 for (const t of tempos) {
 	const out = `conferencia/q_${t.toFixed(2)}${previas ? '_previas' : ''}.png`;

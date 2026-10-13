@@ -1,0 +1,26 @@
+{
+  "fala": "Esse vídeo está sendo 100% editado pelo Claude. Ele foi criado justamente para te mostrar a diferença entre vários modelos que eu criei e melhorei para editar qualquer tipo de vídeo usando o Claude. Inclusive, se você estiver no Instagram agora, você está vendo apenas um desses modelos. Eu posso até colocar duas prévias rápidas aqui em cima, aceleradas em três vezes. Mas se você quiser realmente ver outros modelos de edição como esse e aprender a como usar isso nos seus vídeos, comenta edição aqui embaixo que eu vou te mandar na sua DM agora.",
+  "cauda": 0.7,
+  "apenasUm": [45, "um"],
+  "previas": {"ergue": [52, "duas"], "sobe": [53, "prévias"], "desce": [62, "Mas"]},
+  "virada": [68, "outros"],
+  "apagao": 26.55,
+  "chegadas": [
+    {"x0": 360, "x1": 810, "t0": -0.2, "d": 2.4, "edita": [7, "Claude"], "destaque": true},
+    {"x0": -70, "x1": 660, "t0": 2.95, "d": 2.23, "edita": [16, "diferença"], "previa": 1},
+    {"x0": -70, "x1": 510, "t0": [16, "diferença"], "d": 2.2, "edita": [24, "melhorei"], "previa": 0},
+    {"x0": -70, "x1": 360, "t0": [24, "melhorei"], "d": 2.0, "edita": [33, "Claude"]},
+    {"x0": -70, "x1": 210, "t0": [62, "Mas"], "d": 2.0, "edita": [78, "usar"], "voce": true}
+  ],
+  "frases": [
+    {"txt": "“100% EDITADO PELO CLAUDE”", "de": [4, "100%"], "dig": 0.6, "ate": [15, "a", -0.4]},
+    {"txt": "“A DIFERENÇA ENTRE VÁRIOS MODELOS”", "de": [15, "a"], "dig": 0.4, "ate": [27, "qualquer", -0.4]},
+    {"txt": "“QUALQUER TIPO DE VÍDEO”", "de": [27, "qualquer"], "dig": 0.35, "ate": [44, "apenas", -0.4]},
+    {"txt": "“APENAS UM DESSES MODELOS”", "de": [44, "apenas"], "dig": 0.35, "ate": 15.8},
+    {"txt": "“OUTROS MODELOS DE EDIÇÃO COMO ESSE”", "de": [68, "outros"], "dig": 0.45, "ate": 26.55}
+  ],
+  "moral": [
+    {"txt": "COMENTA “EDIÇÃO”", "de": [83, "comenta"], "dig": 0.4},
+    {"txt": "AQUI EMBAIXO", "de": [85, "aqui"], "dig": 0.35}
+  ]
+}

@@ -10,7 +10,7 @@ V = sys.argv[1] if len(sys.argv) > 1 else str(AQUI / 'out' / 'vitrine-sofistmoti
 REF = AQUI.parents[1] / 'modelos' / 'sofistmotion01' / 'analise'  # raiz do estúdio/modelos
 C = AQUI / 'conferencia'
 (C / 'final').mkdir(parents=True, exist_ok=True)
-fo = ImageFont.truetype('C:/Windows/Fonts/arialbd.ttf', 18)
+fo = ImageFont.load_default(size=18)  # fonte embutida no Pillow: funciona em Windows, macOS e Linux
 
 def quadro(t):
     out = C / 'final' / f'final_{t:05.2f}.png'

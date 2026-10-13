@@ -4,6 +4,7 @@ node_modules/
 **/node_modules
 .tmp/
 tools/.cache/
+kit/.cache/
 tools/modelos/*.onnx
 videos/*
 !videos/LEIA.md

@@ -32,7 +32,7 @@ PARES = [
     (28.8, 'ref4_25.00.png', 'apagão e moral em 2 linhas no preto (ref4 25,00)'),
 ]
 W, H, T = 300, 533, 70
-f = ImageFont.truetype('C:/Windows/Fonts/arialbd.ttf', 14)
+f = ImageFont.load_default(size=14)  # fonte embutida no Pillow: funciona em Windows, macOS e Linux
 folha = Image.new('RGB', (len(PARES) * W, 2 * H + T), 'white')
 d = ImageDraw.Draw(folha)
 for i, (t, ref, rot) in enumerate(PARES):
@@ -58,7 +58,7 @@ tempos = list(range(0, 31))
 cw, ch = 216, 384
 cols = 8
 linhas_n = (len(tempos) + cols - 1) // cols
-f2 = ImageFont.truetype('C:/Windows/Fonts/arialbd.ttf', 18)
+f2 = ImageFont.load_default(size=18)  # fonte embutida no Pillow: funciona em Windows, macOS e Linux
 grade = Image.new('RGB', (cols * cw, linhas_n * ch), 'black')
 g = ImageDraw.Draw(grade)
 for k, t in enumerate(tempos):

@@ -1,6 +1,6 @@
 # Lições do Reel 01 ("100% editado pelo Claude Code", 2026-10-05)
 
-Primeiro vídeo real com o método (`conteudo/2026-10-05-reel-editado-pelo-claude/`). O dono criticou a
+Primeiro vídeo real com o método (`modelos/modelopadrao01/aplicacoes/2026-10-05-reel-editado-pelo-claude/`). O dono criticou a
 v1 em cinco pontos; a v2 corrigiu assim. Viram regra da skill.
 
 1. **Cor da marca não basta, tem que casar com o vídeo cru.** Painel preto contra parede bege quente

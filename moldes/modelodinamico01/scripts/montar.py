@@ -5,7 +5,7 @@ out, fs = sys.argv[1], sys.argv[2:]
 W, H, col = 324, 576, 5
 lin = (len(fs) + col - 1) // col
 folha = Image.new('RGB', (col * W, lin * H), 'black')
-fonte = ImageFont.truetype('C:/Windows/Fonts/arialbd.ttf', 20)
+fonte = ImageFont.load_default(size=20)  # fonte embutida no Pillow: funciona em Windows, macOS e Linux
 for i, f in enumerate(fs):
     im = Image.open(f).convert('RGB').resize((W, H))
     d = ImageDraw.Draw(im)

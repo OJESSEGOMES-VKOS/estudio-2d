@@ -1,5 +1,6 @@
-"""modelodinamico01: rastreia o rosto em public/fala.mp4 (YuNet) e grava src/rosto.json com a mediana
-do centro dos olhos e da largura do rosto em src/rosto_med.json (o enquadramento dos cards de rosto sai daqui).
+"""modelodinamico01: rastreia o rosto em public/fala.mp4 (YuNet) e grava a mediana do centro dos olhos, da largura do
+rosto e do queixo em src/rosto_med.json (o enquadramento dos cards de rosto sai daqui), com a marca da fala de
+src/palavras.json (o molde confere ao carregar). Rodar de novo a cada gravação nova.
 uso (de dentro do molde): ../../.venv/Scripts/python.exe scripts/rosto.py [--saida arquivo.json]
 """
 import json, subprocess, sys
@@ -27,9 +28,15 @@ while True:
             k = 1080 / W
             am.append(((ex1 + ex2) / 2 * k, (ey1 + ey2) / 2 * k, w * k, (y + h) * k))
     f += 1
+if not am:
+    sys.exit('nenhum rosto achado em public/fala.mp4: este molde precisa da pessoa na gravação.')
 a = np.array(am)
 r = dict(zip(('cx', 'olhos', 'largura', 'queixo'), [round(float(v), 1) for v in np.median(a, 0)]))
 r['amostras'] = len(am)
+r['quadros'] = f  # quadros de public/fala.mp4 (o vídeo segura o penúltimo no fim, src/ui.tsx)
+# de qual fala é este rosto (src/tema.ts confere ao carregar: gravação nova pede rodar este script de novo)
+_pal = json.loads((AQUI / 'src' / 'palavras.json').read_text(encoding='utf-8'))
+r['fala'] = {'palavras': len(_pal), 'fim': _pal[-1]['end'] if _pal else 0}
 saida = Path(sys.argv[sys.argv.index('--saida') + 1]) if '--saida' in sys.argv else AQUI / 'src' / 'rosto_med.json'
 saida.write_text(json.dumps(r, indent=1), encoding='utf-8')
 print(r, 'p10/p90 olhos', np.percentile(a[:, 1], [10, 90]).round(), 'cx', np.percentile(a[:, 0], [10, 90]).round())

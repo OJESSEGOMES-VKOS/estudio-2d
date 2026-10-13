@@ -2,7 +2,7 @@ import React from 'react';
 import {AbsoluteFill, OffthreadVideo, Sequence, staticFile} from 'remotion';
 import {Boneco, Pose} from './Boneco';
 import {ALT_PE, EM_PE, SENTADO} from './Poses';
-import {C, E, FONTE, FPS, NEON_OURO, NEON_VERDE, T, ini, tw, txt} from './base';
+import {C, E, FONTE, FPS, NEON_OURO, NEON_VERDE, T, ini, marca, tw, txt} from './base';
 import {Cama, Facho, Janela, Luminaria, Mesa, Parede, Poeira, Svg} from './Cenarios';
 import {Avanco, Cadeira, Cartao, Icone} from './Objetos';
 
@@ -28,7 +28,7 @@ const Luz: React.FC<{cx: number; w0?: number; w1?: number; base?: number; op?: n
 // S1 "Esse vídeo está sendo 100% editado pelo Claude." mesa de edição, a barra chega a 100%
 export const S1: React.FC<P> = ({f}) => {
 	const t = sec(f);
-	const barra = f < ini(4) ? 0.62 : tw(f, ini(4), ini(5), 0.62, 1, E.out);
+	const barra = f < marca('barra_cheia') ? 0.62 : tw(f, marca('barra_cheia'), marca('barra_fim'), 0.62, 1, E.out);
 	const pose: Pose = {...SENTADO, x: 430, y: CHAO - 115, s: 1, mF: [150, -150], mT: [132, -142], olhos: 'aberto', boca: 'leve', olhar: [1, -0.3]} as Pose;
 	return (
 		<AbsoluteFill style={{background: C.preto}}>
@@ -176,6 +176,7 @@ export const S7: React.FC<P> = ({f}) => <ParedePrevias f={f} aponta />;
 
 /** as duas prévias penduradas nos quadros da parede, cada uma com a etiqueta do modelo dela; só com previas=true */
 export const Previas: React.FC<{f: number; nomes: [string, string]}> = ({f, nomes}) => {
+	if (!T.previas) return null; // o plano sem "previas": a parede fica só com os focos
 	const {de_q, ate_q} = T.previas;
 	if (f < de_q || f >= ate_q) return null;
 	const op = tw(f, de_q, de_q + 4, 0, 1, E.lin);
@@ -284,7 +285,7 @@ export const S10: React.FC<P> = ({f}) => {
 export const S11: React.FC<P> = ({f}) => {
 	const t = sec(f);
 	const topoCaixa = 875;
-	const sub = tw(f, ini(84) + 6, ini(84) + 15, 0, 1, E.inOut);
+	const sub = tw(f, marca('risco') + 6, marca('risco') + 15, 0, 1, E.inOut);
 	return (
 		<AbsoluteFill style={{background: C.preto}}>
 			<Svg>
@@ -292,7 +293,7 @@ export const S11: React.FC<P> = ({f}) => {
 				<rect x={0} y={topoCaixa} width={1080} height={1920} fill="#060607" />
 				<Luz cx={330} w0={70} w1={420} base={topoCaixa} id="s11" />
 				<Boneco p={{...emPe(330, 0.95, {abre: 0.45, mF: [150, 52], jF: [0, -1], mT: [-28, 14], olhos: 'aberto', boca: 'dentes', olhar: [1, 1]}), y: topoCaixa - ALT_PE * 0.95}} t={t} id="s11" />
-				{f >= ini(83) ? (
+				{f >= marca('caixa') ? (
 					<g>
 						<path d={`M 110 ${topoCaixa + 10} L 970 ${topoCaixa + 10} Q 990 ${topoCaixa + 10} 990 ${topoCaixa + 30} L 990 1115 Q 990 1135 970 1135 L 250 1135 L 196 1166 L 204 1135 L 110 1135 Q 90 1135 90 1115 L 90 ${topoCaixa + 30} Q 90 ${topoCaixa + 10} 110 ${topoCaixa + 10} Z`} fill="#0d0e12" stroke={C.giz} strokeWidth={6} strokeLinejoin="round" />
 						{sub > 0 ? (
@@ -369,7 +370,8 @@ export const Legenda: React.FC<{f: number}> = ({f}) => {
 
 /** o comando fixo do fecho: COMENTA / "EDIÇÃO" dentro da caixa de comentário */
 export const Fixo: React.FC<{f: number}> = ({f}) => {
-	const c = T.cenas.find((k) => k.id === T.fixo.cena)!;
+	if (!T.fixo) return null; // o plano sem "fixo": sem comando fixo no fecho
+	const c = T.cenas.find((k) => k.id === T.fixo!.cena)!;
 	if (f < c.de_q) return null;
 	return (
 		<AbsoluteFill>

@@ -3,7 +3,6 @@ import R from './rosto.json';
 export const FPS = 30;
 export const W = 1080;
 export const H = 1920;
-export const QUADROS = 910; // public/fala.mp4 tem 30,36 s; "agora." acaba em 29,63
 export const fr = (s: number) => Math.round(s * FPS);
 
 /* rosto: [t, cx, cy, h] a cada 0,25 s (src/rosto.json), suavizado em ~1,2 s pra câmera não tremer com o rosto */

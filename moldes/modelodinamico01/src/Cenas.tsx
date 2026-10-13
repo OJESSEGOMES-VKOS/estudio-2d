@@ -52,6 +52,7 @@ export const Gancho: React.FC = () => {
 /** a tela do Reels com o próprio vídeo tocando (interface desenhada, sem logo) */
 const TelaReels: React.FC<{largura: number; altura: number; raio: number; s: number; children?: React.ReactNode}> = ({largura, altura, raio, s, children}) => {
 	const {t} = useT();
+	const {arroba, foto} = React.useContext(Previas);
 	const k = largura / 468;
 	return (
 		<div style={{position: 'relative', width: largura, height: altura, borderRadius: raio, overflow: 'hidden', background: '#000'}}>
@@ -75,9 +76,9 @@ const TelaReels: React.FC<{largura: number; altura: number; raio: number; s: num
 				</div>
 			))}
 			<div style={ab(28 * k, altura - 108 * k, {display: 'flex', alignItems: 'center', gap: 12 * k})}>
-				<Img src={staticFile('foto.jpg')} style={{width: 46 * k, height: 46 * k, borderRadius: 23 * k, objectFit: 'cover', border: '2px solid #fff'}} />
-				<span style={{color: C.branco, fontFamily: SANS, fontWeight: 700, fontSize: 24 * k}}>ojessegomes</span>
-				<span style={{color: C.branco, fontFamily: SANS, fontWeight: 600, fontSize: 20 * k, border: '2px solid rgba(255,255,255,0.7)', borderRadius: 8 * k, padding: `${2 * k}px ${10 * k}px`}}>Seguir</span>
+				{foto && <Img src={staticFile(foto)} style={{width: 46 * k, height: 46 * k, borderRadius: 23 * k, objectFit: 'cover', border: '2px solid #fff'}} />}
+				{arroba && <span style={{color: C.branco, fontFamily: SANS, fontWeight: 700, fontSize: 24 * k}}>{arroba}</span>}
+				{arroba && <span style={{color: C.branco, fontFamily: SANS, fontWeight: 600, fontSize: 20 * k, border: '2px solid rgba(255,255,255,0.7)', borderRadius: 8 * k, padding: `${2 * k}px ${10 * k}px`}}>Seguir</span>}
 			</div>
 			{children}
 		</div>
@@ -481,6 +482,7 @@ const PromptSkill: React.FC<{de: number}> = ({de}) => {
 /* ---------------------------------------------------------------- M2: o fechamento, comentário EDIÇÃO + a DM chegando (ref1 24 a 26; legenda em cima, card embaixo como na ref3) */
 export const Comenta: React.FC = () => {
 	const {t} = useT();
+	const {arroba, foto} = React.useContext(Previas);
 	const c = cena('comenta');
 	const e = mola(t, c.de, {damping: 18});
 	const edicao = w('edição', 2);
@@ -511,11 +513,13 @@ export const Comenta: React.FC = () => {
 				<div style={ab(0, 116, {width: 1000, borderTop: '1px solid #EDEDED'})} />
 				{/* a legenda fixada do próprio post */}
 				<div style={ab(44, 160, {display: 'flex', gap: 22, alignItems: 'flex-start'})}>
-					<Img src={staticFile('foto.jpg')} style={{width: 80, height: 80, borderRadius: 40, objectFit: 'cover'}} />
+					{foto && <Img src={staticFile(foto)} style={{width: 80, height: 80, borderRadius: 40, objectFit: 'cover'}} />}
 					<div style={{width: 780}}>
-						<div style={{fontFamily: SANS, fontWeight: 700, fontSize: 30, color: C.tinta}}>
-							ojessegomes <span style={{fontWeight: 500, color: '#8E8E8E', fontSize: 26}}>· Fixado</span>
-						</div>
+						{arroba && (
+							<div style={{fontFamily: SANS, fontWeight: 700, fontSize: 30, color: C.tinta}}>
+								{arroba} <span style={{fontWeight: 500, color: '#8E8E8E', fontSize: 26}}>· Fixado</span>
+							</div>
+						)}
 						<div style={{fontFamily: SANS, fontWeight: 500, fontSize: 32, color: C.tinta, marginTop: 6, lineHeight: 1.3}}>Comenta EDIÇÃO que eu te mando na DM</div>
 					</div>
 				</div>
@@ -556,9 +560,9 @@ export const Comenta: React.FC = () => {
 			{/* a DM chegando */}
 			{t >= que && (
 				<div style={ab(40, 40 + (1 - banner) * -260, {width: 1000, height: 150, borderRadius: 34, background: 'rgba(255,255,255,0.97)', boxShadow: SOMBRA, display: 'flex', alignItems: 'center', gap: 24, padding: '0 34px', boxSizing: 'border-box', transform: `scale(${bate})`})}>
-					<Img src={staticFile('foto.jpg')} style={{width: 88, height: 88, borderRadius: 44, objectFit: 'cover'}} />
+					{foto && <Img src={staticFile(foto)} style={{width: 88, height: 88, borderRadius: 44, objectFit: 'cover'}} />}
 					<div style={{flex: 1}}>
-						<div style={{fontFamily: SANS, fontWeight: 700, fontSize: 32, color: C.tinta}}>ojessegomes</div>
+						{arroba && <div style={{fontFamily: SANS, fontWeight: 700, fontSize: 32, color: C.tinta}}>{arroba}</div>}
 						<div style={{fontFamily: SANS, fontWeight: 500, fontSize: 30, color: '#555'}}>nova mensagem</div>
 					</div>
 					<div style={{fontFamily: SANS, fontWeight: 500, fontSize: 26, color: '#8E8E8E'}}>agora</div>

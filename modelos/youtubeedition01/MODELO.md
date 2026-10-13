@@ -400,7 +400,7 @@ exemplo de como a autenticidade aparece, **nunca** vira regra daqui.
 ## 13. O fluxo de um vídeo (com portões)
 
 1. **Entrada.** O bruto (A-roll + gravações de tela, se já existirem), o roteiro se houver, o perfil do criador.
-   Pasta do vídeo em `conteudo/AAAA-MM-DD-tema/` (projeto Remotion); materiais em
+   Pasta do vídeo em `videos/AAAA-MM-DD-tema/` (projeto Remotion); materiais em
    `materiais/youtubeedition01/AAAA-MM-DD-tema/`.
 2. **Transcrição e limpeza.** Whisper + `align.py`; corte de silêncio e de take ruim; o corte que esconde erro
    vira punch-in.
@@ -421,15 +421,15 @@ exemplo de como a autenticidade aparece, **nunca** vira regra daqui.
 
 | Precisa | Ferramenta | Estado |
 |---|---|---|
-| Transcrição palavra a palavra | `projetos/maquina-de-conteudo/tools/transcribe.py` + `align.py` | pronto |
+| Transcrição palavra a palavra | `tools/transcribe.py` + `align.py` | pronto |
 | Punch-in e câmera seguindo o rosto | `enquadrar.py` (YuNet) | pronto |
-| Recorte da pessoa para texto atrás (R3) | modelo RVM em `maquina-de-conteudo/tools/modelos/rvm_mobilenetv3_fp32.onnx` | o modelo existe; falta o script que gera a máscara quadro a quadro |
+| Recorte da pessoa para texto atrás (R3) | modelo RVM em `tools/modelos/rvm_mobilenetv3_fp32.onnx` | o modelo existe; falta o script que gera a máscara quadro a quadro |
 | Apagar dado pessoal ou marca d'água | `inpaint_lama.py`, desfoque no Remotion | pronto |
-| Logo oficial e foto aberta | `estudio-2d/kit/buscar.py` | pronto |
+| Logo oficial e foto aberta | `kit/buscar.py` | pronto |
 | Ilustração de metáfora | `kit/gerar.py` (kie.ai) | pronto, com gasto |
 | Trilha e efeito | `kit/audio_ia.py` (ElevenLabs) | pronto, com gasto |
 | Gravar navegação em site público | navegador automatizado (playwright) | conexão disponível |
-| Peças do catálogo (espinhas, R3, R4, R5, E1 a E5, C4) | Remotion | primeira versão em `conteudo/2026-10-10-youtubeedition01-apresentacao/src/` (Camera.tsx e Pecas.tsx); viram componentes reaproveitáveis e, depois, o pacote do modelo |
+| Peças do catálogo (espinhas, R3, R4, R5, E1 a E5, C4) | Remotion | primeira versão em `modelos/youtubeedition01/aplicacoes/2026-10-10-youtubeedition01-apresentacao/src/` (Camera.tsx e Pecas.tsx); viram componentes reaproveitáveis e, depois, o pacote do modelo |
 
 ---
 
@@ -454,8 +454,8 @@ exemplo de como a autenticidade aparece, **nunca** vira regra daqui.
 
 | Vídeo | Formato | Saída |
 |---|---|---|
-| Apresentação do modelo (1 min, 16:9, fala improvisada pelo Jessé; pode virar criativo impulsionado) | vitrine curta, espinha = barra de tempo | `conteudo/2026-10-10-youtubeedition01-apresentacao/out/youtubeedition01-apresentacao.mp4` (RECUSADA: "parece que você criou outro") |
-| Vitrine dos modelos (30 s, 9:16, Instagram) | A. método com a tela, espinha = título-capítulo; identidade §9.1 | `conteudo/2026-10-10-vitrine-modelos/youtubeedition01/out/vitrine-youtubeedition01-sem-previas.mp4` (aguardando o Jessé) |
+| Apresentação do modelo (1 min, 16:9, fala improvisada pelo Jessé; pode virar criativo impulsionado) | vitrine curta, espinha = barra de tempo | `modelos/youtubeedition01/exemplos/youtubeedition01-apresentacao.mp4` (RECUSADA: "parece que você criou outro") |
+| Vitrine dos modelos (30 s, 9:16, Instagram) | A. método com a tela, espinha = título-capítulo; identidade §9.1 | `moldes/youtubeedition01/out/vitrine-youtubeedition01-sem-previas.mp4` (aguardando o Jessé) |
 
 A versão longa da apresentação (~4:45) fica de reserva em `apresentacao/roteiro.md`.
 
@@ -488,19 +488,19 @@ A versão longa da apresentação (~4:45) fica de reserva em `apresentacao/rotei
   gravação em seis edições): prova sem fabricar nada.
 - **Texto atrás no vertical:** cabe uma palavra curta no plano aberto; o nome comprido foi para a frente (§9.2).
 - **Tempo de leitura e trilha:** com o texto preso a blocos que nascem e morrem em corte, todos os 8 blocos passaram
-  em 1 s + 3 palavras/s (`scripts/tempos.py`); a trilha sintetizada a -3,5 dB com ducking ficou ~16 dB abaixo da voz.
+  em 1 s + 3 palavras/s (`scripts/tempos.py`, hoje `scripts/checar.mjs`, que lê o plano em `src/plano.ts`); a trilha sintetizada a -3,5 dB com ducking ficou ~16 dB abaixo da voz.
 
 ## 17. Em aberto
 
 - O som das referências não foi ouvido: efeito sonoro, transições finas e a curva dos movimentos ficam para
   calibrar no primeiro vídeo.
-- As peças do catálogo existem só no projeto da apresentação (`conteudo/2026-10-10-youtubeedition01-apresentacao/src/`): câmera em janela, abertura com número, barra de tempo, nome no terço de baixo, grade, elemento que cai, celular flutuante, tela dividida, gravação com rosto no canto, frase com marca-texto, seguir, comentário com palavra-chave. Viram componentes reaproveitáveis no próximo vídeo. Na identidade §9.1 e no 9:16, as peças estão em `conteudo/2026-10-10-vitrine-modelos/youtubeedition01/src/` (Camera.tsx com o giro do cartão e o texto atrás com `pessoa.webm`; Video.tsx com R3 atrás e na frente, grade de vídeos reais, montagem, tela de reels genérica, prévias em cima, CTA com degradê): é dali que o próximo vídeo deste modelo parte, se o Jessé aprovar.
+- As peças do catálogo existem só no projeto da apresentação (`modelos/youtubeedition01/aplicacoes/2026-10-10-youtubeedition01-apresentacao/src/`): câmera em janela, abertura com número, barra de tempo, nome no terço de baixo, grade, elemento que cai, celular flutuante, tela dividida, gravação com rosto no canto, frase com marca-texto, seguir, comentário com palavra-chave. Viram componentes reaproveitáveis no próximo vídeo. Na identidade §9.1 e no 9:16, as peças estão em `moldes/youtubeedition01/src/` (Camera.tsx com o giro do cartão e o texto atrás com `pessoa.webm`; Video.tsx com R3 atrás e na frente, grade de vídeos reais, montagem, tela de reels genérica, prévias em cima, CTA com degradê): é dali que o próximo vídeo deste modelo parte, se o Jessé aprovar.
 - O script de recorte da pessoa (RVM) para o texto atrás.
 - Pacote no motor da Máquina: só depois de o dono aprovar o primeiro vídeo e pedir.
 
 ## Validação do vertical (2026-10-12, Jessé)
 
-A versão 9:16 da vitrine (`conteudo/2026-10-10-vitrine-modelos/youtubeedition01/`) foi aprovada como está ("ficou perfeito no 9:16"). Ficam como regra para as próximas aplicações, sem refazer a da vitrine:
+A versão 9:16 da vitrine (`moldes/youtubeedition01/`) foi aprovada como está ("ficou perfeito no 9:16"). Ficam como regra para as próximas aplicações, sem refazer a da vitrine:
 - **Música é opcional**, escolha do usuário; padrão desligada.
 - **Não escrever o nome do modelo na tela** quando a fala menciona "este modelo".
 - **9:16 dinâmico pede legenda corrida opcional** numa boa posição de leitura (altura do peito, dentro da zona segura das redes), porque a maioria assiste vídeo curto com legenda. Padrão: oferecer ao usuário; no 16:9 de YouTube o modelo segue sem legenda corrida, como as referências.

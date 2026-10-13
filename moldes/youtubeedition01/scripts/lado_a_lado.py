@@ -22,7 +22,7 @@ PARES = [
 W, H, RH, T = 360, 640, 203, 70
 folha = Image.new('RGB', (len(PARES) * W, H + T + RH), 'white')
 d = ImageDraw.Draw(folha)
-f = ImageFont.truetype('C:/Windows/Fonts/arialbd.ttf', 16)
+f = ImageFont.load_default(size=16)  # fonte embutida no Pillow: funciona em Windows, macOS e Linux
 for i, (a, b, rot) in enumerate(PARES):
     folha.paste(Image.open(AQUI / a).convert('RGB').resize((W, H)), (i * W, 0))
     folha.paste(Image.open(AQUI / b).convert('RGB').resize((W, RH)), (i * W, H + T))

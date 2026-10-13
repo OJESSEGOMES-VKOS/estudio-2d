@@ -29,6 +29,7 @@ if (-not (Test-Path "$raiz\kit\.env")) { Copy-Item .env.exemplo "$raiz\kit\.env"
 
 Write-Host '3/4 Remotion (node_modules)'
 npm ci
+npx remotion browser ensure   # o navegador do render, dentro de node_modules
 
 Write-Host '4/4 Modelos de visão (tools/modelos)'
 $modelos = @{

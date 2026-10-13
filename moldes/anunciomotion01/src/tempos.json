@@ -1,6 +1,10 @@
 {
+  "fala": "Esse vídeo está sendo 100% editado pelo Claude. Ele foi criado justamente para te mostrar a diferença entre vários modelos que eu criei e melhorei para editar qualquer tipo de vídeo usando o Claude. Inclusive, se você estiver no Instagram agora, você está vendo apenas um desses modelos. Eu posso até colocar duas prévias rápidas aqui em cima, aceleradas em três vezes. Mas se você quiser realmente ver outros modelos de edição como esse e aprender a como usar isso nos seus vídeos, comenta edição aqui embaixo que eu vou te mandar na sua DM agora.",
   "fps": 30,
   "duracao_q": 930,
+  "escurece": true,
+  "virada": "S7",
+  "acordes": [0.0, "S3", "S5", "S6", "S7", "S8", "S9", "S10"],
   "cenas": [
     {"id": "S1", "de_q": 0, "ate_q": 92, "fundo": "escuro", "entrada": "corte"},
     {"id": "S2", "de_q": 92, "ate_q": 137, "fundo": "claro", "entrada": "corte"},
@@ -14,6 +18,36 @@
     {"id": "S10", "de_q": 803, "ate_q": 930, "fundo": "escuro", "entrada": "iris"}
   ],
   "previas": {"de_q": 470, "ate_q": 600},
+  "marcas": {
+    "inicio": [0, "Esse"],
+    "cem": [4, "100%"],
+    "clipe1": [8, "Ele"],
+    "clipe2": [9, "foi"],
+    "clipe3": [10, "criado"],
+    "clipe4": [11, "justamente"],
+    "clipe5": [12, "para"],
+    "placa1": [16, "diferença"],
+    "placa2": [18, "vários"],
+    "placa3": [19, "modelos"],
+    "melhorei": [24, "melhorei"],
+    "orbita1": [27, "qualquer"],
+    "orbita2": [28, "tipo"],
+    "orbita3": [30, "vídeo"],
+    "orbita4": [31, "usando"],
+    "coracao": [39, "Instagram"],
+    "apenas": [44, "apenas"],
+    "um": [45, "um"],
+    "setas": [55, "aqui"],
+    "aceleradas": [58, "aceleradas"],
+    "outros": [68, "outros"],
+    "pilula1": [69, "modelos"],
+    "pilula2": [70, "de"],
+    "pilula3": [71, "edição"],
+    "usar": [78, "usar"],
+    "videos": [82, "vídeos"],
+    "edicao": [84, "edição"],
+    "embaixo": [86, "embaixo"]
+  },
   "texto": {"84": "“EDIÇÃO”"},
   "blocos": [
     {"id": "B1", "cena": "S1", "linhas": [

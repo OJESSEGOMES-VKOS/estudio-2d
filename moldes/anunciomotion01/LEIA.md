@@ -12,70 +12,87 @@ fala vira legenda numa altura só. Trilha eletrônica e efeitos sintetizados. Es
 
 Molde de narração: não usa `public/fala.mp4` nem `src/rosto.json`.
 
-| Arquivo | Uso |
-|---|---|
-| `public/voz.wav` | a voz (a composição toca) |
-| `src/palavras.json` | palavras com tempo (cada palavra nasce no `start` dela) |
-| `src/tempos.json` | `fps`, `duracao_q`, as cenas S1-S10 (quadros, fundo `escuro`/`claro`, entrada `corte`/`borrao`/`iris`), a janela das prévias e os blocos de legenda (ids por linha, `fs`, `peso`, `y`, `marca`, `tipo` contador/pílula); `texto` troca a grafia de uma palavra |
-| `public/previa1.mp4`, `public/previa2.mp4` | opcionais, com `previas: true` |
-| `public/trilha.wav`, `public/efeitos.wav` | saem do `scripts/som.py` |
-| `scripts/Sora.ttf` | a Sora variável (OFL), só para o checador medir a largura das linhas |
+| Arquivo | Uso | De onde vem |
+|---|---|---|
+| `public/voz.wav`, `src/palavras.json` | a voz (a composição toca) e as palavras com tempo (cada palavra nasce no `start` dela) | `tools/novo-video.py` com a gravação da narração (em vídeo; só áudio, veja "Vídeo novo") |
+| `src/tempos.json` | **o plano**: a fala para a qual foi feito, `duracao_q`, as cenas S1-S10 (quadros, fundo `escuro`/`claro`, entrada `corte`/`borrao`/`iris`), as prévias, as marcas, os acordes e os blocos de legenda (ids por linha, `fs`, `peso`, `y`, `marca`, `tipo` contador/pílula); `texto` troca a grafia de uma palavra | à mão, sobre a fala |
+| `public/previa1.mp4`, `public/previa2.mp4` | opcionais, só com `previas: true` | `tools/previa.py` a partir de um vídeo seu pronto |
+| `public/trilha.wav`, `public/efeitos.wav` | opcionais, com `musica`/`efeitos` | `scripts/som.py` |
+| `scripts/Sora.ttf` | a Sora variável (OFL), só para o checador medir a largura das linhas | vem no molde |
 
+Se uma prop ligada pede um arquivo que não está em `public/`, o molde para ao carregar e diz o comando para fazer.
 O `node_modules` é uma junção para `../../node_modules` (nunca `npm install` aqui).
 
 ## Composição e props
 
-- `VitrineAnuncioMotion01` (`src/Root.tsx`), 1080x1920, 30 qps, 930 quadros (31,0 s).
-- `src/tema.ts` (cores, Sora, tempos), `src/ui.tsx` (fundos, palavra que nasce do desfoque, pílula, anéis, partículas,
-  ícone de vidro, glifos), `src/texto.tsx` (legenda, contador "100%", pílulas), `src/cenas.tsx` (as 10 telas e as
-  prévias), `src/Reel.tsx` (câmera, transições e áudio).
+- `VitrineAnuncioMotion01` (`src/Root.tsx`), 1080x1920, 30 qps, `duracao_q` quadros (930 na vitrine, 31,0 s).
+- `src/tema.ts` (cores, Sora, tempos, a conferência do plano), `src/ui.tsx` (fundos, palavra que nasce do desfoque,
+  pílula, anéis, partículas, ícone de vidro, glifos), `src/texto.tsx` (legenda, contador "100%", pílulas),
+  `src/cenas.tsx` (as 10 telas e as prévias; cada uma conta o tempo a partir da cena dela e pega os instantes das
+  palavras nas `"marcas"`), `src/Reel.tsx` (câmera, transições e áudio).
 - Props: `previas` (false), `nomesPrevias` ([string, string], padrão `['profissional01', 'sofistmotion01']`),
-  `musica` (false), `efeitos` (false). A composição toca `voz.wav` sempre e trilha/efeitos quando ligados, então o
+  `musica` (false), `efeitos` (true: os efeitos sonoros do modelo, de `scripts/som.py`). A composição toca `voz.wav` sempre e trilha/efeitos quando ligados, então o
   render já sai mixado; o `finalizar.sh` só normaliza.
-- Prévias (S7, 15,67-20,00 s): duas placas 330x587 (centros x 290 e 710, y 267-853) voam dos lados, nome embaixo em
-  Sora 700 34 px. Com `previas: false` fica só o ícone de avanço rápido.
+- Prévias (S7; na vitrine 15,67-20,00 s): duas placas 330x587 (centros x 290 e 710, y 267-853) voam dos lados, nome
+  embaixo em Sora 700 34 px. Com `previas: false` fica só o ícone de avanço rápido.
+- Partes que se desligam no `src/tempos.json`, sem mexer no desenho: sem `"previas"` não há prévias; sem
+  `"escurece": true` não vai ao preto no fim; linha sem `"tipo"` é legenda comum (`"contador"`: 0→100%; `"pilula"`:
+  destaque); sem `"virada"` o pulso da trilha não sobe; marca que o plano não tem, efeito sonoro dela não toca.
 
-## Gerar, mixar e renderizar (de dentro de `moldes/anunciomotion01/` ou da cópia em `videos/<v>/`)
+## Vídeo novo
 
-```sh
-../../.venv/Scripts/python.exe scripts/conferir.py      # o checador: tem que sair "0 erros"
-../../.venv/Scripts/python.exe scripts/som.py           # public/trilha.wav e public/efeitos.wav (SAIDA=<pasta> grava fora)
-QUEM=anunciomotion01 sh ../../tools/com-trava.sh npx remotion render src/index.ts VitrineAnuncioMotion01 out/bruto.mp4 \
-  --codec=h264 --crf=16 --concurrency=2 --props='{"previas":true,"nomesPrevias":["<previa1>","<previa2>"],"musica":true,"efeitos":true}'
-sh scripts/finalizar.sh out/bruto.mp4 out/final.mp4     # loudnorm -14 LUFS / -1 dBTP em duas passadas, vídeo copiado
-```
+Da raiz do estúdio: `.venv/Scripts/python.exe tools/novo-video.py anunciomotion01 <narracao.mp4> <AAAA-MM-DD-tema>`
+(a narração gravada, ou gerada pelo `kit/voz.py`; o `novo-video.py` ainda não aceita áudio puro, então ponha o
+áudio num vídeo preto antes: `ffmpeg -f lavfi -i color=c=black:s=1080x1920:r=30 -i narracao.wav -shortest -c:v libx264 -pix_fmt yuv420p -c:a aac narracao.mp4`). Depois, de dentro de `videos/<AAAA-MM-DD-tema>/`:
 
-- `som.py` lê os tempos de `src/tempos.json` e a voz de `public/voz.wav` e acerta a trilha 16 dB abaixo da voz
-  (medido: voz -14,5, trilha -30,5, efeitos -28,6 LUFS).
-- Stills: `QUEM=anunciomotion01 sh ../../tools/com-trava.sh npx remotion still src/index.ts VitrineAnuncioMotion01 ../../.tmp/q.png --frame=510 --props='{"previas":true,"nomesPrevias":["a","b"]}'`.
-  Em lote: `node scripts/quadros.mjs [--previas] [--pasta=conferencia/x] 1 14.7`.
-- Folhas do mp4 final: `../../.venv/Scripts/python.exe scripts/folhas.py out/final.mp4` grava
-  `conferencia/folha-1qps.png` e `conferencia/lado-a-lado.png` (contra as refs de `../../modelos/anunciomotion01/referencias/`
-  e o anúncio do Marcaí em `../../modelos/anunciomotion01/exemplos/marcai-anuncio.mp4`). Folha avulsa:
-  `../../.venv/Scripts/python.exe scripts/montar.py saida.png q1.png ... --cols 6`.
+1. **Refazer o `src/tempos.json` sobre o `src/palavras.json` novo**, seguindo o MODELO (§4, o repertório de telas) e o
+   `REGRAS.md`. Enquanto o plano for o da vitrine, o vídeo para ao carregar com `O plano não bate com a fala` e o
+   conferidor diz a linha.
+   - `"fala"` (linha 2): o texto da fala nova (o conferidor imprime pronto para colar; maiúscula, acento e pontuação não
+     contam). `"duracao_q"` (linha 4, ao menos o fim da última palavra), `"escurece"` (linha 5), `"virada"` (linha 6) e
+     `"acordes"` (linha 7: segundos ou id de cena; o último é o acorde do fecho).
+   - `"cenas"` (linha 8): cada `id` é uma tela de `src/cenas.tsx` (S1-S10); a última cena é o fecho. Tela nova:
+     desenhe em `src/cenas.tsx` e ponha no `Quadro` do `Reel.tsx`.
+   - `"previas"` (linha 20), `"marcas"` (linha 21: `"nome": [índice, "palavra"]`, os instantes que as telas e o
+     `som.py` usam), `"texto"` e `"blocos"` (linha 52).
+2. Conferir: `../../.venv/Scripts/python.exe scripts/conferir.py` (tem que sair `0 erros`; abaixo).
+3. Opcionais: `../../.venv/Scripts/python.exe scripts/som.py` (trilha e efeitos, gravados a partir do plano) e, para
+   `previas: true`, da raiz: `.venv/Scripts/python.exe tools/previa.py <video.mp4> videos/<pasta> 1` e o mesmo com `2`.
+4. Olhar os quadros: `QUEM=<nome> sh ../../tools/com-trava.sh node scripts/quadros.mjs 1 14.7` (em `conferencia/q/`;
+   `PROPS=<arquivo.json>` as props do render, `--previas` liga as prévias).
+5. Render com os padrões (só a voz):
+   ```sh
+   QUEM=<nome> sh ../../tools/com-trava.sh npx remotion render src/index.ts VitrineAnuncioMotion01 out/bruto.mp4 --codec=h264 --crf=16 --concurrency=2
+   ```
+   Com trilha e efeitos (depois do `som.py`): `--props='{"musica":true,"efeitos":true}'`; com prévias (depois do
+   `previa.py`): acrescente `"previas":true,"nomesPrevias":["<previa1>","<previa2>"]`.
+6. `sh scripts/finalizar.sh out/bruto.mp4 out/final.mp4` (loudnorm -14 LUFS / -1 dBTP em duas passadas, vídeo copiado;
+   o som já está no render, do tamanho do vídeo).
 
 ## Checador
 
-`../../.venv/Scripts/python.exe scripts/conferir.py` (sai 1 se algo falhar): toda palavra aparece uma vez só, nasce no
-start (±2 quadros) e fica >= 0,4 s; bloco >= 1,5 s, máx. 4 linhas, dentro da cena; zona segura 9:16 y 250-1500,
-x 60-940 (largura medida com `scripts/Sora.ttf` no peso de cada linha); legenda em no máximo 2 alturas; pílulas do
-mesmo tamanho; nenhum trecho > 2,5 s sem evento; nenhum travessão e nenhum nome de modelo no texto. Na vitrine:
-`0 erros | alturas da legenda [1170] | pílulas [84]`.
+`../../.venv/Scripts/python.exe scripts/conferir.py` (sai 1 se algo falhar, não grava nada). Primeiro, o plano é desta
+fala (`"fala"` igual às palavras, ids existentes, cada marca na palavra que diz, duração que cobre a fala); se não for,
+para dizendo a palavra que difere, as linhas do `src/tempos.json` a refazer e o texto da fala nova. Depois: toda
+palavra aparece uma vez só, nasce no start (±2 quadros) e fica >= 0,4 s; bloco >= 1,5 s, máx. 4 linhas, dentro da
+cena; zona segura 9:16 y 250-1500, x 60-940 (largura medida com `scripts/Sora.ttf` no peso de cada linha); legenda em
+no máximo 2 alturas; pílulas do mesmo tamanho; nenhum trecho > 2,5 s sem evento (fora o fecho); nenhum travessão e
+nenhum nome de modelo no texto. Na vitrine: `0 erros | alturas da legenda [1170] | pílulas [84]`.
 
-## O que é específico do vídeo de origem (refazer num vídeo novo)
+## O vídeo de origem (a vitrine)
 
 Preso à fala da vitrine ("Esse vídeo está sendo 100% editado pelo Claude...", 31,0 s):
-- `src/tempos.json` inteiro (as 10 cenas, as entradas, os blocos com os ids das palavras desta fala).
+- `src/tempos.json` inteiro (as 10 cenas, as entradas, as marcas, os acordes, os blocos com os ids desta fala).
 - `src/cenas.tsx`, o que cada tela encena: S1 play que vira o contador 0→100%, S2 editor numa placa com um clipe por
   palavra, S3 três placas e "melhorei" com check, S4 ícone herói em "qualquer tipo de vídeo", S5 celular com o coração em
   "Instagram", S6 seis telinhas e "apenas um" que cresce, S7 avanço rápido com prévias, setas em "aqui" e riscos em
   "aceleradas", S8 pílulas "outros modelos" / "de edição", S9 interruptor OFF→ON em "usar", S10 comenta + pílula
   **"EDIÇÃO"** nos anéis com a seta em "embaixo".
-- `scripts/som.py`: cada efeito preso a uma palavra pelo índice (`ini(84)` = "EDIÇÃO") ou a uma cena.
 
-O que se aproveita igual: `tema.ts`, `ui.tsx`, `texto.tsx`, a câmera e as transições do `Reel.tsx`, as prévias em
-placas, a forma do `tempos.json`, a trilha gerada pelos tempos, a finalização e o checador. O vídeo novo escreve um
-`tempos.json` novo e escolhe as telas do repertório (MODELO §4) para cada frase.
+Para refazer a vitrine igual: `--props='{"previas":true,"nomesPrevias":["profissional01","sofistmotion01"],"musica":true,"efeitos":true}'`.
+Folhas do mp4 final: `../../.venv/Scripts/python.exe scripts/folhas.py out/final.mp4` grava `conferencia/folha-1qps.png`
+e `conferencia/lado-a-lado.png` (este precisa das referências, que não vêm na distribuição). Folha avulsa:
+`../../.venv/Scripts/python.exe scripts/montar.py saida.png q1.png ... --cols 6`.
 
 ## Histórico
 

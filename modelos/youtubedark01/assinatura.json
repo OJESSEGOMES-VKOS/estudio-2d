@@ -1,0 +1,15 @@
+{
+ "modelo": "youtubedark01",
+ "gerado_de": "vitrine-youtubedark01.mp4",
+ "saida": {
+  "video": "vitrine-youtubedark01.mp4",
+  "segundos": 30.5,
+  "formato": "1080x1920",
+  "brilho": 25.2,
+  "contraste": 136.5,
+  "saturacao": 70.59,
+  "temperatura": 0.84,
+  "tom": 0.87,
+  "cortes_min": 17.7
+ }
+}

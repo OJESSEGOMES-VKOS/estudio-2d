@@ -4,7 +4,7 @@ ducking pela voz, 16 dB abaixo dela. Efeitos discretos só em acontecimentos DEN
 a barra chegando a 100%, as prévias entrando nos quadros, o risco vermelho sob "EDIÇÃO".
 Gera public/trilha.wav e public/efeitos.wav.  uso: ../../.venv/Scripts/python.exe scripts/som.py   (SAIDA=<pasta> grava fora de public/)
 """
-import json, os, re, subprocess
+import json, os, re, subprocess, sys, unicodedata
 from pathlib import Path
 
 import numpy as np
@@ -21,11 +21,19 @@ N = int(D * SR)
 tt = np.arange(N) / SR
 rng = np.random.default_rng(5)
 ini = lambda i: round(PS[i]['start'] * FPS) / FPS
+limpa = lambda s: re.sub(r'[^a-z0-9]', '', ''.join(c for c in unicodedata.normalize('NFD', s.lower()) if unicodedata.category(c) != 'Mn'))
+if [w for w in map(limpa, T.get('fala', '').split()) if w] != [w for w in (limpa(p['text']) for p in PS) if w]:
+    sys.exit('O plano (src/tempos.json) não é desta fala: rode scripts/conferir.py, que diz o que refazer.')
+MARCAS = T.get('marcas') or {}
+
+
+def marca(nome):
+    """segundo da marca do plano (src/tempos.json → marcas); sem a marca, o efeito dela não toca"""
+    return ini(MARCAS[nome][0]) if nome in MARCAS else None
 hz = lambda m: 440 * 2 ** ((m - 69) / 12)
 lp = lambda x, f: sosfilt(butter(2, f, 'low', fs=SR, output='sos'), x)
 hp = lambda x, f: sosfilt(butter(2, f, 'high', fs=SR, output='sos'), x)
 bp = lambda x, a, b: sosfilt(butter(2, [a, b], 'band', fs=SR, output='sos'), x)
-cena = {c['id']: c['de_q'] / FPS for c in T['cenas']}
 
 
 def add(buf, t, s, g=1.0):
@@ -48,9 +56,12 @@ def piano(m, d=3.0, vel=1.0):  # o mesmo piano do curta aprovado (tools/som.py d
 
 
 # acordes (Lá menor, calmo): Am, F, C, G ... no fecho Am(add9)
-ACORDES = [(0.0, [45, 57, 60, 64]), (cena['S2'], [41, 53, 57, 60]), (cena['S3'], [48, 55, 60, 64]), (cena['S4'], [43, 55, 59, 62]),
-           (cena['S5'], [45, 57, 60, 64]), (cena['S6'], [41, 53, 57, 60]), (cena['S7'], [48, 55, 60, 64]), (cena['S8'], [43, 55, 59, 62]),
-           (cena['S9'], [41, 53, 57, 60, 64]), (cena['S10'], [48, 55, 60, 64]), (cena['S11'], [45, 57, 59, 60, 64])]
+# um acorde por cena: o ciclo Am, F, C, G e, nas três últimas, a cadência F(add), C, Am(add9) do fecho
+CICLO = [[45, 57, 60, 64], [41, 53, 57, 60], [48, 55, 60, 64], [43, 55, 59, 62]]
+FECHO = [[41, 53, 57, 60, 64], [48, 55, 60, 64], [45, 57, 59, 60, 64]]
+inis = [c['de_q'] / FPS for c in T['cenas']]
+nf = min(3, len(inis))
+ACORDES = [(t0, CICLO[k % 4] if k < len(inis) - nf else FECHO[3 - nf + k - (len(inis) - nf)]) for k, t0 in enumerate(inis)]
 cordas = np.zeros(N)
 pno = np.zeros(N)
 for k, (t0, notas) in enumerate(ACORDES):
@@ -112,14 +123,19 @@ def caneta(dur=0.3):  # risco de caneta (o sublinhado vermelho do curta aprovado
     return bp(rng.standard_normal(n), 2500, 7000) * (0.6 + 0.4 * np.sin(2 * np.pi * 18 * x)) * np.sin(np.pi * x)
 
 
-for k in range(5):                                          # barra enchendo até 100%
-    add(fx, ini(4) + k * 0.1, tique(2200 + 120 * k), 0.3)
-add(fx, ini(5), sino(1760, 1.0), 0.25)
-pv = T['previas']['de_q'] / FPS                             # as prévias acendem nos quadros
-add(fx, pv - 0.15, sopro(0.45, 300, 5000), 0.45)
-add(fx, pv, sino(1320, 0.8), 0.15)
-add(fx, ini(84), sino(1568, 1.2), 0.28)                     # "EDIÇÃO" + risco vermelho
-add(fx, ini(84) + 0.2, caneta(0.3), 0.5)
+# cada efeito preso a uma marca do plano (src/tempos.json → marcas); marca que o plano não tem, efeito que não toca
+if marca('barra_cheia') is not None:                        # barra enchendo até 100%
+    for k in range(5):
+        add(fx, marca('barra_cheia') + k * 0.1, tique(2200 + 120 * k), 0.3)
+if marca('barra_fim') is not None:
+    add(fx, marca('barra_fim'), sino(1760, 1.0), 0.25)
+if T.get('previas'):                                        # as prévias acendem nos quadros
+    pv = T['previas']['de_q'] / FPS
+    add(fx, pv - 0.15, sopro(0.45, 300, 5000), 0.45)
+    add(fx, pv, sino(1320, 0.8), 0.15)
+if marca('risco') is not None:                              # "EDIÇÃO" + risco vermelho
+    add(fx, marca('risco'), sino(1568, 1.2), 0.28)
+    add(fx, marca('risco') + 0.2, caneta(0.3), 0.5)
 
 
 def grava(nome, x, pico):

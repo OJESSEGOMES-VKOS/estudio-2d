@@ -1,0 +1,36 @@
+{
+ "modelo": "youtubeedition01",
+ "gerado_de": "vitrine-youtubeedition01.mp4",
+ "entrada": {
+  "segundos": 30.0,
+  "formato": "1080x1920",
+  "brilho": 88.67,
+  "contraste": 155.0,
+  "saturacao": 64.34,
+  "temperatura": 2.77,
+  "tom": 4.2,
+  "rosto_aberto": 0.2689,
+  "rosto_fechado": 0.292,
+  "rosto_cy": 0.351,
+  "rosto_cx": 0.5021,
+  "cabeca_cortada": 0.0,
+  "com_rosto": 1.0
+ },
+ "saida": {
+  "video": "vitrine-youtubeedition01.mp4",
+  "segundos": 30.2,
+  "formato": "1080x1920",
+  "brilho": 91.07,
+  "contraste": 220.0,
+  "saturacao": 65.49,
+  "temperatura": 3.17,
+  "tom": 4.15,
+  "cortes_min": 21.8,
+  "rosto_aberto": 0.2646,
+  "rosto_fechado": 0.3097,
+  "rosto_cy": 0.3627,
+  "rosto_cx": 0.5016,
+  "cabeca_cortada": 0.051,
+  "com_rosto": 0.975
+ }
+}

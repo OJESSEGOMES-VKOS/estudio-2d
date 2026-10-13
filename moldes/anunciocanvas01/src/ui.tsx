@@ -1,6 +1,6 @@
 import React from 'react';
 import {Img, staticFile} from 'remotion';
-import {C, E, MAO, SANS, mola, rnd, tw, useT} from './tema';
+import {C, E, MAO, SANS, existe, mola, rnd, tw, useT} from './tema';
 
 export const ab = (x: number, y: number, extra: React.CSSProperties = {}): React.CSSProperties => ({position: 'absolute', left: x, top: y, ...extra});
 export const brilho = (cor: string, k = 1) => `0 0 ${18 * k}px ${cor}, 0 0 ${48 * k}px ${cor}88`;
@@ -186,13 +186,31 @@ export const Particulas: React.FC<{n?: number; cor?: string; semente?: number; d
 
 /* ---------------------------------------------------------------- produto */
 /** celular com o print real; a tela é a imagem de 1170x2532 */
+/** plano B de uma tela do produto que não está em public/: uma tela de app genérica desenhada (cabeçalho, cartões, botão) */
+export const TelaGenerica: React.FC<{larg: number; alt: number}> = ({larg, alt}) => (
+	<div style={{width: larg, height: alt, background: C.claro, position: 'relative', overflow: 'hidden'}}>
+		<div style={ab(0, 0, {width: larg, height: alt * 0.16, background: `linear-gradient(160deg, ${C.vClaro}, ${C.vFundo})`})} />
+		{[0, 1, 2].map((i) => (
+			<div key={i} style={ab(larg * 0.07, alt * (0.22 + i * 0.17), {width: larg * 0.86, height: alt * 0.13, borderRadius: larg * 0.05, background: '#fff', boxShadow: '0 6px 20px rgba(40,20,90,0.10)'})}>
+				<div style={ab(larg * 0.05, alt * 0.02, {width: Math.min(larg * 0.14, alt * 0.09), height: Math.min(larg * 0.14, alt * 0.09), borderRadius: larg, background: hexA(C.vFundo, 0.25)})} />
+				<div style={ab(larg * 0.25, alt * 0.04, {width: larg * 0.45, height: alt * 0.018, borderRadius: 99, background: '#D9D3E6'})} />
+				<div style={ab(larg * 0.25, alt * 0.075, {width: larg * 0.3, height: alt * 0.014, borderRadius: 99, background: '#ECE8F3'})} />
+			</div>
+		))}
+		<div style={ab(larg * 0.07, alt * 0.8, {width: larg * 0.86, height: alt * 0.08, borderRadius: alt * 0.04, background: C.vFundo})} />
+	</div>
+);
+/** imagem de public/ ou, se ela não estiver lá, a tela genérica */
+export const ImgOuTela: React.FC<{src: string; larg: number; alt: number}> = ({src, larg, alt}) =>
+	existe(src) ? <Img src={staticFile(src)} style={{width: larg, height: alt, display: 'block'}} /> : <TelaGenerica larg={larg} alt={alt} />;
+
 export const Celular: React.FC<{src: string; larg: number; brilhoCor?: string; children?: React.ReactNode}> = ({src, larg, brilhoCor = C.v, children}) => {
 	const borda = larg * 0.035;
 	const alt = larg * (2532 / 1170);
 	return (
 		<div style={{position: 'relative', width: larg + 2 * borda, height: alt + 2 * borda, borderRadius: larg * 0.15, background: 'linear-gradient(145deg, #3A3546, #0C0A12 40%, #1E1A28)', padding: borda, boxSizing: 'border-box', boxShadow: `0 0 0 2px rgba(255,255,255,0.10), 0 40px 90px rgba(0,0,0,0.55), 0 0 120px ${hexA(brilhoCor, 0.35)}`}}>
 			<div style={{position: 'relative', width: larg, height: alt, borderRadius: larg * 0.12, overflow: 'hidden', background: '#fff'}}>
-				<Img src={staticFile(src)} style={{width: larg, height: alt, display: 'block'}} />
+				<ImgOuTela src={src} larg={larg} alt={alt} />
 				<div style={ab(larg / 2 - larg * 0.16, larg * 0.03, {width: larg * 0.32, height: larg * 0.085, borderRadius: larg, background: '#000'})} />
 				<div style={{position: 'absolute', inset: 0, background: 'linear-gradient(115deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0) 32%)'}} />
 				{children}
@@ -254,9 +272,9 @@ export const Simbolo: React.FC<{tam: number; check?: number}> = ({tam, check = 1
 	</svg>
 );
 
-/** palavra da marca, com o acento do í na cor da marca */
-export const Wordmark: React.FC<{tam: number; letras?: number; cor?: string}> = ({tam, letras = 6, cor = '#fff'}) => {
-	const L = ['m', 'a', 'r', 'c', 'a', 'ı'];
+/** palavra da marca (prop `texto`, letra por letra; um "ı" sem pingo ganha o acento na cor da marca) */
+export const Wordmark: React.FC<{tam: number; texto: string; letras?: number; cor?: string}> = ({tam, texto, letras = texto.length, cor = '#fff'}) => {
+	const L = [...texto];
 	return (
 		<div style={{fontFamily: SANS, fontWeight: 800, fontSize: tam, letterSpacing: '-0.055em', color: cor, lineHeight: 1, display: 'flex', alignItems: 'baseline'}}>
 			{L.map((c, i) => {
@@ -264,7 +282,7 @@ export const Wordmark: React.FC<{tam: number; letras?: number; cor?: string}> = 
 				return (
 					<span key={i} style={{display: 'inline-block', position: 'relative', opacity: k, transform: `translateY(${(1 - k) * tam * 0.35}px)`, filter: k < 1 ? `blur(${(1 - k) * 10}px)` : undefined}}>
 						{c}
-						{i === 5 && <span style={{position: 'absolute', left: '0.02em', top: '0.02em', width: '0.2em', height: '0.24em', background: C.v, borderRadius: '0.06em', transform: 'skewX(-24deg)', boxShadow: `0 0 ${tam * 0.2}px ${C.v}`}} />}
+						{c === 'ı' && <span style={{position: 'absolute', left: '0.02em', top: '0.02em', width: '0.2em', height: '0.24em', background: C.v, borderRadius: '0.06em', transform: 'skewX(-24deg)', boxShadow: `0 0 ${tam * 0.2}px ${C.v}`}} />}
 					</span>
 				);
 			})}

@@ -2,7 +2,7 @@
 
 Um vídeo só, gravado uma vez pelo Jessé e editado em quase todos os modelos. Vai pro site: a pessoa vê a mesma
 gravação em cada modelo e percebe a diferença entre eles. Segue a linha do vídeo "decupado" de 05/10
-(`conteudo/2026-10-05-reel-editado-pelo-claude/cru/decupado.mp4`): o vídeo fala de si mesmo.
+(`teste-comum/decupado.mp4`): o vídeo fala de si mesmo.
 
 O áudio é igual em todos, então a fala **não diz o nome do modelo**. O nome aparece na tela, do jeito de cada modelo.
 

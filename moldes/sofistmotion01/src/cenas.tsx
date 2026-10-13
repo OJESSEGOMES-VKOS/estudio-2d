@@ -3,7 +3,13 @@
 import React from 'react';
 import {OffthreadVideo, Sequence, staticFile} from 'remotion';
 import {AnelNeon, Cartao, Celular, Cursor, Ladrilho, Notebook, Pasta, Roleta, TelaEditor, TelaReels} from './objetos';
-import {COR, DefsSvg, E, Estrela, Fachos, FILTRO_NEON, H, HALO_TEXTO, INTER, Nevoa, Poeira, Seta, T, W, clamp, ini, mede, surge, tw} from './base';
+import {COR, DefsSvg, E, Estrela, Fachos, FILTRO_NEON, H, HALO_TEXTO, INTER, Nevoa, Poeira, Seta, T, W, cena, clamp, ini, marca, mede, surge, tw, txt} from './base';
+
+/** início e fim (quadros) da cena no plano: cada tela conta o tempo a partir do começo dela */
+const janela = (id: string) => {
+	const c = cena(id);
+	return {c0: c.de_q, c1: c.ate_q, dur: c.ate_q - c.de_q};
+};
 
 const lerp = (a: number, b: number, p: number) => a + (b - a) * p;
 const Svg: React.FC<{children: React.ReactNode; style?: React.CSSProperties}> = ({children, style}) => (
@@ -19,31 +25,38 @@ const Camera: React.FC<{s?: number; x?: number; y?: number; r?: number; ox?: num
 // ============ C1: T1 palavra gigante deslizando + T3 contador no anel ============
 const FSG = 300;
 export const marquee = (f: number) => 230 - 30 * (f - 4);
-export const C1: React.FC<{f: number; ok: boolean}> = ({f, ok}) => {
-	const giante = ok && f < 28;
+/** a linha do bloco que nasce da palavra gigante (tipo "gigante" no src/tempos.json; "gigante" = os ids que deslizam) */
+export const linhaGigante = () => T.blocos.flatMap((b) => b.linhas as {ids: number[]; fs: number; y: number; tipo?: string; gigante?: number[]}[]).find((l) => l.tipo === 'gigante');
+export const C1: React.FC<{f: number; ok: boolean}> = ({f: fg, ok}) => {
+	const {c0, dur} = janela('C1');
+	const f = fg - c0;
+	const lg = linhaGigante();
+	const g = lg?.gigante ?? [];
+	const giante = ok && f < 28 && !!lg;
 	// gigante → encolhe para a 1ª linha do bloco (y 770, 68 px), ref1 0,5 s
-	const L = ok ? 540 - mede('Esse vídeo está sendo', 68) / 2 : 0;
+	const L = ok && lg ? 540 - mede(lg.ids.map(txt).join(' '), lg.fs) / 2 : 0;
 	const p = tw(f, 20, 27, 0, 1, E.io);
 	const X = lerp(marquee(Math.min(f, 31)), L, p);
-	const Y = lerp(960, 770, p);
-	const s = lerp(1, 68 / FSG, p);
+	const Y = lerp(960, lg?.y ?? 960, p);
+	const s = lerp(1, (lg?.fs ?? FSG) / FSG, p);
 	const og = f < 24 ? 1 : tw(f, 24, 27, 1, 0, E.lin);
-	const wEsse = ok ? mede('Esse ', FSG) : 0;
-	const palavra = (k: number, texto: string, x: number) => <span style={{position: 'absolute', left: x, top: 0, ...surge(f, ini(k), 5, 22, 0.06)}}>{texto}</span>;
+	const xs = g.map((_, k) => (ok && k > 0 ? mede(g.slice(0, k).map(txt).join(' ') + ' ', FSG) : 0));
+	const palavra = (k: number, texto: string, x: number) => <span key={k} style={{position: 'absolute', left: x, top: 0, ...surge(fg, ini(k), 5, 22, 0.06)}}>{texto}</span>;
+	const gigantes = () => g.map((k, j) => palavra(k, txt(k), xs[j]));
 	// anel de progresso + contador (100% dito em 1,20 s)
-	const n0 = ini(4);
-	const prog = tw(f, n0, n0 + 16, 0, 1, E.out);
-	const ea = tw(f, n0 - 2, n0 + 10, 0, 1, E.out);
-	const pico = f >= n0 + 16 ? Math.exp(-(f - n0 - 16) / 6) : 0;
+	const n0 = marca('contador');
+	const prog = tw(fg, n0, n0 + 16, 0, 1, E.out);
+	const ea = tw(fg, n0 - 2, n0 + 10, 0, 1, E.out);
+	const pico = fg >= n0 + 16 ? Math.exp(-(fg - n0 - 16) / 6) : 0;
 	const R = 432;
 	const C = 2 * Math.PI * R;
 	return (
 		<div style={{position: 'absolute', inset: 0, background: COR.fundo}}>
-			<Camera s={1 + 0.05 * (f / 92)} r={f * 0.012}>
+			<Camera s={1 + 0.05 * (f / dur)} r={f * 0.012}>
 				<Nevoa x={18} y={10} r={70} cor="rgba(176,100,25,0.55)" />
 				<Nevoa x={85} y={95} r={55} cor="rgba(176,100,25,0.3)" />
 				<Poeira f={f} seed="c1" n={80} />
-				{f >= n0 - 2 && (
+				{fg >= n0 - 2 && (
 					<Svg style={{opacity: ea, transform: `scale(${0.72 + 0.28 * ea})`, transformOrigin: '540px 960px', filter: ea < 1 ? `blur(${(1 - ea) * 12}px)` : undefined}}>
 						<AnelNeon cx={540} cy={960} r={R + 62} arcos={28} abertura={0.45} rot={-f * 0.4} larg={1.6} o={0.7} />
 						<AnelNeon cx={540} cy={960} r={R - 50} arcos={3} abertura={0.55} rot={f * 0.9} larg={1.6} cor={COR.fogo} o={0.75} />
@@ -60,8 +73,8 @@ export const C1: React.FC<{f: number; ok: boolean}> = ({f, ok}) => {
 							<circle cx={540} cy={960} r={R} fill="none" stroke={COR.nucleo} strokeWidth={4} strokeDasharray={`${C * prog} ${C}`} strokeLinecap="round" />
 						</g>
 						{prog > 0 && prog < 1 && <circle cx={540 + R * Math.cos(prog * 2 * Math.PI - Math.PI / 2)} cy={960 + R * Math.sin(prog * 2 * Math.PI - Math.PI / 2)} r={10} fill={COR.nucleo} style={{filter: `drop-shadow(0 0 14px ${COR.ouroAlto})`}} />}
-						<Estrela x={540} y={960 - R} r={60} f={f} n={n0 + 16} />
-						<Estrela x={540 + R * 0.72} y={960 - R * 0.72} r={30} f={f} n={n0 + 18} />
+						<Estrela x={540} y={960 - R} r={60} f={fg} n={n0 + 16} />
+						<Estrela x={540 + R * 0.72} y={960 - R * 0.72} r={30} f={fg} n={n0 + 18} />
 					</Svg>
 				)}
 			</Camera>
@@ -70,13 +83,11 @@ export const C1: React.FC<{f: number; ok: boolean}> = ({f, ok}) => {
 					{f < 22 &&
 						[3, 2, 1].map((k) => (
 							<div key={k} style={{position: 'absolute', left: k * 46, top: 0, whiteSpace: 'nowrap', fontFamily: INTER, fontWeight: 700, fontSize: FSG, letterSpacing: '-0.02em', lineHeight: 1, color: '#FBFBFB', opacity: [0, 0.22, 0.11, 0.05][k], filter: `blur(${2 + k * 3}px)`}}>
-								{palavra(0, 'Esse', 0)}
-								{palavra(1, 'vídeo', wEsse)}
+								{gigantes()}
 							</div>
 						))}
 					<div style={{position: 'absolute', left: 0, top: 0, whiteSpace: 'nowrap', fontFamily: INTER, fontWeight: 700, fontSize: FSG, letterSpacing: '-0.02em', lineHeight: 1, color: '#FBFBFB', textShadow: '0 0 30px rgba(255,214,140,0.35)'}}>
-						{palavra(0, 'Esse', 0)}
-						{palavra(1, 'vídeo', wEsse)}
+						{gigantes()}
 					</div>
 				</div>
 			)}
@@ -85,8 +96,8 @@ export const C1: React.FC<{f: number; ok: boolean}> = ({f, ok}) => {
 };
 
 // linha do contador do B1: "100%" com o número contando e o "%" em contorno neon
-export const LinhaContador: React.FC<{f: number; y: number; fs: number}> = ({f, y, fs}) => {
-	const n0 = ini(4);
+export const LinhaContador: React.FC<{f: number; y: number; fs: number; i: number}> = ({f, y, fs, i}) => {
+	const n0 = ini(i);
 	if (f < n0) return null;
 	const v = Math.round(100 * tw(f, n0, n0 + 16, 0, 1, E.out));
 	const dig = String(v).padStart(3, '0');
@@ -105,12 +116,13 @@ export const LinhaContador: React.FC<{f: number; y: number; fs: number}> = ({f, 
 
 // ============ C2: T2 notebook entrando girando, a linha do tempo se montando ============
 export const C2: React.FC<{f: number}> = ({f}) => {
-	const p = tw(f, 92, 107, 0, 1, E.out);
-	const ry = lerp(168, -16, p) - Math.max(0, f - 107) * 0.18;
-	const mergulho = tw(f, 128, 137, 0, 1, E.in);
+	const {c0, c1, dur} = janela('C2');
+	const p = tw(f, c0, c0 + 15, 0, 1, E.out);
+	const ry = lerp(168, -16, p) - Math.max(0, f - (c0 + 15)) * 0.18;
+	const mergulho = tw(f, c1 - 9, c1, 0, 1, E.in);
 	return (
 		<div style={{position: 'absolute', inset: 0, background: COR.fundo}}>
-			<Camera s={1 + 0.03 * ((f - 92) / 45)}>
+			<Camera s={1 + 0.03 * ((f - c0) / dur)}>
 				<Nevoa x={10} y={80} r={70} cor="rgba(244,137,7,0.4)" />
 				<Fachos f={f} />
 				<Poeira f={f} seed="c2" n={50} estrelas={12} />
@@ -119,7 +131,7 @@ export const C2: React.FC<{f: number}> = ({f}) => {
 				<div style={{position: 'absolute', inset: 0, perspective: 2200, perspectiveOrigin: '540px 640px'}}>
 					<div style={{position: 'absolute', left: 540 - 380, top: 320, transformStyle: 'preserve-3d', transform: `translate3d(${(1 - p) * 320}px, ${(1 - p) * 90}px, 0) scale(${0.72 + 0.28 * p})`}}>
 						<Notebook w={760} f={f} rx={-9} ry={ry}>
-							<TelaEditor f={f} w={760 * 0.95} h={760 * 0.63 * 0.945} n0={ini(10)} />
+							<TelaEditor f={f} w={760 * 0.95} h={760 * 0.63 * 0.945} n0={marca('editor')} />
 						</Notebook>
 					</div>
 				</div>
@@ -129,28 +141,29 @@ export const C2: React.FC<{f: number}> = ({f}) => {
 };
 
 // ============ C3: T8 anéis concêntricos com cartões orbitando, frase no centro ============
-const CARTOES_C3 = [
-	{k: 0, x: 280, y: 520, w: 170, n: 137, blur: 2.5},
-	{k: 1, x: 800, y: 470, w: 200, n: ini(16), blur: 0, destaque: true},
-	{k: 2, x: 230, y: 1395, w: 170, n: ini(18), blur: 3},
-	{k: 3, x: 850, y: 1380, w: 175, n: ini(19), blur: 0},
-	{k: 4, x: 560, y: 1660, w: 150, n: ini(22), blur: 1.5},
-];
 export const C3: React.FC<{f: number}> = ({f}) => {
-	const e = tw(f, 137, 148, 0, 1, E.out);
-	const ev = CARTOES_C3.map((c) => c.n).concat([ini(24)]);
+	const {c0, dur} = janela('C3');
+	const CARTOES_C3 = [
+		{k: 0, x: 280, y: 520, w: 170, n: c0, blur: 2.5},
+		{k: 1, x: 800, y: 470, w: 200, n: marca('cartao1'), blur: 0, destaque: true},
+		{k: 2, x: 230, y: 1395, w: 170, n: marca('cartao2'), blur: 3},
+		{k: 3, x: 850, y: 1380, w: 175, n: marca('cartao3'), blur: 0},
+		{k: 4, x: 560, y: 1660, w: 150, n: marca('cartao4'), blur: 1.5},
+	];
+	const e = tw(f, c0, c0 + 11, 0, 1, E.out);
+	const ev = CARTOES_C3.map((c) => c.n).concat([marca('melhorei')]);
 	const pulso = ev.reduce((a, n) => a + (f >= n ? Math.exp(-(f - n) / 5) : 0), 0);
-	const th = ((f - 137) * 0.05 * Math.PI) / 180;
-	const melhorei = ini(24);
+	const th = ((f - c0) * 0.05 * Math.PI) / 180;
+	const melhorei = marca('melhorei');
 	const fl = tw(f, melhorei, melhorei + 8, 0, 1, E.back);
 	return (
 		<div style={{position: 'absolute', inset: 0, background: 'radial-gradient(circle at 50% 50%, #1a0f04 0%, #070300 55%, #000 100%)'}}>
-			<Camera s={(2.3 - 1.3 * e) * (1 + 0.06 * ((f - 137) / 106))} blur={(1 - e) * 16} r={(f - 137) * 0.03}>
+			<Camera s={(2.3 - 1.3 * e) * (1 + 0.06 * ((f - c0) / dur))} blur={(1 - e) * 16} r={(f - c0) * 0.03}>
 				<Poeira f={f} seed="c3" n={110} estrelas={20} />
 				<div style={{position: 'absolute', left: 0, right: 0, top: 957, height: 6, background: 'linear-gradient(90deg, rgba(0,0,0,0), rgba(242,190,58,0.5) 30%, rgba(255,254,221,0.7) 50%, rgba(242,190,58,0.5) 70%, rgba(0,0,0,0))', filter: 'blur(3px)', opacity: 0.5}} />
 				<Svg>
 					{[70, 200, 370, 600, 860].map((r, k) => (
-						<AnelNeon key={r} cx={540} cy={960} r={r} arcos={[0, 3, 4, 2, 5][k]} abertura={[0, 0.3, 0.22, 0.35, 0.25][k]} rot={(k % 2 ? 1 : -1) * (f - 137) * (0.5 + k * 0.15) + k * 40} larg={2.2 + 0.4 * clamp(pulso)} o={0.6 + 0.35 * clamp(pulso)} />
+						<AnelNeon key={r} cx={540} cy={960} r={r} arcos={[0, 3, 4, 2, 5][k]} abertura={[0, 0.3, 0.22, 0.35, 0.25][k]} rot={(k % 2 ? 1 : -1) * (f - c0) * (0.5 + k * 0.15) + k * 40} larg={2.2 + 0.4 * clamp(pulso)} o={0.6 + 0.35 * clamp(pulso)} />
 					))}
 				</Svg>
 				{CARTOES_C3.map((c) => {
@@ -181,15 +194,16 @@ export const C3: React.FC<{f: number}> = ({f}) => {
 
 // ============ C4: T6 roleta que gira um gomo por palavra + fileira de cartões rolando ============
 export const C4: React.FC<{f: number}> = ({f}) => {
-	const ticks = [ini(27), ini(28), ini(29), ini(30)];
-	const ang = tw(f, 243, 253, -160, 0, E.out) - ticks.reduce((a, n) => a + 60 * tw(f, n, n + 6, 0, 1, E.back), 0) - (f - 243) * 0.06;
+	const {c0, c1, dur} = janela('C4');
+	const ticks = ['roleta1', 'roleta2', 'roleta3', 'roleta4'].map(marca);
+	const ang = tw(f, c0, c0 + 10, -160, 0, E.out) - ticks.reduce((a, n) => a + 60 * tw(f, n, n + 6, 0, 1, E.back), 0) - (f - c0) * 0.06;
 	const ativo = (((Math.round(-ang / 60) % 6) + 6) % 6);
-	const preto = tw(f, 311, 316, 1, 0, E.in);
-	const rol = (f - 243) * 7.5;
+	const preto = tw(f, c1 - 5, c1, 1, 0, E.in);
+	const rol = (f - c0) * 7.5;
 	const passo = 356 + 26;
 	return (
 		<div style={{position: 'absolute', inset: 0, background: COR.fundo, opacity: preto}}>
-			<Camera s={1.02 + 0.03 * ((f - 243) / 73)} r={-(f - 243) * 0.02}>
+			<Camera s={1.02 + 0.03 * ((f - c0) / dur)} r={-(f - c0) * 0.02}>
 				<Nevoa x={0} y={33} r={75} cor="rgba(244,137,7,0.5)" />
 				<Nevoa x={80} y={30} r={60} cor="rgba(176,100,25,0.25)" />
 				<Poeira f={f} seed="c4" n={50} estrelas={10} />
@@ -216,13 +230,14 @@ export const C4: React.FC<{f: number}> = ({f}) => {
 
 // ============ C5: T2 celular entrando girando, este vídeo no Reels ============
 export const C5: React.FC<{f: number}> = ({f}) => {
-	const p = tw(f, 321, 337, 0, 1, E.out);
-	const ry = lerp(-172, 14, p) - Math.max(0, f - 337) * 0.2;
-	const cor = ini(39);
+	const {c0, dur} = janela('C5');
+	const p = tw(f, c0, c0 + 16, 0, 1, E.out);
+	const ry = lerp(-172, 14, p) - Math.max(0, f - (c0 + 16)) * 0.2;
+	const cor = marca('coracao');
 	const pulso = f >= cor ? tw(f, cor, cor + 4, 0, 1, E.out) * Math.exp(-Math.max(0, f - cor - 4) / 6) : 0;
 	return (
 		<div style={{position: 'absolute', inset: 0, background: COR.fundo}}>
-			<Camera s={1 + 0.04 * ((f - 321) / 56)}>
+			<Camera s={1 + 0.04 * ((f - c0) / dur)}>
 				<Nevoa x={8} y={85} r={70} cor="rgba(244,137,7,0.42)" />
 				<Fachos f={f} lado="dir" o={0.9} />
 				<Poeira f={f} seed="c5" n={40} estrelas={14} />
@@ -240,13 +255,14 @@ export const C5: React.FC<{f: number}> = ({f}) => {
 
 // ============ C6: T4 pico vermelho, o mesmo celular de perto ============
 export const C6: React.FC<{f: number}> = ({f}) => {
-	const l = f - 377;
-	const ap = ini(44);
+	const {c0, dur} = janela('C6');
+	const l = f - c0;
+	const ap = marca('apenas');
 	const some = tw(f, ap, ap + 6, 0, 1, E.out);
-	const foco = tw(f, 377, 384, 0, 1, E.out);
+	const foco = tw(f, c0, c0 + 7, 0, 1, E.out);
 	return (
 		<div style={{position: 'absolute', inset: 0, background: 'radial-gradient(circle at 50% 40%, #BC051B 0%, #7a0612 28%, #3B0000 58%, #120000 100%)'}}>
-			<Camera s={1 + 0.06 * (l / 58)}>
+			<Camera s={1 + 0.06 * (l / dur)}>
 				<div style={{position: 'absolute', inset: 0, background: `radial-gradient(circle at ${50 + Math.sin(l * 0.05) * 8}% 30%, rgba(255,80,100,0.25), rgba(0,0,0,0) 45%)`}} />
 				{[
 					{x: 160, y: 300, k: 2},
@@ -259,7 +275,7 @@ export const C6: React.FC<{f: number}> = ({f}) => {
 				<Poeira f={f} seed="c6" n={30} estrelas={0} cor={COR.tensaoHalo} />
 			</Camera>
 			<div style={{position: 'absolute', inset: 0, perspective: 1800, perspectiveOrigin: '540px 620px', filter: foco < 1 ? `blur(${(1 - foco) * 10}px)` : undefined}}>
-				<div style={{position: 'absolute', left: 340, top: 210, transformStyle: 'preserve-3d', transform: `scale(${1.12 + 0.07 * (l / 58)})`, transformOrigin: '200px 410px'}}>
+				<div style={{position: 'absolute', left: 340, top: 210, transformStyle: 'preserve-3d', transform: `scale(${1.12 + 0.07 * (l / dur)})`, transformOrigin: '200px 410px'}}>
 					<Celular w={400} f={f} rx={4} ry={16 - l * 0.12} rz={-4} aro={COR.tensaoHalo}>
 						<TelaReels f={f} w={372} h={792} tingir={0.28} />
 					</Celular>
@@ -272,9 +288,10 @@ export const C6: React.FC<{f: number}> = ({f}) => {
 // ============ C7: T9 clarão + portas, túnel; prévias no alto; T10 setas; T3 selo 3x ============
 const PREV = {w: 330, h: 587, x: [330, 750], y: 556};
 export const C7: React.FC<{f: number; previas: boolean; nomes: [string, string]}> = ({f, previas, nomes}) => {
-	const abre = tw(f, 441, 455, 0, 1, E.io);
-	const sol = tw(f, 435, 441, 0.3, 1, E.out) * (1 - tw(f, 441, 460, 0, 0.85, E.out));
-	const fase = (f - 441) * 0.014;
+	const {c0} = janela('C7');
+	const abre = tw(f, c0 + 6, c0 + 20, 0, 1, E.io);
+	const sol = tw(f, c0, c0 + 6, 0.3, 1, E.out) * (1 - tw(f, c0 + 6, c0 + 25, 0, 0.85, E.out));
+	const fase = (f - (c0 + 6)) * 0.014;
 	const cx = 540, cy = 700;
 	const grade = (
 		<Svg>
@@ -346,10 +363,11 @@ export const C7: React.FC<{f: number; previas: boolean; nomes: [string, string]}
 
 // prévias de outros modelos: dois cartões de vidro que voam dos lados e pousam no alto (prop previas)
 export const PreviasNoAlto: React.FC<{f: number; nomes: [string, string]}> = ({f, nomes}) => {
+	if (!T.previas) return null; // o plano sem "previas": fica só o túnel
 	const de = T.previas.de_q;
 	if (f < de) return null;
-	const aqui = ini(55);
-	const tres = ini(60);
+	const aqui = marca('setas');
+	const tres = marca('tres');
 	const sel = tw(f, tres, tres + 8, 0, 1, E.back);
 	const contagem = f < tres + 3 ? '1x' : f < tres + 6 ? '2x' : '3x';
 	return (
@@ -406,15 +424,16 @@ export const PreviasNoAlto: React.FC<{f: number; nomes: [string, string]}> = ({f
 
 // ============ C8: T7 palavra que nasce do desfoque + horizonte de planeta subindo ============
 export const C8: React.FC<{f: number}> = ({f}) => {
-	const l = f - 600;
-	const enc = 650;
-	const topo = tw(f, 648, 690, 2080, 1268, E.out) - Math.max(0, f - 690) * 0.5;
+	const {c0, dur} = janela('C8');
+	const l = f - c0;
+	const enc = c0 + 50;
+	const topo = tw(f, c0 + 48, c0 + 90, 2080, 1268, E.out) - Math.max(0, f - (c0 + 90)) * 0.5;
 	const R = 1150;
 	const lin = tw(f, enc + 7, enc + 19, 0, 1, E.out);
 	return (
 		<div style={{position: 'absolute', inset: 0, background: COR.fundo}}>
-			<Camera s={1.0 + 0.05 * (l / 120)}>
-				<div style={{position: 'absolute', left: 540 - 260, top: -300, width: 520, height: 1300, background: 'radial-gradient(ellipse at 50% 0%, rgba(244,137,7,0.75) 0%, rgba(176,100,25,0.35) 35%, rgba(0,0,0,0) 70%)', filter: 'blur(30px)', opacity: 0.55 + 0.25 * tw(f, 600, 660, 0, 1)}} />
+			<Camera s={1.0 + 0.05 * (l / dur)}>
+				<div style={{position: 'absolute', left: 540 - 260, top: -300, width: 520, height: 1300, background: 'radial-gradient(ellipse at 50% 0%, rgba(244,137,7,0.75) 0%, rgba(176,100,25,0.35) 35%, rgba(0,0,0,0) 70%)', filter: 'blur(30px)', opacity: 0.55 + 0.25 * tw(f, c0, c0 + 60, 0, 1)}} />
 				<Poeira f={f} seed="c8" n={45} estrelas={18} sobe={0.4} />
 				<Svg>
 					<defs>
@@ -444,16 +463,17 @@ export const C8: React.FC<{f: number}> = ({f}) => {
 
 // ============ C9: T5 cursor clica, a pasta de vidro dourado abre e os ícones saltam ============
 const ICONES_C9 = [
-	{nome: 'play', x: 320, y: 470, i: 76},
-	{nome: 'chapeu', x: 460, y: 385, i: 77},
-	{nome: 'filme', x: 620, y: 385, i: 78},
-	{nome: 'doc', x: 760, y: 470, i: 79},
+	{nome: 'play', x: 320, y: 470, marca: 'icone1'},
+	{nome: 'chapeu', x: 460, y: 385, marca: 'icone2'},
+	{nome: 'filme', x: 620, y: 385, marca: 'icone3'},
+	{nome: 'doc', x: 760, y: 470, marca: 'icone4'},
 ];
 export const C9: React.FC<{f: number}> = ({f}) => {
-	const l = f - 720;
-	const clique = ini(75);
+	const {c0, dur} = janela('C9');
+	const l = f - c0;
+	const clique = marca('clique');
 	const abre = tw(f, clique + 1, clique + 10, 0, 1, E.back);
-	const ida = tw(f, 720, clique, 0, 1, E.out);
+	const ida = tw(f, c0, clique, 0, 1, E.out);
 	const cx = lerp(980, 610, ida) + tw(f, clique + 4, clique + 40, 0, 120, E.io);
 	const cy = lerp(1180, 850, ida) + tw(f, clique + 4, clique + 40, 0, 110, E.io);
 	const aperta = f >= clique ? tw(f, clique, clique + 2, 0, 1, E.out) * tw(f, clique + 3, clique + 6, 1, 0, E.out) : 0;
@@ -461,7 +481,7 @@ export const C9: React.FC<{f: number}> = ({f}) => {
 	const brilho = f >= clique ? Math.exp(-(f - clique) / 8) : 0;
 	return (
 		<div style={{position: 'absolute', inset: 0, background: COR.fundo}}>
-			<Camera s={1.03 + 0.03 * (l / 83)} r={l * 0.03} oy={720}>
+			<Camera s={1.03 + 0.03 * (l / dur)} r={l * 0.03} oy={720}>
 				<div style={{position: 'absolute', inset: -200, background: 'repeating-linear-gradient(45deg, rgba(244,137,7,0.10) 0px, rgba(244,137,7,0.10) 46px, rgba(0,0,0,0) 46px, rgba(0,0,0,0) 92px)', WebkitMaskImage: 'radial-gradient(circle at 50% 40%, #000 0%, transparent 65%)'}} />
 				<Nevoa x={50} y={38} r={55} cor="rgba(244,137,7,0.4)" />
 				<Svg>
@@ -479,7 +499,7 @@ export const C9: React.FC<{f: number}> = ({f}) => {
 				<Pasta w={520} abre={abre} brilho={brilho} />
 			</div>
 			{ICONES_C9.map((ic, k) => {
-				const n = ini(ic.i);
+				const n = marca(ic.marca);
 				if (f < n) return null;
 				const p = tw(f, n, n + 10, 0, 1, E.out);
 				const x = lerp(540, ic.x, p);
@@ -492,8 +512,8 @@ export const C9: React.FC<{f: number}> = ({f}) => {
 			})}
 			<Svg>
 				{onda > 0 && onda < 1 && <circle cx={610} cy={850} r={20 + 130 * onda} fill="none" stroke={COR.ouroAlto} strokeWidth={6 * (1 - onda)} opacity={1 - onda} style={{filter: `drop-shadow(0 0 10px ${COR.fogo})`}} />}
-				<Estrela x={250} y={390} r={24} f={f} n={ini(78)} />
-				<Estrela x={840} y={360} r={18} f={f} n={ini(79)} />
+				<Estrela x={250} y={390} r={24} f={f} n={marca('icone3')} />
+				<Estrela x={840} y={360} r={18} f={f} n={marca('icone4')} />
 			</Svg>
 			<div style={{position: 'absolute', left: cx, top: cy}}>
 				<Cursor s={70} aperta={aperta} />
@@ -504,19 +524,21 @@ export const C9: React.FC<{f: number}> = ({f}) => {
 
 // ============ C10: T20 assinatura "EDIÇÃO" em ouro com volume e luz passando, seta para baixo ============
 export const C10: React.FC<{f: number}> = ({f}) => {
-	const l = f - 803;
-	const fim = tw(f, 918, 932, 1, 0, E.io);
+	const {c0, dur} = janela('C10');
+	const l = f - c0;
+	const fim = T.escurece_q ? tw(f, T.escurece_q[0], T.escurece_q[1], 1, 0, E.io) : 1;
+	const seta = marca('seta_baixo');
 	return (
 		<div style={{position: 'absolute', inset: 0, background: COR.fundo, opacity: fim}}>
-			<Camera s={1 + 0.04 * (l / 148)}>
+			<Camera s={1 + 0.04 * (l / dur)}>
 				<div style={{position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 75% 40% at 50% 46%, rgba(92,60,24,0.95) 0%, rgba(49,38,22,0.8) 35%, rgba(27,14,4,0.5) 65%, rgba(0,0,0,0) 100%)'}} />
 				<Poeira f={f} seed="c10" n={60} estrelas={18} sobe={0.3} />
 				<Svg>
 					<AnelNeon cx={540} cy={890} r={520} arcos={6} abertura={0.6} rot={l * 0.25} larg={1.4} o={0.35} />
 				</Svg>
 			</Camera>
-			<Svg style={{transform: `translateY(${f > ini(85) + 12 ? Math.sin((f - ini(85)) * 0.16) * 10 : 0}px)`}}>
-				<Seta d="M 540 1218 C 516 1290, 566 1350, 540 1430" ponta={[540, 1430, 92]} f={f} n={ini(85)} />
+			<Svg style={{transform: `translateY(${f > seta + 12 ? Math.sin((f - seta) * 0.16) * 10 : 0}px)`}}>
+				<Seta d="M 540 1218 C 516 1290, 566 1350, 540 1430" ponta={[540, 1430, 92]} f={f} n={seta} />
 			</Svg>
 		</div>
 	);

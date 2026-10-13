@@ -20,17 +20,33 @@ globalThis.document = {createElement: () => ({getContext: () => {
 	return c;
 }})};
 
+// Sai com código 1 se algo falhar ou se o plano não bater com a fala (aí diz a lista e a linha). Apaga o temporário
+// sempre. Confere com prévias só se o plano tem a janela delas (um plano com previas: true).
 const tmp = path.resolve('.tmp-cobertura.mjs');
-await build({
-	stdin: {contents: "export {palavrasNaTela, exibicoes, caixas, LEG_Y, LEG_Y2, ZONA, CORTES, FONTES, DURACAO, FPS} from './src/Reel.tsx'; export {default as PB} from './src/palavras.json';", resolveDir: process.cwd(), loader: 'ts'},
-	bundle: true, platform: 'node', format: 'esm', outfile: tmp, logLevel: 'error', jsx: 'automatic', loader: {'.json': 'json'},
-	plugins: [{name: 'stub', setup(b) {
-		b.onResolve({filter: /^@remotion\/google-fonts\//}, (a) => ({path: a.path, namespace: 'stub'}));
-		b.onLoad({filter: /.*/, namespace: 'stub'}, (a) => ({contents: `export const loadFont = () => ({fontFamily: '${a.path.endsWith('Anton') ? 'ANT' : 'POP'}', waitUntilDone: async () => {}});`, loader: 'js'}));
-	}}],
-});
-const {palavrasNaTela, exibicoes, caixas, LEG_Y, LEG_Y2, ZONA, CORTES, FONTES, DURACAO, PB} = await import('file://' + tmp.replace(/\\/g, '/'));
-fs.rmSync(tmp);
+let M;
+try {
+	await build({
+		stdin: {contents: "export {palavrasNaTela, exibicoes, caixas, LEG_Y, LEG_Y2, ZONA, CORTES, FONTES, DURACAO, FPS, PREVIAS} from './src/Reel.tsx'; export {default as PB} from './src/palavras.json';", resolveDir: process.cwd(), loader: 'ts'},
+		bundle: true, platform: 'node', format: 'esm', outfile: tmp, logLevel: 'error', jsx: 'automatic', loader: {'.json': 'json'},
+		plugins: [{name: 'stub', setup(b) {
+			b.onResolve({filter: /^@remotion\/google-fonts\//}, (a) => ({path: a.path, namespace: 'stub'}));
+			b.onLoad({filter: /.*/, namespace: 'stub'}, (a) => ({contents: `export const loadFont = () => ({fontFamily: '${a.path.endsWith('Anton') ? 'ANT' : 'POP'}', waitUntilDone: async () => {}});`, loader: 'js'}));
+		}}],
+	});
+	M = await import('file://' + tmp.replace(/\\/g, '/'));
+} catch (e) {
+	// o plano não bate com a fala: o Reel.tsx para ao carregar com a mensagem do que refazer; aqui ganha a linha da lista
+	let msg = String(e?.message ?? e).split('\n')[0];
+	const lista = /Na lista (\w+)/.exec(msg)?.[1];
+	const n = lista ? fs.readFileSync('src/Reel.tsx', 'utf8').split('\n').findIndex((l) => new RegExp(`^(export )?const ${lista}\\b`).test(l)) : -1;
+	if (n >= 0) msg = msg.replace(`Na lista ${lista}`, `Na lista ${lista} (src/Reel.tsx, linha ${n + 1})`);
+	fs.rmSync(tmp, {force: true}); // o exit não passa pelo finally
+	console.error(msg);
+	process.exit(1);
+} finally {
+	fs.rmSync(tmp, {force: true});
+}
+const {palavrasNaTela, exibicoes, caixas, LEG_Y, LEG_Y2, ZONA, CORTES, FONTES, DURACAO, PB, PREVIAS} = M;
 const FPS = 30;
 const MIN_PEDACO = 1.5, MIN_PALAVRA = 0.4, MAX_LINHAS = 4;
 
@@ -55,7 +71,7 @@ const repetidas = vezes.flatMap((v, i) => (v !== 1 ? [`${i} "${PB[i].text}" ${v}
 
 const posicoes = new Set(), batidas = [], foraZona = [];
 const anota = (l, k, txt) => { if (!l.some((x) => x.k === k)) l.push({k, txt}); };
-for (const previas of [false, true]) {
+for (const previas of PREVIAS ? [false, true] : [false]) {
 	const modo = previas ? 'com prévias' : 'sem prévias';
 	for (let f = 0; f < Math.round(DURACAO * FPS); f++) {
 		const t = f / FPS, cs = caixas(t, previas);
@@ -72,12 +88,16 @@ const fontesSrc = (fs.readFileSync('src/Reel.tsx', 'utf8').match(/@remotion\/goo
 const cortes9 = CORTES.filter((c) => c < 9);
 
 console.log(`${PB.length} palavras, ${buracos.length} com buraco`); buracos.forEach((b) => console.log('  ' + b));
+if (buracos.length) console.log('  -> ponha essas palavras numa peça de PECAS que esteja na tela enquanto elas são ditas');
 console.log(`${ex.length} pedaços, ${curtos.length} curtos (mín. ${MIN_PEDACO} s por pedaço, ${MIN_PALAVRA} s por palavra)`); curtos.forEach((c) => console.log('  ' + c));
+if (curtos.length) console.log('  -> junte a peça curta com a vizinha, ou segure-a mais (o ate dela: ler(i) dá 0,4 s à palavra i)');
 console.log(`${repetidas.length} palavras fora de "exatamente 1 vez"`); repetidas.forEach((c) => console.log('  ' + c));
+if (repetidas.length) console.log('  -> cada palavra fica em exatamente uma peça de PECAS');
 console.log(`${longos.length} blocos com mais de ${MAX_LINHAS} linhas`); longos.forEach((c) => console.log('  ' + c));
 console.log(`posições da legenda: ${[...posicoes].sort().join(', ')} (permitidas ${LEG_Y} e ${LEG_Y2})`);
 console.log(`${batidas.length} textos se cruzando`); batidas.forEach((c) => console.log('  ' + c.txt));
 console.log(`${foraZona.length} textos fora da zona segura (x ${ZONA.esq}-${ZONA.dir}, y ${ZONA.topo}-${ZONA.base})`); foraZona.forEach((c) => console.log('  ' + c.txt));
+if (foraZona.length || batidas.length) console.log('  -> mude x/top/largura da peça (ou cap da palavra-chave) em PECAS');
 console.log(`fontes: ${FONTES.length} no código, ${fontesSrc} importadas`);
 console.log(`cortes: ${CORTES.length} no vídeo, ${cortes9.length} nos 9 s iniciais (${cortes9.map((c) => c.toFixed(2)).join(', ')})`);
 ex.forEach((e) => console.log(`  ${e.de.toFixed(2)}-${e.ate.toFixed(2)} ${e.tipo} ${e.nome}`));

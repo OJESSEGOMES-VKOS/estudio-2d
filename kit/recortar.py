@@ -7,6 +7,9 @@ pra conferir a borda de olho). Os modelos baixam sozinhos na primeira vez (~200 
 import argparse
 from pathlib import Path
 from PIL import Image
+import os as _os
+# os pesos do recorte ficam dentro do kit, nada espalhado pelo computador
+_os.environ.setdefault('U2NET_HOME', str(Path(__file__).resolve().parent / '.cache' / 'rembg'))
 from rembg import new_session, remove
 
 MODELOS = {'pessoa': 'birefnet-portrait', 'geral': 'birefnet-general', 'leve': 'isnet-general-use'}

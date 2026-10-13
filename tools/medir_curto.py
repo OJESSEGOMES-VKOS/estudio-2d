@@ -56,7 +56,7 @@ with open(f'{pref}_rosto.txt', 'w', encoding='utf-8') as f:
 vert = H0 > W0
 tw, th = (180, 320) if vert else (320, 180)
 col, lin = (8, 3) if vert else (5, 5)
-fonte = ImageFont.truetype('C:/Windows/Fonts/arialbd.ttf', 16)
+fonte = ImageFont.load_default(size=16)  # fonte embutida no Pillow: funciona em Windows, macOS e Linux
 ims = []
 for i, q in enumerate(qs):
     im = Image.open(q).convert('RGB').resize((tw, th))

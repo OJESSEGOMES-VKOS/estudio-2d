@@ -22,7 +22,7 @@ def chave():
             if l.strip().startswith('ELEVENLABS_API_KEY='):
                 k = l.split('=', 1)[1].strip().strip('"\'')
     if not k:
-        sys.exit('Falta a chave do ElevenLabs em projetos/estudio-2d/kit/.env (ELEVENLABS_API_KEY=...).')
+        sys.exit('Falta a chave do ElevenLabs em kit/.env (ELEVENLABS_API_KEY=...).')
     return k
 
 

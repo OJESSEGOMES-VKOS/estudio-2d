@@ -223,12 +223,14 @@ não é legenda grifada: é um letreiro gigante que domina a largura.
 ## 13. Como produzir com o que a casa tem
 
 ### O fluxo
-1. **Entrada:** o bruto, o perfil do criador (`perfis/<criador>/PERFIL.md`, se existir). Pasta do vídeo
-   `conteudo/AAAA-MM-DD-superpodcast01-<tema>/` (projeto Remotion); materiais em
-   `materiais/superpodcast01/AAAA-MM-DD-<tema>/`.
-2. **Transcrição e limpeza:** `projetos/maquina-de-conteudo/tools/transcribe.py` + `align.py`; corte de silêncio e
-   take repetido pela energia do áudio (licoes-reel-01, itens 15 e 18). O plano roda **sobre a transcrição da fala
-   real**, não sobre roteiro (o criador improvisa).
+1. **Entrada:** a gravação. Da raiz do estúdio, `.venv/Scripts/python.exe tools/novo-video.py superpodcast01
+   <gravação> <AAAA-MM-DD-tema>` cria a pasta do vídeo `videos/<AAAA-MM-DD-tema>/` (o projeto Remotion, cópia de
+   `moldes/superpodcast01/`) com o contrato: `public/fala.mp4`, `public/voz.wav`, `src/palavras.json` e
+   `src/rosto.json`. O material do vídeo (fotos, prints, B-roll seu) mora em `public/` dessa pasta. O passo a passo é o
+   "Vídeo novo" do `LEIA.md` do molde.
+2. **Transcrição:** já vem do `novo-video.py` (palavras com tempo). Confira de ouvido o trecho rápido e corrija a grafia
+   (nomes, números) antes do plano. O plano roda **sobre a transcrição da fala real**, não sobre roteiro (o criador
+   improvisa).
 3. **Plano (`plano.md`):** uma linha por frase com hora, mundo (palco, rosto, papel, arquivo), palavra-chave, modo
    da legenda, gatilho da §6 e quem fornece a imagem. Escolher a velocidade (§7).
 4. **Pedido de materiais** (abaixo). O vídeo não espera: o que é do sistema começa.
@@ -236,35 +238,37 @@ não é legenda grifada: é um letreiro gigante que domina a largura.
    uma colagem, um B-roll com palavra-chave, o fecho). Ninguém anima antes do OK.
 6. **Montagem no Remotion**, prévia (folha de contato + momentos-chave em tamanho real), conferência (§14), render.
 
-### Peças a construir no Remotion (ainda não existem)
-`PalavraChave` (letra por letra do borrão, halo, ajuste à largura de 60–83%), `LinhaPequena` (palavras em lugares
-reservados, fade com desfoque ou "acende"), `TercoInferior` (mono, letras embaralhando, traço com brilho),
-`Colagem` (papel com vinheta, fotos que aparecem no lugar, avanço de câmera com desfoque do resto), `Vazamento`
-(onda vermelha → âmbar → branco), `Palco`, `ListaNumerada`, `CaixaMarca`, `CartelaNome`, `TelaDividida`,
-`TracoCaneta`, `LegendaSimples`. Fontes pelo `@remotion/google-fonts`. Correção de cor e vinheta por filtro CSS no
-vídeo do criador.
+### As peças no Remotion (prontas no molde, `moldes/superpodcast01/src/Reel.tsx`)
+A palavra-chave (`PalavraK`: letra por letra do borrão, halo, ajuste à largura de 60–83%), a linha pequena (`PalavraP`,
+fade com desfoque, com a caixa de marca branca), o terço inferior (`TercoView`: mono, letras embaralhando, traço com
+brilho), a colagem, os celulares e os prints do papel (`ColagemModelos`, `RedeSocial`, `ColagemEdicao`, com os cards de
+`src/cards.json`), o `Vazamento` (onda vermelha → âmbar → branco), o `Palco` (a foto `public/palco.png` ou o palco
+desenhado), o arquivo (`Arquivo`), a tela dividida com as prévias (`Dividida`, `PreviasEmCima`) e o rosto graduado
+(`Gravacao`, com o `scripts/grade.py`). Fontes pelo `@remotion/google-fonts`; correção de cor e vinheta no grade e por
+filtro CSS. Ainda não estão no molde: a lista numerada, a cartela de nome e o traço de caneta; quando a fala pedir,
+desenhe no mesmo estilo (Inter SemiBold, um vermelho só).
 
 ### Quem fornece o quê
 | Precisa | Quem | Como |
 |---|---|---|
-| O **palco**: plano aberto do set, com a pessoa pequena | **criador** | gravar 10–20 s: sentado a uma mesa, num cômodo escuro, uma luz só por cima ou de lado, mesma roupa, olhando para o lado como numa conversa (o pedido explica com um quadro da ref1) |
+| O **palco**: plano aberto do set, com a pessoa pequena | **criador** | gravar 10–20 s: sentado a uma mesa, num cômodo escuro, uma luz só por cima ou de lado, mesma roupa, olhando para o lado como numa conversa (o pedido explica com um quadro da ref1). Sem isso, o molde desenha o palco escuro (padrão, sem IA) |
 | Os closes | criador | a própria gravação; dois enquadramentos saem dela por recorte (1,0 e ~1,3) |
 | Nome e credencial ou @ | criador | texto do terço inferior |
 | Prints, fotos e gravações **dele** (o que ele citou, os números dele, o trabalho dele) | criador | entra no papel ou no arquivo |
-| Foto real de pessoa pública, lugar, objeto, logo oficial | **sistema** | `projetos/estudio-2d/kit/buscar.py "<termo>" <pasta> --n 8` (Wikimedia Commons e Openverse, licença aberta, fonte no `ORIGEM.md`), escolher pela folha |
+| Foto real de pessoa pública, lugar, objeto, logo oficial | **sistema** | `kit/buscar.py "<termo>" <pasta> --n 8` (Wikimedia Commons e Openverse, licença aberta, fonte no `ORIGEM.md`), escolher pela folha |
 | Recorte de objeto ou pessoa para o papel | sistema | `kit/recortar.py` |
-| Cenário, objeto ou metáfora sem pessoa real | sistema | `kit/gerar.py` (kie.ai Nano Banana 2.1 1K, 4 créditos) |
-| Clipe curto de atmosfera para a rajada (fábrica, cidade, mesa) | sistema | `kit/video.py` (Grok Imagine 480p 6 s, 14,4 créditos); nunca pessoa real, nunca no lugar de um fato |
-| Palco **vazio** de reserva (mesa clara sob foco em estúdio preto, sem ninguém) | sistema | `kit/gerar.py`; serve de fundo para tese, lista e fecho se o criador não gravar o palco |
-| Trilha e batida | sistema | `kit/audio_ia.py` (`trilha`, `efeito`) |
-| Câmera seguindo o rosto, punch-in | sistema | `projetos/maquina-de-conteudo/tools/enquadrar.py` |
+| Cenário, objeto ou metáfora sem pessoa real | criador ou sistema | foto do criador ou com licença aberta (`kit/buscar.py`); gerado por IA (`kit/gerar.py`, chave própria) só se o usuário ligar |
+| Clipe curto de atmosfera para a rajada (fábrica, cidade, mesa) | criador | B-roll dele; gerado por IA (`kit/video.py`, chave própria) só se o usuário ligar, nunca pessoa real, nunca no lugar de um fato |
+| Palco **vazio** de reserva (mesa clara sob foco em estúdio preto, sem ninguém) | sistema | o molde desenha (padrão, sem IA); a foto gerada por IA (`kit/gerar.py`) em `public/palco.png` é opção do usuário |
+| Trilha e batida | sistema | `scripts/trilha.py` do molde (sintetizada): as batidas saem por padrão, a música é opção |
+| Câmera seguindo o rosto, punch-in | sistema | `tools/enquadrar.py` |
 
 ### Material de terceiro
 - Nas referências, foto e vídeo de terceiros (Musk, Tesla, NYSE, tweets, manchetes, campanhas com famosos) entram
   livres. **Aqui não.** O sistema busca imagem com licença aberta; o que for de terceiro sem licença (manchete,
   print de rede social, trecho de telejornal, foto de campanha) só entra como **citação**: o criador manda o link,
   fica pequeno e no tempo do comentário, com a fonte visível, e nunca vira tapete de B-roll.
-- O que não der para conseguir vira `PEDIDO.md` em `materiais/superpodcast01/<data-tema>/`, com o quadro da
+- O que não der para conseguir vira `PEDIDO.md` na pasta do vídeo (`videos/<AAAA-MM-DD-tema>/`), com o quadro da
   referência que mostra o que é preciso e o plano B (o palco vazio, a palavra-chave sobre o rosto).
 - Pessoa real nunca gerada por IA. Dado pessoal desfocado antes de montar.
 
@@ -286,7 +290,7 @@ vídeo do criador.
 - [ ] Nenhuma palavra muda de lugar depois de aparecer.
 - [ ] Texto abaixo do queixo medido no rosto; nada na faixa de baixo do Reels nem fora da área segura.
 - [ ] Lista de trocas secas comparada com a saída de cada texto: nada atravessa corte.
-- [ ] Tempos de leitura da §13 conferidos por script (`tempos.json`).
+- [ ] Tempos de leitura da §13 conferidos por script (`scripts/sincronia.mjs`).
 - [ ] Um único vermelho (`sinal`), nenhuma outra cor de destaque; correção de cor fria, sem âmbar.
 - [ ] Vazamento de luz só nas trocas de bloco (1 a 3 no vídeo).
 - [ ] Toda imagem de fora com fonte e licença no `ORIGEM.md`; terceiro sem licença só como citação, com fonte na tela.
@@ -306,15 +310,16 @@ nenhum set de podcast. O tratamento:
    abrir com ela, o primeiro plano ainda é o palco com a frase dita mais perto do começo que carrega a ideia, sem
    mudar a ordem da fala.
 3. **O palco:** pedir a ele 10–20 s gravados num cômodo escuro, sentado a uma mesa sob uma luz só, mesma roupa,
-   olhando para o lado. Sem isso, o sistema gera o palco vazio (mesa sob foco, sem pessoa) e usa como fundo da tese,
-   da lista e do fecho.
+   olhando para o lado. Sem isso, o molde desenha o palco escuro (mesa sob foco, sem pessoa) e usa como fundo da tese,
+   da lista e do fecho. O palco vazio gerado por IA é opção do usuário (regras novas, abaixo).
 4. **O rosto:** a gravação dele em dois enquadramentos alternados nos cortes (aberto 1,0 e fechado ~1,3, rosto com
    26–28% H no fechado), câmera seguindo o rosto (`enquadrar.py`), fundo escurecido e esfriado com vinheta para
    chegar perto do `estudio` #131A1E. Para isso funcionar bem, o pedido diz: fundo escuro e longe, uma luz de lado,
    roupa escura. O olhar para a câmera fica como está; não se inventa entrevistador.
 5. **Terço inferior** na primeira aparição do rosto: nome dele e @ em mono, com o traço vermelho, ~5 s.
-6. **Cada substantivo concreto vira imagem** (§6): pessoa ou marca citada pelo `buscar.py`; objeto e cenário pelo
-   `gerar.py`; o trabalho dele (telas, prints, números) pedido a ele; série de exemplos vira colagem no papel.
+6. **Cada substantivo concreto vira imagem** (§6): pessoa ou marca citada pelo `buscar.py`; objeto e cenário por foto
+   dele ou com licença aberta (`buscar.py`; gerado pelo `gerar.py` só se o usuário ligar); o trabalho dele (telas,
+   prints, números) pedido a ele; série de exemplos vira colagem no papel.
    Rosto ~40–50% do tempo, palco ~20%, papel e arquivo o resto.
 7. **Legenda no modo conversa** em todo o vídeo (ele fala o que pensa), uma palavra-chave serifada por frase, na
    última palavra forte; nome dele ou de pessoa em serifa branca.
@@ -327,13 +332,13 @@ nenhum set de podcast. O tratamento:
 
 | Data | Peça | Observação |
 |---|---|---|
-| 2026-10-10 | Vitrine dos modelos (`conteudo/2026-10-10-vitrine-modelos/superpodcast01/`) | 1ª aplicação: vídeo-teste comum, 13 planos nos 4 mundos + tela dividida, palco vazio gerado, colagem com as edições dele, nome do modelo no terço inferior; texto no tempo da fala fica abaixo de 1 s + 3 palavras/s (fala a 3,3 palavras/s), palavras-chave todas com 0,8 s; aguarda o olho do Jessé |
+| 2026-10-10 | Vitrine dos modelos (`moldes/superpodcast01/`) | 1ª aplicação: vídeo-teste comum, 13 planos nos 4 mundos + tela dividida, palco vazio gerado, colagem com as edições dele, nome do modelo no terço inferior; texto no tempo da fala fica abaixo de 1 s + 3 palavras/s (fala a 3,3 palavras/s), palavras-chave todas com 0,8 s; aguarda o olho do Jessé |
 
 ## 17. Em aberto
 
 - O som das referências não foi ouvido: tipo de trilha, efeito nos cortes e no vazamento ficam para calibrar no
   primeiro vídeo.
-- As peças do Remotion da §13 não existem ainda.
+- A lista numerada, a cartela de nome e o traço de caneta (§13) ainda não estão no molde.
 - Se o palco das referências é filmado ou gerado (parece filmado, o mesmo set dos closes).
 - Qual entrada de palavra comum vira padrão (fade com desfoque da ref1 ou "acende" da ref3): decidir no portão 1 do
   primeiro vídeo.
@@ -344,11 +349,12 @@ nenhum set de podcast. O tratamento:
 - **Outras câmeras não se geram por IA.** Os planos das referências são outras câmeras do mesmo set e, no máximo, B-roll.
   No lugar de "outra câmera" entram, nesta ordem: outros cortes de câmera do mesmo vídeo, B-roll do usuário ou B-roll de
   terceiros. Imagem ou vídeo gerado por IA (palco vazio, B-roll gerado) é **opção do usuário**, desligada por padrão,
-  nunca o padrão do modelo. As seções acima que mandam gerar o palco (§13, §15.3) valem só quando o usuário escolher.
-- **Versão própria, mantida.** A 1ª aplicação (vitrine, `conteudo/2026-10-10-vitrine-modelos/superpodcast01/`) gerou o
+  nunca o padrão do modelo. É o que a §13 e a §15.3 descrevem: sem a gravação do palco, o palco desenhado pelo molde;
+  o palco gerado só quando o usuário escolher.
+- **Versão própria, mantida.** A 1ª aplicação (vitrine, `moldes/superpodcast01/`) gerou o
   palco e o B-roll por IA copiando a cena das refs. Com isso o vídeo virou uma versão própria do modelo, e o Jessé decidiu
   mantê-la como está "para termos essa noção". É a régua de visual, ritmo e tamanho de legenda (aprovados: "sensacionais").
-- **Sem nome do modelo na tela** no "um desses modelos": o 2º terço inferior (SUPERPODCAST01 / @OJESSEGOMES) saiu; as
+- **Sem nome do modelo na tela** no "um desses modelos": o 2º terço inferior (o nome do modelo com o @ de quem fala) saiu; as
   etiquetas das prévias ficam.
 - **Sincronia:** cada palavra nasce quando é dita (±2 quadros) e cada corte cai no start da palavra que o motiva. Nada de
   atraso proposital para ganhar tempo de leitura. Conferido por `scripts/sincronia.mjs` (tem que dar 0 erros).

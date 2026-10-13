@@ -72,5 +72,9 @@
    "largura": 429.2,
    "queixo": 985.2
   }
- ]
+ ],
+ "fala": {
+  "palavras": 96,
+  "fim": 29.63
+ }
 }

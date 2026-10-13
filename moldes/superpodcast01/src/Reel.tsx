@@ -1,10 +1,11 @@
 import React, {useEffect, useState} from 'react';
-import {AbsoluteFill, Easing, Img, OffthreadVideo, Sequence, continueRender, delayRender, interpolate, random, staticFile, useCurrentFrame} from 'remotion';
+import {AbsoluteFill, Easing, Img, OffthreadVideo, Sequence, continueRender, delayRender, getStaticFiles, interpolate, random, staticFile, useCurrentFrame} from 'remotion';
 import {loadFont as loadPlayfair} from '@remotion/google-fonts/PlayfairDisplay';
 import {loadFont as loadInter} from '@remotion/google-fonts/Inter';
 import {loadFont as loadMono} from '@remotion/google-fonts/JetBrainsMono';
 import PB from './palavras.json';
 import ROSTO_T from './rosto.json';
+import CARDS from './cards.json'; // ../../tools/cards.py: quadros dos vídeos do próprio usuário para a colagem e os celulares
 
 /**
  * Vitrine no superpodcast01 (../../modelos/superpodcast01/MODELO.md).
@@ -15,7 +16,6 @@ import ROSTO_T from './rosto.json';
  * Plano frase a frase em ../plano.md.
  */
 export const FPS = 30;
-export const DURACAO = 30.16; // "agora." acaba em 29,63; a última tela segura até o fim da gravação graduada (906 quadros)
 const W = 1080;
 const H = 1920;
 
@@ -51,35 +51,55 @@ const tw = (t: number, a: number, b: number, v0: number, v1: number, e = E.out) 
 	interpolate(t, [a, b], [v0, v1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: e});
 const fr = (s: number) => Math.round(s * FPS);
 
-export type Props = {previas: boolean; nomesPrevias: [string, string]};
+/* nome e @ do terço inferior (vazio esconde o terço) */
+export type Props = {previas: boolean; nomesPrevias: [string, string]; nome?: string; arroba?: string};
 
 type Pal = {texto: string; de: number; ate: number};
 const PS: Pal[] = (PB as {text: string; start: number; end: number}[]).map((p) => ({texto: p.text, de: p.start, ate: p.end}));
+if (!PS.length) throw new Error('src/palavras.json está vazio: rode tools/novo-video.py (ou tools/preparar.py) na gravação.');
+/* a última tela segura FOLGA s depois da última palavra (na vitrine: "agora." acaba em 29,63 -> 30,16) */
+const FOLGA = 0.53;
+export const DURACAO = Number((PS[PS.length - 1].ate + FOLGA).toFixed(2));
 const rg = (a: number, b: number) => Array.from({length: b - a + 1}, (_, k) => a + k);
+/** plano que não bate com a fala: para ao carregar e diz em português qual lista refazer (nada de TypeError) */
+const errPlano = (lista: string, oque: string) =>
+	new Error(`O plano de src/Reel.tsx não bate com a fala de src/palavras.json (${PS.length} palavras, de 0 a ${PS.length - 1}, até ${DURACAO} s). Na lista ${lista}: ${oque}. Refaça o plano para a fala nova (LEIA.md, seção "Vídeo novo").`);
+const de = (i: number, lista: string) => {
+	if (!PS[i]) throw errPlano(lista, `a palavra nº ${i} não existe`);
+	return PS[i].de;
+};
 
-/* ---------------------------------------------------------------- planos (a lista de cortes vem primeiro) */
+/* ================================================================ O PLANO (preso à fala; num vídeo novo, refazer PLANOS,
+ * VAZAMENTOS, blocos e TERCOS, e os vazamentos de scripts/trilha.py). Os ids são índices de src/palavras.json. */
+/* ---------------------------------------------------------------- planos (a lista de cortes vem primeiro)
+ * mundo: rosto (a gravação), papel (fundo claro; papel.tipo põe a colagem, os celulares ou os prints dos cards),
+ * palco (img palco.png ou o palco desenhado), arquivo (img = B-roll do usuário ou gerado; sem img, a própria gravação em
+ * tom de arquivo), dividida (palco em cima, rosto embaixo: a janela das prévias). */
 type Mundo = 'palco' | 'rosto' | 'papel' | 'arquivo' | 'dividida';
 type Quadro = {s: number; ox: number; oy: number}; // escala e onde o centro do rosto cai na tela
-type Plano = {id: string; de: number; ate: number; mundo: Mundo; q?: Quadro; img?: string};
+type PapelDef = {tipo: 'colagem'; entra: number; foco: number} | {tipo: 'celulares'; explode: number} | {tipo: 'prints'};
+type Plano = {id: string; de: number; ate: number; mundo: Mundo; q?: Quadro; img?: string; papel?: PapelDef};
 const PLANOS: Plano[] = [
 	{id: 'P1', de: 0, ate: 3.02, mundo: 'palco'},
 	{id: 'P2', de: 3.02, ate: 5.18, mundo: 'rosto', q: {s: 1.1, ox: 0.55, oy: 0.33}},
-	{id: 'P3', de: 5.18, ate: 8.04, mundo: 'papel'},
+	{id: 'P3', de: 5.18, ate: 8.04, mundo: 'papel', papel: {tipo: 'colagem', entra: 18, foco: 22}}, // fotos a partir de "vários", câmera no "criei"
 	{id: 'P4', de: 8.04, ate: 9.52, mundo: 'arquivo', img: 'broll_edicao.png'},
 	{id: 'P5', de: 9.52, ate: 10.64, mundo: 'rosto', q: {s: 1.32, ox: 0.53, oy: 0.31}},
-	{id: 'P6', de: 10.64, ate: 12.58, mundo: 'papel'},
+	{id: 'P6', de: 10.64, ate: 12.58, mundo: 'papel', papel: {tipo: 'celulares', explode: 39}}, // explode no "Instagram"
 	{id: 'P7', de: 12.58, ate: 14.5, mundo: 'rosto', q: {s: 1.18, ox: 0.58, oy: 0.3}},
 	{id: 'P8', de: 14.5, ate: 19.99, mundo: 'dividida'},
 	{id: 'P9', de: 19.99, ate: 21.85, mundo: 'rosto', q: {s: 1.1, ox: 0.45, oy: 0.33}},
-	{id: 'P10', de: 21.85, ate: 23.95, mundo: 'papel'},
+	{id: 'P10', de: 21.85, ate: 23.95, mundo: 'papel', papel: {tipo: 'prints'}},
 	{id: 'P11', de: 23.95, ate: 25.47, mundo: 'palco'},
 	{id: 'P12', de: 25.47, ate: 26.69, mundo: 'arquivo', img: 'broll_celular.png'},
 	{id: 'P13', de: 26.69, ate: DURACAO, mundo: 'rosto', q: {s: 1.1, ox: 0.55, oy: 0.31}},
 ];
 export const CORTES = PLANOS.slice(1).map((p) => p.de);
 const planoEm = (t: number) => PLANOS.find((p) => t >= p.de && t < p.ate) ?? PLANOS[PLANOS.length - 1];
-const VAZAMENTOS = [0.0, 19.99]; // abertura (ref2 0,0) e virada para a conclusão (ref1 25,1)
-export const JANELA_PREVIAS = {de: 14.5, ate: 19.99};
+const VAZAMENTOS = [0.0, 19.99]; // abertura (ref2 0,0) e virada para a conclusão (ref1 25,1); [] desliga
+/* a janela das prévias é o plano 'dividida' (sem ele, previas: true não faz nada) */
+const P_DIV = PLANOS.find((p) => p.mundo === 'dividida');
+export const JANELA_PREVIAS = P_DIV ? {de: P_DIV.de, ate: P_DIV.ate} : null;
 const DIV = (prev: boolean) => Math.round(H * (prev ? 0.4 : 0.33)); // divisa da tela dividida (ref2: 31% H)
 
 /* rosto mediano no trecho (src/rosto.json: [t, cx, cy, h]) */
@@ -111,19 +131,23 @@ const kwTam = (txt: string, alvo = KW_ALVO, max = KW_MAX) => {
 /* ---------------------------------------------------------------- texto */
 type Tema = 'escuro' | 'papel';
 type Linha =
-	| {tipo: 'p'; ids: number[]; y: number; al: 'kwL' | 'kwR' | 'c'; cor?: string; caixa?: number} // caixa: índice da palavra que vai na caixa branca
+	| {tipo: 'p'; ids: number[]; y: number; al: 'kwL' | 'kwR' | 'c'; cor?: string; caixa?: number | number[]} // caixa: a palavra (índice) ou as palavras vizinhas ([6, 7], "Claude Code") que vão numa caixa branca só
 	| {tipo: 'k'; id: number; id2?: number; y: number; cor: string; alvo?: number; max?: number; texto?: string};
-type Bloco = {de: number; ate: number; tema: Tema; linhas: Linha[]; clipTop?: number};
+/** as palavras da caixa branca de uma linha pequena (nenhuma, uma ou várias vizinhas) */
+const caixaDe = (l: Linha): number[] => (l.tipo === 'p' && l.caixa !== undefined ? (Array.isArray(l.caixa) ? l.caixa : [l.caixa]) : []);
+/* aceito: bloco aprovado abaixo da régua de leitura ou com texto sobre o rosto (a tela dividida da vitrine); o conferidor
+ * só avisa. Num vídeo novo, não use */
+type Bloco = {de: number; ate: number; tema: Tema; linhas: Linha[]; clipTop?: number; aceito?: string};
 
 /* quando cada palavra aparece: no instante dito, nunca antes do plano (MODELO §5.3; regra da casa t >= t0) */
 const aparece = (id: number, bloco: Bloco) => Math.max(PS[id].de, bloco.de);
 
-const PalavraP: React.FC<{txt: string; t: number; t0: number; cor: string; halo: string; caixa?: boolean; fs: number}> = ({txt, t, t0, cor, halo, caixa, fs}) => {
+const PalavraP: React.FC<{txt: string; t: number; t0: number; cor: string; halo: string; caixa?: boolean; pad?: string; fs: number}> = ({txt, t, t0, cor, halo, caixa, pad, fs}) => {
 	const e = tw(t, t0, t0 + 0.15, 0, 1, E.io); // fade com desfoque de ~5 quadros (ref1)
 	const base: React.CSSProperties = {display: 'inline-block', opacity: e, filter: e < 1 ? `blur(${(1 - e) * 10}px)` : undefined};
 	if (caixa)
 		return (
-			<span style={{...base, background: COR.branco, color: COR.tinta, fontWeight: 700, padding: `0 ${fs * 0.2}px`, lineHeight: 1.12, boxShadow: '0 0 18px rgba(255,255,255,0.35)', letterSpacing: '-0.02em'}}>
+			<span style={{...base, background: COR.branco, color: COR.tinta, fontWeight: 700, padding: pad ?? `0 ${fs * 0.2}px`, lineHeight: 1.12, boxShadow: '0 0 18px rgba(255,255,255,0.35)', letterSpacing: '-0.02em'}}>
 				{txt}
 			</span>
 		);
@@ -175,19 +199,27 @@ const BlocoView: React.FC<{b: Bloco; t: number}> = ({b, t}) => {
 				}
 				const fs = FS;
 				const txts = l.ids.map((id) => PS[id].texto);
-				const larg = mede(txts.join(' '), fSans(fs)) + (l.caixa !== undefined ? fs * 0.4 : 0);
+				const cx = caixaDe(l);
+				const caixas = l.ids.filter((id, k) => cx.includes(id) && !cx.includes(l.ids[k - 1])).length; // cada caixa soma o seu respiro
+				const larg = mede(txts.join(' '), fSans(fs)) + caixas * fs * 0.4;
 				const left = l.al === 'kwL' ? kL + kt.px * 0.12 : l.al === 'kwR' ? kR - larg - kt.px * 0.05 : (W - larg) / 2;
 				return (
 					<div key={i} style={{position: 'absolute', left, top: l.y - fs * 0.62, whiteSpace: 'nowrap', fontFamily: SANS, fontWeight: 600, fontSize: fs, letterSpacing: '-0.02em', lineHeight: 1.2}}>
 						{l.ids.map((id, k) => {
 							const t0 = aparece(id, b);
+							// palavras vizinhas na caixa formam uma caixa só: o espaço entre elas fica dentro dela (e o respiro só nas pontas)
+							const naCaixa = cx.includes(id);
+							const antes = k > 0 && naCaixa && cx.includes(l.ids[k - 1]);
+							const depois = naCaixa && cx.includes(l.ids[k + 1]);
+							const pad = naCaixa ? (antes || depois ? `0 ${depois ? 0 : fs * 0.2}px 0 ${antes ? 0 : fs * 0.2}px` : `0 ${fs * 0.2}px`) : undefined;
+							const txt = PS[id].texto + (depois ? '\u00a0' : '');
 							return (
 								<React.Fragment key={id}>
-									{k > 0 && ' '}
+									{k > 0 && !antes && ' '}
 									{t >= t0 ? (
-										<PalavraP txt={PS[id].texto} t={t} t0={t0} cor={l.cor ?? corP} halo={haloP} caixa={l.caixa === id} fs={fs} />
+										<PalavraP txt={txt} t={t} t0={t0} cor={l.cor ?? corP} halo={haloP} caixa={naCaixa} pad={pad} fs={fs} />
 									) : (
-										<span style={{display: 'inline-block', opacity: 0, padding: l.caixa === id ? `0 ${fs * 0.2}px` : undefined}}>{PS[id].texto}</span>
+										<span style={{display: 'inline-block', opacity: 0, padding: pad}}>{txt}</span>
 									)}
 								</React.Fragment>
 							);
@@ -211,7 +243,7 @@ const blocos = (prev: boolean): Bloco[] => {
 			{tipo: 'p', ids: [6, 7], y: 1000, al: 'kwR', caixa: 7},
 		]},
 		// P2 rosto: só pequenas no peito, abaixo do queixo
-		{de: 3.02, ate: 5.18, tema: 'escuro', linhas: [
+		{de: 3.02, ate: 5.18, tema: 'escuro', aceito: 'vitrine', linhas: [
 			{tipo: 'p', ids: rg(8, 11), y: 1215, al: 'c'},
 			{tipo: 'p', ids: rg(12, 15), y: 1298, al: 'c'},
 		]},
@@ -222,13 +254,13 @@ const blocos = (prev: boolean): Bloco[] => {
 			{tipo: 'p', ids: rg(20, 24), y: 1010, al: 'kwR'},
 		]},
 		// P4 arquivo
-		{de: 8.04, ate: 9.52, tema: 'escuro', linhas: [
+		{de: 8.04, ate: 9.52, tema: 'escuro', aceito: 'vitrine', linhas: [
 			{tipo: 'p', ids: [25, 26], y: 900, al: 'kwL'},
 			{tipo: 'k', id: 27, y: 1022, cor: COR.sinal},
 			{tipo: 'p', ids: rg(28, 30), y: 1148, al: 'kwR'},
 		]},
 		// P5 rosto close
-		{de: 9.52, ate: 10.64, tema: 'escuro', linhas: [{tipo: 'p', ids: rg(31, 33), y: 1215, al: 'c', caixa: 33}]},
+		{de: 9.52, ate: 10.64, tema: 'escuro', aceito: 'vitrine', linhas: [{tipo: 'p', ids: rg(31, 33), y: 1215, al: 'c', caixa: 33}]},
 		// P6 papel: Instagram em tinta preta, como o "Twitter" da ref1
 		{de: 10.64, ate: 12.58, tema: 'papel', linhas: [
 			{tipo: 'p', ids: rg(34, 38), y: 905, al: 'kwL'},
@@ -242,36 +274,36 @@ const blocos = (prev: boolean): Bloco[] => {
 			{tipo: 'p', ids: rg(45, 47), y: 1448, al: 'kwR'},
 		]},
 		// P8 tela dividida: texto embaixo do queixo do close
-		{de: 14.5, ate: 16.66, tema: 'escuro', clipTop: dv, linhas: [
+		{de: 14.5, ate: 16.66, tema: 'escuro', aceito: 'vitrine', clipTop: dv, linhas: [
 			{tipo: 'p', ids: rg(48, 51), y: yb(prev ? 600 : 620), al: 'c'},
 			{tipo: 'p', ids: [52, 53], y: yb(prev ? 683 : 703), al: 'c'},
 		]},
-		{de: 16.66, ate: 17.86, tema: 'escuro', clipTop: dv, linhas: [{tipo: 'p', ids: rg(54, 57), y: yb(prev ? 600 : 620), al: 'c'}]},
-		{de: 17.86, ate: 19.99, tema: 'escuro', clipTop: dv, linhas: [
+		{de: 16.66, ate: 17.86, tema: 'escuro', aceito: 'vitrine', clipTop: dv, linhas: [{tipo: 'p', ids: rg(54, 57), y: yb(prev ? 600 : 620), al: 'c'}]},
+		{de: 17.86, ate: 19.99, tema: 'escuro', aceito: 'vitrine', clipTop: dv, linhas: [
 			{tipo: 'p', ids: [58, 59], y: yb(prev ? 515 : 620), al: 'kwL'},
 			{tipo: 'k', id: 60, id2: 61, texto: 'três vezes.', y: yb(prev ? 620 : 732), cor: COR.sinal},
 		]},
 		// P9 rosto médio (rosto à esquerda, texto no peito)
-		{de: 19.99, ate: 21.85, tema: 'escuro', linhas: [
+		{de: 19.99, ate: 21.85, tema: 'escuro', aceito: 'vitrine', linhas: [
 			{tipo: 'p', ids: rg(62, 65), y: 1215, al: 'c'},
 			{tipo: 'p', ids: [66, 67], y: 1298, al: 'c'},
 		]},
 		// P10 papel: texto no alto, prints embaixo (ref1 29,5)
-		{de: 21.85, ate: 23.95, tema: 'papel', linhas: [
+		{de: 21.85, ate: 23.95, tema: 'papel', aceito: 'vitrine', linhas: [
 			{tipo: 'p', ids: rg(68, 70), y: 470, al: 'kwL', cor: COR.petroleo},
 			{tipo: 'k', id: 71, y: 595, cor: COR.sinal},
 			{tipo: 'p', ids: [72, 73], y: 722, al: 'kwR', cor: COR.petroleo},
 		]},
 		// P11 palco
-		{de: 23.95, ate: 25.47, tema: 'escuro', linhas: [
+		{de: 23.95, ate: 25.47, tema: 'escuro', aceito: 'vitrine', linhas: [
 			{tipo: 'p', ids: [74], y: 742, al: 'kwL'},
 			{tipo: 'k', id: 75, y: 868, cor: COR.sinal},
 			{tipo: 'p', ids: rg(76, 78), y: 1000, al: 'kwR'},
 		]},
 		// P12 arquivo: legenda pequena
-		{de: 25.47, ate: 26.69, tema: 'escuro', linhas: [{tipo: 'p', ids: rg(79, 82), y: 1215, al: 'c'}]},
+		{de: 25.47, ate: 26.69, tema: 'escuro', aceito: 'vitrine', linhas: [{tipo: 'p', ids: rg(79, 82), y: 1215, al: 'c'}]},
 		// P13 rosto: EDIÇÃO embaixo (momento 3); no "que" as pequenas trocam, a palavra-chave fica
-		{de: 26.69, ate: 28.27, tema: 'escuro', linhas: [
+		{de: 26.69, ate: 28.27, tema: 'escuro', aceito: 'vitrine', linhas: [
 			{tipo: 'p', ids: [83], y: 1135, al: 'kwL'},
 			{tipo: 'p', ids: [85, 86], y: 1395, al: 'kwR'},
 		]},
@@ -298,12 +330,11 @@ const Embaralha: React.FC<{txt: string; t: number; t0: number; f: number; seed: 
 		</>
 	);
 };
-type Terco = {de: number; ate: number; l1: string; l2: string; x: number; y: number};
-const TERCOS: Terco[] = [
-	{de: 3.1, ate: 5.18, l1: 'JESSÉ GOMES', l2: '@OJESSEGOMES', x: 0.14, y: 0.5},
-];
-const TercoView: React.FC<{tc: Terco; t: number; f: number}> = ({tc, t, f}) => {
-	if (t < tc.de || t >= tc.ate) return null;
+/* quando e onde entra o terço inferior (1ª aparição do rosto); o texto vem das props nome e arroba, vazias por padrão */
+type Terco = {de: number; ate: number; x: number; y: number};
+const TERCOS: Terco[] = [{de: 3.1, ate: 5.18, x: 0.14, y: 0.5}];
+const TercoView: React.FC<{tc: Terco; l1: string; l2: string; t: number; f: number}> = ({tc, l1, l2, t, f}) => {
+	if ((!l1 && !l2) || t < tc.de || t >= tc.ate) return null;
 	const e = tw(t, tc.de, tc.de + 0.12, 0, 1);
 	const x = tc.x * W;
 	const top = tc.y * H;
@@ -312,15 +343,23 @@ const TercoView: React.FC<{tc: Terco; t: number; f: number}> = ({tc, t, f}) => {
 			<div style={{position: 'absolute', left: x, top, width: 11, height: 205, background: COR.sinal, opacity: e, boxShadow: '0 0 14px rgba(237,3,7,0.9), 0 0 46px rgba(237,3,7,0.6)'}} />
 			<div style={{position: 'absolute', left: x + 11 + 34, top: top + 40, fontFamily: MONO, color: COR.branco, whiteSpace: 'pre', textShadow: HALO_B, opacity: e}}>
 				<div style={{fontSize: 50, letterSpacing: '0.06em', lineHeight: 1.1}}>
-					<Embaralha txt={tc.l1} t={t} t0={tc.de} f={f} seed={tc.l1} />
+					<Embaralha txt={l1} t={t} t0={tc.de} f={f} seed={l1} />
 				</div>
 				<div style={{fontSize: 30, letterSpacing: '0.02em', marginTop: 16, opacity: 0.92}}>
-					<Embaralha txt={tc.l2} t={t} t0={tc.de + 0.12} f={f} seed={tc.l2} />
+					<Embaralha txt={l2} t={t} t0={tc.de + 0.12} f={f} seed={l2} />
 				</div>
 			</div>
 		</AbsoluteFill>
 	);
 };
+
+/* ---------------------------------------------------------------- mídia opcional: o que não está em public/ vira o
+ * plano B que o molde desenha (palco, cards) ou a própria gravação (arquivo sem B-roll, rosto sem o grade) */
+const tem = (arq: string) => {
+	const lista = getStaticFiles();
+	return !lista.length || lista.some((f) => f.name === arq);
+};
+const gravacao = () => (tem('fala_grade.mp4') ? 'fala_grade.mp4' : 'fala.mp4');
 
 /* ---------------------------------------------------------------- mundos */
 const Vinheta: React.FC<{forte?: number}> = ({forte = 0.75}) => (
@@ -353,7 +392,7 @@ const Gravacao: React.FC<{t: number; prev: boolean}> = ({t, prev}) => {
 	}
 	return (
 		<AbsoluteFill style={{clipPath: clip}}>
-			<OffthreadVideo muted src={staticFile('fala_grade.mp4')} style={style} />
+			<OffthreadVideo muted src={staticFile(gravacao())} style={style} />
 			<Vinheta forte={0.7} />
 		</AbsoluteFill>
 	);
@@ -362,25 +401,37 @@ const Gravacao: React.FC<{t: number; prev: boolean}> = ({t, prev}) => {
 const Palco: React.FC<{t: number; de: number; ate: number; topo?: number; alturaVis?: number}> = ({t, de, ate, topo, alturaVis}) => {
 	const z = interpolate(t, [de, ate], [1.2, 1.235]); // a mesa ocupa ~60% da largura (ref1: 13–90% W com as pessoas) + leve deriva
 	const banda = alturaVis !== undefined;
+	const caixa: React.CSSProperties = {position: 'absolute', left: 0, width: W, height: (W * 1376) / 768, top: banda ? (topo as number) : (H - (W * 1376) / 768) / 2, transform: `scale(${z})`, transformOrigin: '50% 58%'};
 	return (
 		<AbsoluteFill style={{background: COR.breu, clipPath: banda ? `inset(0 0 ${H - (alturaVis as number)}px 0)` : undefined}}>
-			<Img
-				src={staticFile('palco.png')}
-				style={{position: 'absolute', left: 0, width: W, height: (W * 1376) / 768, top: banda ? (topo as number) : (H - (W * 1376) / 768) / 2, transform: `scale(${z})`, transformOrigin: '50% 58%', filter: 'brightness(1.12) contrast(1.04) saturate(0.6)'}}
-			/>
+			{tem('palco.png') ? <Img src={staticFile('palco.png')} style={{...caixa, filter: 'brightness(1.12) contrast(1.04) saturate(0.6)'}} /> : <PalcoDesenhado style={caixa} />}
 			<Vinheta forte={0.55} />
 		</AbsoluteFill>
 	);
 };
 
+/* plano B do palco (sem public/palco.png): o set escuro desenhado, foco de cima, mesa clara a 58% da altura e a poça de
+ * luz no chão, nas mesmas proporções da imagem para a tela dividida cortar igual */
+const PalcoDesenhado: React.FC<{style: React.CSSProperties}> = ({style}) => (
+	<div style={{...style, overflow: 'hidden', background: 'linear-gradient(180deg, #040505 0%, #0d1012 50%, #121517 62%, #060707 100%)'}}>
+		<div style={{position: 'absolute', left: '50%', top: 0, width: '74%', height: '60%', transform: 'translateX(-50%)', clipPath: 'polygon(44% 0, 56% 0, 100% 100%, 0 100%)', background: 'linear-gradient(180deg, rgba(225,230,235,0.16) 0%, rgba(225,230,235,0.05) 100%)'}} />
+		<div style={{position: 'absolute', left: '8%', right: '8%', top: '55%', height: '12%', borderRadius: '50%', background: 'radial-gradient(ellipse at 50% 50%, rgba(220,225,230,0.5) 0%, rgba(150,158,165,0.16) 55%, rgba(0,0,0,0) 72%)'}} />
+		<div style={{position: 'absolute', left: '22%', right: '22%', top: '57.4%', height: '1.1%', borderRadius: 4, background: 'linear-gradient(180deg, #d5d8da, #8d9195)', boxShadow: '0 18px 30px rgba(0,0,0,0.7)'}} />
+		<div style={{position: 'absolute', left: '26%', width: '1%', top: '58.4%', height: '7%', background: '#2a2d30'}} />
+		<div style={{position: 'absolute', right: '26%', width: '1%', top: '58.4%', height: '7%', background: '#2a2d30'}} />
+	</div>
+);
+
 const Arquivo: React.FC<{t: number; p: Plano}> = ({t, p}) => {
 	const z = interpolate(t, [p.de, p.ate], [1.04, 1.13]);
 	const k = (t - p.de) * FPS;
 	const chicote = k < 2 ? 1 - k / 2 : 0; // 1º quadro borrado na horizontal (ref1 6,6)
-	const src = staticFile(p.img!);
-	const im = (dx: number, op: number, filtro: string, key: string) => (
-		<Img key={key} src={src} style={{position: 'absolute', left: dx, top: 0, width: W, height: H, objectFit: 'cover', transform: `scale(${z})`, opacity: op, filter: filtro}} />
-	);
+	const temImg = p.img !== undefined && tem(p.img);
+	const im = (dx: number, op: number, filtro: string, key: string) => {
+		const style: React.CSSProperties = {position: 'absolute', left: dx, top: 0, width: W, height: H, objectFit: 'cover', transform: `scale(${z})`, opacity: op, filter: filtro};
+		// sem a imagem de B-roll, o arquivo é a própria gravação, fria e com as bordas desfocadas
+		return temImg ? <Img key={key} src={staticFile(p.img as string)} style={style} /> : <OffthreadVideo key={key} muted src={staticFile(gravacao())} style={style} />;
+	};
 	const frio = 'saturate(0.62) contrast(1.1) brightness(0.88) hue-rotate(-6deg)';
 	return (
 		<AbsoluteFill style={{background: COR.breu}}>
@@ -400,31 +451,51 @@ const Papel: React.FC = () => (
 );
 type Card = {src: string; x: number; y: number; w: number; t0: number; z?: number};
 const FRANJA = '-2px 0 0 rgba(255,122,30,0.75), 2px 0 0 rgba(30,110,255,0.7), 0 8px 18px rgba(0,0,0,0.32)';
-const CardView: React.FC<{c: Card; t: number; borra?: number; apaga?: number}> = ({c, t, borra, apaga = 0}) => {
+/* src/cards.json (do ../../tools/cards.py): a lista de cards de cada mundo; com menos cards que lugares, eles se repetem */
+const CARTOES = CARDS as {colagem?: string[]; celulares?: string[]; prints?: string[]};
+const cartao = (lista: string[] | undefined, i: number) => (lista && lista.length ? lista[i % lista.length] : '');
+/* um card: o quadro de public/cards/<nome>.jpg ou, sem ele, um quadro 9:16 desenhado (fundo escuro e marcas de edição) */
+const FUNDOS = ['#2B3339', '#33302B', '#24302F', '#2E2A33'];
+const QuadroCard: React.FC<{nome: string; i: number; style: React.CSSProperties}> = ({nome, i, style}) => {
+	if (nome && tem(`cards/${nome}.jpg`)) return <Img src={staticFile(`cards/${nome}.jpg`)} style={{...style, objectFit: 'cover'}} />;
+	const barra = (top: string, larg: string, cor: string, alt = '3.2%'): React.CSSProperties => ({position: 'absolute', left: `${(100 - parseFloat(larg)) / 2}%`, width: larg, top, height: alt, borderRadius: 6, background: cor});
+	return (
+		<div style={{position: 'relative', ...style, overflow: 'hidden', background: `linear-gradient(165deg, ${FUNDOS[i % FUNDOS.length]} 0%, #0B0D0F 100%)`}}>
+			<div style={{position: 'absolute', left: '28%', width: '44%', top: '22%', paddingTop: '44%', borderRadius: '50%', background: 'rgba(255,255,255,0.10)'}} />
+			<div style={barra(`${56 + (i % 3) * 3}%`, `${62 - (i % 4) * 6}%`, 'rgba(255,255,255,0.88)')} />
+			<div style={barra(`${62 + (i % 3) * 3}%`, `${40 + (i % 3) * 8}%`, i % 2 ? COR.sinal : 'rgba(255,255,255,0.6)')} />
+		</div>
+	);
+};
+const CardView: React.FC<{c: Card; t: number; i: number; borra?: number; apaga?: number}> = ({c, t, i, borra, apaga = 0}) => {
 	if (t < c.t0) return null;
 	const h = (c.w * 16) / 9;
 	return (
-		<Img
-			src={staticFile(`cards/${c.src}.jpg`)}
-			style={{position: 'absolute', left: c.x, top: c.y, width: c.w, height: h, objectFit: 'cover', boxShadow: FRANJA, opacity: 1 - apaga, filter: `contrast(1.04) saturate(0.85)${borra ? ` blur(${borra}px)` : ''}`}}
+		<QuadroCard
+			nome={c.src}
+			i={i}
+			style={{position: 'absolute', left: c.x, top: c.y, width: c.w, height: h, boxShadow: FRANJA, opacity: 1 - apaga, filter: `contrast(1.04) saturate(0.85)${borra ? ` blur(${borra}px)` : ''}`}}
 		/>
 	);
 };
 
-/* P3: colagem dos modelos; uma foto por vez a partir de "vários"; no "criei" a câmera avança até um item */
-const COL1: Card[] = [
-	['pregacaodinamica01_23', 60, 90, 260],
-	['pregacaodinamica01_1.5', 385, 40, 230],
-	['modelodinamico01_1.5', 700, 120, 290],
-	['profissional01_23', 210, 1120, 250],
-	['storypodcast01_1.5', 760, 1080, 270],
-	['modelopadrao01_4.5', 20, 1240, 210],
-	['modelodinamico03_12', 520, 1210, 230],
-	['modelodinamico03_23', 330, 1430, 320],
-].map(([src, x, y, w], i) => ({src: src as string, x: x as number, y: y as number, w: w as number, t0: PS[18].de + i * 0.12}));
-const ColagemModelos: React.FC<{t: number}> = ({t}) => {
-	const alvo = COL1[7]; // o último a entrar, embaixo no centro
-	const a = PS[22].de; // "criei"
+/* colagem (P3): uma foto por vez a partir da palavra `entra`; na palavra `foco` a câmera avança até o último card.
+ * Lugares [x, y, largura]; as fotos são os cards de CARTOES.colagem */
+const COL1: [number, number, number][] = [
+	[60, 90, 260],
+	[385, 40, 230],
+	[700, 120, 290],
+	[210, 1120, 250],
+	[760, 1080, 270],
+	[20, 1240, 210],
+	[520, 1210, 230],
+	[330, 1430, 320],
+];
+const ColagemModelos: React.FC<{t: number; entra: number; foco: number}> = ({t, entra, foco}) => {
+	const cards = COL1.map(([x, y, w], i) => ({src: cartao(CARTOES.colagem, i), x, y, w, t0: de(entra, 'PLANOS') + i * 0.12}));
+	const ia = cards.length - 1;
+	const alvo = cards[ia]; // o último a entrar, embaixo no centro
+	const a = de(foco, 'PLANOS'); // "criei"
 	const k = tw(t, a, a + 0.35, 0, 1, E.io);
 	const s = 1 + 0.5 * k;
 	const cx = alvo.x + alvo.w / 2;
@@ -433,8 +504,8 @@ const ColagemModelos: React.FC<{t: number}> = ({t}) => {
 		<AbsoluteFill>
 			<Papel />
 			<AbsoluteFill style={{transform: `translate(${(W / 2 - cx) * 0.35 * k}px, ${(H * 0.72 - cy) * 0.35 * k}px) scale(${s})`, transformOrigin: `${cx}px ${cy}px`}}>
-				{COL1.map((c, i) => (
-					<CardView key={i} c={c} t={t} borra={i === 7 ? 0 : 7 * k} apaga={i === 7 ? 0 : 0.55 * k} />
+				{cards.map((c, i) => (
+					<CardView key={i} c={c} t={t} i={i} borra={i === ia ? 0 : 7 * k} apaga={i === ia ? 0 : 0.55 * k} />
 				))}
 			</AbsoluteFill>
 			<Vinheta forte={0.35} />
@@ -442,25 +513,26 @@ const ColagemModelos: React.FC<{t: number}> = ({t}) => {
 	);
 };
 
-/* P10: prints entrando um a um embaixo do texto (ref1 29,5) */
-const COL2: Card[] = [
-	['modelodinamico03_27.5', 40, 820, 250],
-	['pregacaodinamica01_27.5', 330, 900, 230],
-	['modelopadrao01_17', 600, 840, 260],
-	['storypodcast01_23', 840, 960, 230],
-	['profissional01_27.5', 120, 1280, 270],
-	['modelodinamico01_23', 450, 1330, 250],
-	['modelodinamico03_1.5', 760, 1360, 260],
-	['pregacaodinamica01_8.5', -40, 60, 230],
-].map(([src, x, y, w], i) => ({src: src as string, x: x as number, y: y as number, w: w as number, t0: PLANOS[9].de + 0.02 + i * 0.14}));
+/* prints (P10): entrando um a um embaixo do texto desde o corte (ref1 29,5); lugares [x, y, largura], fotos de CARTOES.prints */
+const COL2: [number, number, number][] = [
+	[40, 820, 250],
+	[330, 900, 230],
+	[600, 840, 260],
+	[840, 960, 230],
+	[120, 1280, 270],
+	[450, 1330, 250],
+	[760, 1360, 260],
+	[-40, 60, 230],
+];
 const ColagemEdicao: React.FC<{t: number; p: Plano}> = ({t, p}) => {
+	const cards = COL2.map(([x, y, w], i) => ({src: cartao(CARTOES.prints, i), x, y, w, t0: p.de + 0.02 + i * 0.14}));
 	const z = interpolate(t, [p.de, p.ate], [1, 1.05]);
 	return (
 		<AbsoluteFill>
 			<Papel />
 			<AbsoluteFill style={{transform: `scale(${z})`, transformOrigin: '50% 30%'}}>
-				{COL2.map((c, i) => (
-					<CardView key={i} c={c} t={t} />
+				{cards.map((c, i) => (
+					<CardView key={i} c={c} t={t} i={i} />
 				))}
 			</AbsoluteFill>
 			<Vinheta forte={0.35} />
@@ -479,13 +551,13 @@ const IC = {
 	balao: 'M21 11.5a8.4 8.4 0 0 1-12.3 7.4L3 21l2-5.3A8.4 8.4 0 1 1 21 11.5z',
 	seta: 'M15 5l6 6-6 6M21 11H9a6 6 0 0 0-6 6v2',
 };
-const Celular: React.FC<{src: string; w: number}> = ({src, w}) => {
+const Celular: React.FC<{src: string; i: number; w: number}> = ({src, i, w}) => {
 	const h = (w * 16) / 9;
 	const k = w / 420;
 	return (
 		<div style={{position: 'relative', width: w, height: h, borderRadius: 44 * k, background: '#0B0B0D', padding: 12 * k, boxShadow: FRANJA, boxSizing: 'border-box'}}>
 			<div style={{position: 'relative', width: '100%', height: '100%', borderRadius: 34 * k, overflow: 'hidden'}}>
-				<Img src={staticFile(`cards/${src}.jpg`)} style={{width: '100%', height: '100%', objectFit: 'cover'}} />
+				<QuadroCard nome={src} i={i} style={{width: '100%', height: '100%'}} />
 				<div style={{position: 'absolute', right: 14 * k, bottom: 150 * k, display: 'flex', flexDirection: 'column', gap: 26 * k, transform: `scale(${k})`, transformOrigin: 'right bottom'}}>
 					<Icone d={IC.coracao} />
 					<Icone d={IC.balao} />
@@ -502,15 +574,16 @@ const Celular: React.FC<{src: string; w: number}> = ({src, w}) => {
 		</div>
 	);
 };
+/* celulares (P6): o central cresce até a palavra `explode` e solta os outros; fotos de CARTOES.celulares (a 1ª no central) */
 const VOO = [
-	{src: 'storypodcast01_12', dx: -340, dy: -92, w: 280, r: -6},
-	{src: 'modelodinamico03_17', dx: 340, dy: -122, w: 270, r: 5},
-	{src: 'pregacaodinamica01_17', dx: -350, dy: 1078, w: 300, r: 4},
-	{src: 'profissional01_17', dx: 350, dy: 1058, w: 290, r: -5},
-	{src: 'modelodinamico01_23', dx: 0, dy: 1250, w: 270, r: 2},
+	{dx: -340, dy: -92, w: 280, r: -6},
+	{dx: 340, dy: -122, w: 270, r: 5},
+	{dx: -350, dy: 1078, w: 300, r: 4},
+	{dx: 350, dy: 1058, w: 290, r: -5},
+	{dx: 0, dy: 1250, w: 270, r: 2},
 ];
-const RedeSocial: React.FC<{t: number; p: Plano}> = ({t, p}) => {
-	const exp = PS[39].de; // "Instagram"
+const RedeSocial: React.FC<{t: number; p: Plano; explode: number}> = ({t, p, explode}) => {
+	const exp = de(explode, 'PLANOS'); // "Instagram"
 	const cresce = tw(t, p.de, exp, 0, 1, E.io);
 	const wC = 240 + 120 * cresce; // card central cresce por ~1 s
 	const e = tw(t, exp, exp + 0.3, 0, 1, E.out);
@@ -522,12 +595,12 @@ const RedeSocial: React.FC<{t: number; p: Plano}> = ({t, p}) => {
 					const vel = t < exp + 0.3 ? (1 - e) * 18 : 0; // desfoque de movimento enquanto voa
 					return (
 						<div key={i} style={{position: 'absolute', left: W / 2 - v.w / 2 + v.dx * e, top: H * 0.22 - (v.w * 8) / 9 + v.dy * e, transform: `rotate(${v.r * e}deg) scale(${0.5 + 0.5 * e})`, filter: vel ? `blur(${vel}px)` : undefined}}>
-							<Celular src={v.src} w={v.w} />
+							<Celular src={cartao(CARTOES.celulares, i + 1)} i={i + 1} w={v.w} />
 						</div>
 					);
 				})}
 			<div style={{position: 'absolute', left: W / 2 - wC / 2, top: H * 0.22 - (wC * 8) / 9}}>
-				<Celular src="modelopadrao01_23" w={wC} />
+				<Celular src={cartao(CARTOES.celulares, 0)} i={0} w={wC} />
 			</div>
 			<Vinheta forte={0.35} />
 		</AbsoluteFill>
@@ -544,8 +617,10 @@ const Dividida: React.FC<{t: number; p: Plano; prev: boolean}> = ({t, p, prev}) 
 };
 const PREV = {w: 360, h: 640, y: 34, x: [150, 570]};
 export const PreviasEmCima: React.FC<{t: number; nomes: [string, string]}> = ({t, nomes}) => {
+	if (!JANELA_PREVIAS) return null;
 	const {de, ate} = JANELA_PREVIAS;
 	if (t < de || t >= ate) return null;
+	if (!(tem('previa1.mp4') && tem('previa2.mp4'))) throw new Error('Falta public/previa1.mp4 ou previa2.mp4: faça com tools/previa.py (LEIA.md, "Vídeo novo") ou renderize com "previas": false.');
 	return (
 		<AbsoluteFill>
 			{[0, 1].map((i) => {
@@ -595,7 +670,7 @@ const Vazamento: React.FC<{t: number}> = ({t}) => {
 };
 
 /* ---------------------------------------------------------------- composição */
-export const VitrineSuperPodcast01: React.FC<Props> = ({previas, nomesPrevias}) => {
+export const VitrineSuperPodcast01: React.FC<Props> = ({previas, nomesPrevias, nome = '', arroba = ''}) => {
 	const f = useCurrentFrame();
 	const t = f / FPS;
 	const [ok, setOk] = useState(false);
@@ -614,16 +689,70 @@ export const VitrineSuperPodcast01: React.FC<Props> = ({previas, nomesPrevias}) 
 			{p.mundo === 'palco' && <Palco t={t} de={p.de} ate={p.ate} />}
 			{p.mundo === 'dividida' && <Dividida t={t} p={p} prev={previas} />}
 			{p.mundo === 'arquivo' && <Arquivo t={t} p={p} />}
-			{p.id === 'P3' && <ColagemModelos t={t} />}
-			{p.id === 'P6' && <RedeSocial t={t} p={p} />}
-			{p.id === 'P10' && <ColagemEdicao t={t} p={p} />}
+			{p.mundo === 'papel' && !p.papel && <Papel />}
+			{p.papel?.tipo === 'colagem' && <ColagemModelos t={t} entra={p.papel.entra} foco={p.papel.foco} />}
+			{p.papel?.tipo === 'celulares' && <RedeSocial t={t} p={p} explode={p.papel.explode} />}
+			{p.papel?.tipo === 'prints' && <ColagemEdicao t={t} p={p} />}
 			{previas && <PreviasEmCima t={t} nomes={nomesPrevias} />}
-			{ok && TERCOS.map((tc, i) => <TercoView key={i} tc={tc} t={t} f={f} />)}
+			{ok && TERCOS.map((tc, i) => <TercoView key={i} tc={tc} l1={nome} l2={arroba} t={t} f={f} />)}
 			{ok && BL.map((b, i) => <BlocoView key={i} b={b} t={t} />)}
 			<Vazamento t={t} />
 		</AbsoluteFill>
 	);
 };
 
+/* ---------------------------------------------------------------- o plano bate com a fala? (ao carregar)
+ * Os planos se emendam até o fim; cada palavra de um bloco é dita dentro dele (ou até 2 quadros antes, quando o corte
+ * cai logo depois do começo dela). */
+const Q2 = 2 / FPS + 1e-6;
+PLANOS.forEach((pl, k) => {
+	if (!(pl.ate > pl.de)) throw errPlano('PLANOS', `o plano ${pl.id} (${pl.de}-${pl.ate} s) acaba antes de começar`);
+	const prox = PLANOS[k + 1];
+	if (prox && Math.abs(prox.de - pl.ate) > 1e-6) throw errPlano('PLANOS', `o plano ${pl.id} acaba em ${pl.ate} s e o ${prox.id} começa em ${prox.de} s`);
+	if (pl.de >= DURACAO) throw errPlano('PLANOS', `o plano ${pl.id} começa em ${pl.de} s, depois do fim do vídeo`);
+	if (pl.mundo === 'rosto' && !pl.q) throw errPlano('PLANOS', `o plano ${pl.id} é de rosto e não tem o enquadramento q`);
+	if (pl.papel?.tipo === 'colagem') [pl.papel.entra, pl.papel.foco].forEach((i) => de(i, 'PLANOS'));
+	if (pl.papel?.tipo === 'celulares') de(pl.papel.explode, 'PLANOS');
+});
+for (const prev of [false, true])
+	for (const b of blocos(prev))
+		for (const l of b.linhas) {
+			for (const id of caixaDe(l))
+				if (l.tipo === 'p' && !l.ids.includes(id)) throw errPlano('blocos', `o bloco de ${b.de.toFixed(2)} s põe na caixa a palavra ${id}, que não está na linha dela (${l.ids.join(', ')})`);
+			for (const id of l.tipo === 'k' ? [l.id, ...(l.id2 !== undefined ? [l.id2] : [])] : l.ids) {
+				if (!PS[id]) throw errPlano('blocos', `o bloco de ${b.de.toFixed(2)} s usa a palavra ${id}, que não existe`);
+				if (PS[id].de < b.de - Q2 || PS[id].de >= b.ate)
+					throw errPlano('blocos', `o bloco de ${b.de.toFixed(2)} a ${b.ate.toFixed(2)} s escreve a palavra ${id} ("${PS[id].texto}"), que é dita em ${PS[id].de} s, fora dele`);
+			}
+		}
+
+/* ---------------------------------------------------------------- para o conferidor: onde o rosto está na tela
+ * Nos mundos que mostram a gravação (rosto, dividida e arquivo sem a imagem), a caixa do rosto em px: src/rosto.json do
+ * plano (±0,25 s) com o enquadramento do mundo, largura ~0,8 da altura. null nos outros. existe(arq): a imagem está em public/? */
+const rostoNaTela = (t: number, prev: boolean, existe: (arq: string) => boolean) => {
+	const p = planoEm(t);
+	const amostras = ROSTO.filter((r) => r[0] >= p.de - 0.25 && r[0] <= p.ate + 0.25);
+	let mapa: ((x: number, y: number) => [number, number]) | null = null;
+	if (p.mundo === 'rosto' && p.q) {
+		const tr = transformRosto(p.q, rostoMed(p.de, p.ate));
+		mapa = (x, y) => [tr.left + x * W * tr.s, tr.top + y * H * tr.s];
+	} else if (p.mundo === 'dividida') {
+		const r = rostoMed(p.de, p.ate);
+		const alvo = DIV(prev) + (prev ? 255 : 300);
+		mapa = (x, y) => [x * W, alvo - r.cy * H + y * H];
+	} else if (p.mundo === 'arquivo' && !(p.img !== undefined && existe(p.img))) {
+		const z = 1.04 + 0.09 * Math.min(1, Math.max(0, (t - p.de) / (p.ate - p.de))); // o zoom do Arquivo, do centro
+		mapa = (x, y) => [W / 2 + (x * W - W / 2) * z, H / 2 + (y * H - H / 2) * z];
+	}
+	if (!mapa || !amostras.length) return null;
+	let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+	for (const [, cx, cy, h] of amostras) {
+		const ml = (h * H * 0.4) / W;
+		const [a, b] = mapa(cx - ml, cy - h / 2), [c, d] = mapa(cx + ml, cy + h / 2);
+		[x0, y0, x1, y1] = [Math.min(x0, a), Math.min(y0, b), Math.max(x1, c), Math.max(y1, d)];
+	}
+	return {x0, x1, y0, y1, plano: p.id, mundo: p.mundo, img: p.img};
+};
+
 /* para scripts/sincronia.mjs */
-export const conferencia = {PLANOS, blocos, PS, W, FS};
+export const conferencia = {PLANOS, blocos, PS, W, FS, TERCOS, DURACAO, CARTOES, rostoNaTela};

@@ -11,6 +11,6 @@ export const Root: React.FC = () => (
 		fps={FPS}
 		width={1080}
 		height={1920}
-		defaultProps={{voz: true, previas: false, nomesPrevias: ['modelodinamico01', 'youtubeedition01'] as [string, string]}}
+		defaultProps={{voz: true, previas: false, nomesPrevias: ['modelodinamico01', 'youtubeedition01'] as [string, string], arroba: '', foto: ''}}
 	/>
 );

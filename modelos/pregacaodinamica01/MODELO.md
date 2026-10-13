@@ -1,7 +1,5 @@
 # pregacaodinamica01
 
-> **Pacote no motor:** `projetos/maquina-de-conteudo/motor/pacotes/pregacaodinamica01/` (versão 1), em prova até o portão do dono. A comparação com o último vídeo aprovado está em `projetos/maquina-de-conteudo/docs/etapa-7/pregacaodinamica01.md`.
-
 Modelo de edição de corte de pregação, montado olhando quadro a quadro 5 referências que o Jessé
 escolheu (`referencias/`). Tudo o que ele ensinar dizendo "pregaçãodinâmica01" entra **só aqui**.
 Não mistura com modelopadrao01, modelodinamico01 nem modelodinamico02.
@@ -125,13 +123,13 @@ gigante, tela lisa, preto e branco, LEGO). Nada de enfeite fora desses picos.
 
 | Vídeo | Base | Saída |
 |---|---|---|
-| Corte de podcast "a gente é treinado" (16:9, 32,9 s, QR code apagado por IA) | `corte-2-limpa2.mp4` | `conteudo/2026-10-06-corte-podcast-horizontal01/out/corte-horizontal-pregacaodinamica01.mp4` |
-| Corte de podcast "a pessoa não te cumprimentou" (9:16, 18,9 s) | `corte-1-limpa.mp4` | `conteudo/2026-10-06-corte-podcast-pregacao01/out/corte-pregacaodinamica01.mp4` |
+| Corte de podcast "a gente é treinado" (16:9, 32,9 s, QR code apagado por IA) | `corte-2-limpa2.mp4` | `modelos/pregacaodinamica01/exemplos/corte-pregacao-16x9.mp4` |
+| Corte de podcast "a pessoa não te cumprimentou" (9:16, 18,9 s) | `corte-1-limpa.mp4` | `modelos/pregacaodinamica01/exemplos/corte-pregacao-9x16.mp4` |
 
 ## Regras novas (2026-10-12, pedido do Jessé)
 
 Valem acima do que estiver escrito antes neste arquivo. Vieram da correção do vídeo da vitrine
-(`conteudo/2026-10-10-vitrine-modelos/pregacaodinamica01/`) e incluem as que ele já tinha dado no modelodinamico03.
+(`moldes/pregacaodinamica01/`) e incluem as que ele já tinha dado no modelodinamico03.
 
 - **A legenda conta uma história.** Todas as falas aparecem na tela, cada trecho uma vez só, em ordem. Nada de trecho
   falado enquanto um bloco segura a tela sem estar escrito.
@@ -160,7 +158,8 @@ Valem acima de tudo o que estiver antes. Vieram da 2ª correção do vídeo da v
 - **Legenda padrão na posição de leitura medida, nunca rebaixada ao pé do quadro.** A posição é a da §2: no peito,
   logo abaixo do queixo. Na vitrine (queixo em y ~940 a 990 com o zoom dos planos) a legenda começa em **y 1060**,
   centrada na zona segura (x 500), numa posição só no vídeo inteiro. Em outro vídeo, mede-se o queixo (`rosto.json`)
-  e a legenda vai logo abaixo dele; a y 1560 que saiu na 1ª rodada é o erro a não repetir.
+  e a legenda vai logo abaixo dele (no molde, `LEG_Y_PLANO = null` faz essa conta: 70 px abaixo do queixo no maior zoom
+  com legenda, o que na vitrine dá os mesmos 1060); a y 1560 que saiu na 1ª rodada é o erro a não repetir.
 - **Zona segura das redes em 9:16 (Reels, TikTok, Shorts), em 1080x1920.** Nenhum texto (legenda, frase-bloco, tela de
   destaque, letreiro, fecho, etiquetas das prévias) fora de: **y 250 a 1500** (fora os 250 px de cima, da barra e do
   nome, e os 420 px de baixo, da legenda do post, do @ e dos botões) e **x 60 a 940** (fora os 60 px da esquerda e os

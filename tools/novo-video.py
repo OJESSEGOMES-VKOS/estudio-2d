@@ -7,9 +7,12 @@ faz:
   2. liga node_modules à raiz (junção)
   3. roda tools/preparar.py na gravação e põe a base onde o contrato manda
      (public/fala.mp4, public/voz.wav, src/palavras.json, src/rosto.json)
+  4. adapta a gravação ao ponto de partida do modelo (tools/adaptar.py): rosto no tamanho e na altura, luz e cor de
+     partida iguais às da gravação em que o modelo foi calibrado. --sem-adaptar pula (só para comparar).
 Depois: refazer o plano sobre a fala nova seguindo modelos/<modelo>/MODELO.md e REGRAS.md, rodar o checador e renderizar.
 """
 import argparse, shutil, subprocess, sys
+sys.stdout.reconfigure(encoding='utf-8'); sys.stderr.reconfigure(encoding='utf-8')  # acentos no terminal do Windows
 from pathlib import Path
 
 AQUI = Path(__file__).resolve().parent
@@ -23,6 +26,7 @@ ap.add_argument('nome')
 ap.add_argument('--idioma', default='pt')
 ap.add_argument('--trocar', nargs='*', default=[])
 ap.add_argument('--sem-voz', action='store_true')
+ap.add_argument('--sem-adaptar', action='store_true')
 a = ap.parse_args()
 
 molde = RAIZ / 'moldes' / a.modelo
@@ -39,17 +43,17 @@ def ignorar(pasta, nomes):
     return [n for n in nomes if n in fora or (p.name == 'public' and n in MIDIA_ORIGEM)]
 
 
-print('1/3 copiando o molde', a.modelo)
+print('1/4 copiando o molde', a.modelo)
 shutil.copytree(molde, destino, ignore=ignorar)
 
-print('2/3 node_modules')
+print('2/4 node_modules')
 alvo = RAIZ / 'node_modules'
 if sys.platform == 'win32':
     subprocess.run(['cmd', '/c', 'mklink', '/J', str(destino / 'node_modules'), str(alvo)], check=True, capture_output=True)
 else:
     (destino / 'node_modules').symlink_to(alvo, target_is_directory=True)
 
-print('3/3 preparando a gravação')
+print('3/4 preparando a gravação')
 cmd = [sys.executable, str(AQUI / 'preparar.py'), a.gravacao, str(destino), '--idioma', a.idioma]
 if a.trocar:
     cmd += ['--trocar', *a.trocar]
@@ -63,5 +67,11 @@ for nome, para in [('fala.mp4', 'public/fala.mp4'), ('voz.wav', 'public/voz.wav'
                    ('palavras.json', 'src/palavras.json'), ('rosto.json', 'src/rosto.json')]:
     if (base / nome).exists():
         shutil.copy2(base / nome, destino / para)
+if a.sem_adaptar:
+    print('4/4 adaptação pulada (--sem-adaptar)')
+else:
+    print('4/4 adaptando a gravação ao modelo')
+    subprocess.run([sys.executable, str(AQUI / 'adaptar.py'), str(destino), a.modelo], check=True)
 print('pronto:', destino)
-print('próximo passo: ler modelos/%s/MODELO.md, refazer o plano em %s e renderizar.' % (a.modelo, destino / 'LEIA.md'))
+print('próximo passo: ler modelos/%s/MODELO.md e a seção "Vídeo novo" de %s, refazer o plano no código do vídeo '
+      '(src/), conferir e renderizar.' % (a.modelo, destino / 'LEIA.md'))

@@ -1,0 +1,36 @@
+{
+ "modelo": "profissional01",
+ "gerado_de": "vitrine-profissional01.mp4",
+ "entrada": {
+  "segundos": 30.0,
+  "formato": "1080x1920",
+  "brilho": 88.67,
+  "contraste": 155.0,
+  "saturacao": 64.34,
+  "temperatura": 2.77,
+  "tom": 4.2,
+  "rosto_aberto": 0.2689,
+  "rosto_fechado": 0.292,
+  "rosto_cy": 0.351,
+  "rosto_cx": 0.5021,
+  "cabeca_cortada": 0.0,
+  "com_rosto": 1.0
+ },
+ "saida": {
+  "video": "vitrine-profissional01.mp4",
+  "segundos": 30.2,
+  "formato": "1080x1920",
+  "brilho": 81.45,
+  "contraste": 160.0,
+  "saturacao": 89.0,
+  "temperatura": 4.59,
+  "tom": 4.1,
+  "cortes_min": 13.9,
+  "rosto_aberto": 0.2676,
+  "rosto_fechado": 0.3017,
+  "rosto_cy": 0.6066,
+  "rosto_cx": 0.4945,
+  "cabeca_cortada": 0.0,
+  "com_rosto": 0.711
+ }
+}

@@ -1,8 +1,9 @@
-"""Trilha e efeitos sintetizados no tempo da imagem (lê src/tempos.json), o mesmo som do v4 do modelopadrao01.
-Sem amostra, sem IA. Cama calma (acordes suaves) bem abaixo da voz; efeito só em evento de verdade; silêncio na
-virada ("Mas se você quiser"). Saída: public/trilha.wav (48 kHz estéreo); com --previas, public/trilha_previas.wav
-(soma os sons das prévias).
-uso (de dentro do molde): ../../.venv/Scripts/python.exe audio/compor.py [--previas] [--saida arquivo.wav]
+"""Efeitos sintetizados no tempo da imagem (lê src/tempos.json) e, com --cama, a trilha: o mesmo som do v4 do
+modelopadrao01. Sem amostra, sem IA. Cama calma (acordes suaves) bem abaixo da voz; efeito só em evento de verdade;
+silêncio na virada ("Mas se você quiser"). Saída: public/trilha.wav (48 kHz estéreo); com --previas,
+public/trilha_previas.wav (soma os sons das prévias). Tela que o plano desligou (None) não tem som.
+uso (de dentro do molde): ../../.venv/Scripts/python.exe audio/compor.py [--cama] [--previas] [--saida arquivo.wav]
+--cama: liga a música (desligada por padrão, REGRAS §6; a vitrine saiu com ela). Os efeitos saem no mesmo nível com ou sem.
 """
 import json, sys
 from pathlib import Path
@@ -54,12 +55,13 @@ cama = sosfilt(butter(2, 1800, 'low', fs=SR, output='sos'), cama)
 
 # a virada: a cama some e volta (respiro antes da tese)
 S = T['silencio']
-tt = np.arange(N) / SR
-ganho = np.ones(N)
-ganho[(tt >= S['de']) & (tt < S['ate'])] = 0
-volta = (tt >= S['ate']) & (tt < S['ate'] + 0.8)
-ganho[volta] = (tt[volta] - S['ate']) / 0.8
-cama *= np.convolve(ganho, np.ones(480) / 480, mode='same')
+if S:
+    tt = np.arange(N) / SR
+    ganho = np.ones(N)
+    ganho[(tt >= S['de']) & (tt < S['ate'])] = 0
+    volta = (tt >= S['ate']) & (tt < S['ate'] + 0.8)
+    ganho[volta] = (tt[volta] - S['ate']) / 0.8
+    cama *= np.convolve(ganho, np.ones(480) / 480, mode='same')
 
 
 def whoosh(d=0.35):
@@ -95,52 +97,56 @@ def snip():
 
 
 ED, MO, CE, PV, PR, FE = (T[k] for k in ('editor', 'modelos', 'celular', 'previas', 'prompt', 'fecho'))
-# editor: o vídeo entra, a lâmina, a legenda, a tela, o vídeo cresce
-add(fx, ED['de'] - 0.2, whoosh(0.5), 0.5)
-add(fx, ED['corte'], snip(), 0.7)
-add(fx, ED['legenda'], pop(880), 0.35)
-add(fx, ED['tela'], pop(1100), 0.35)
-add(fx, ED['devolve'] - 0.1, whoosh(0.5), 0.5)
-# os modelos: um pop por cartão, ✓, barras, formatos, o Claude
-passo = (MO['modelos'] - MO['de'] - 0.12) / 7
-for k in range(8):
-    add(fx, MO['de'] + 0.12 + k * passo, pop(700 + 40 * k), 0.14)
-for k in range(8):
-    add(fx, MO['criei'] + 0.05 * k, tique(), 0.3)
-add(fx, MO['melhorei'], whoosh(0.45), 0.25)
-add(fx, MO['editar'], whoosh(0.3), 0.3)
-for k, t0 in enumerate(MO['formatos']):
-    add(fx, t0, pop(950 + 120 * k), 0.3)
-add(fx, MO['claude'], pop(1300), 0.35)
-add(fx, MO['sai'] - 0.1, whoosh(), 0.45)
-# o celular: interface do Reel, os outros modelos saem de trás, o nome, devolve
-add(fx, CE['instagram'], pop(1000), 0.3)
-add(fx, CE['desses'] - 0.1, whoosh(0.4), 0.35)
-add(fx, CE['nome'], pop(1250), 0.4)
-add(fx, CE['devolve'] - 0.1, whoosh(0.5), 0.45)
-if PREVIAS:
+if ED:  # editor: o vídeo entra, a lâmina, a legenda, a tela, o vídeo cresce
+    add(fx, ED['de'] - 0.2, whoosh(0.5), 0.5)
+    add(fx, ED['corte'], snip(), 0.7)
+    add(fx, ED['legenda'], pop(880), 0.35)
+    add(fx, ED['tela'], pop(1100), 0.35)
+    add(fx, ED['devolve'] - 0.1, whoosh(0.5), 0.5)
+if MO:  # os modelos: um pop por cartão, ✓, barras, formatos, o Claude
+    passo = (MO['modelos'] - MO['de'] - 0.12) / 7
+    for k in range(8):
+        add(fx, MO['de'] + 0.12 + k * passo, pop(700 + 40 * k), 0.14)
+    for k in range(8):
+        add(fx, MO['criei'] + 0.05 * k, tique(), 0.3)
+    add(fx, MO['melhorei'], whoosh(0.45), 0.25)
+    add(fx, MO['editar'], whoosh(0.3), 0.3)
+    for k, t0 in enumerate(MO['formatos']):
+        add(fx, t0, pop(950 + 120 * k), 0.3)
+    add(fx, MO['claude'], pop(1300), 0.35)
+    add(fx, MO['sai'] - 0.1, whoosh(), 0.45)
+if CE:  # o celular: interface do Reel, os outros modelos saem de trás, o nome, devolve
+    add(fx, CE['instagram'], pop(1000), 0.3)
+    add(fx, CE['desses'] - 0.1, whoosh(0.4), 0.35)
+    add(fx, CE['nome'], pop(1250), 0.4)
+    add(fx, CE['devolve'] - 0.1, whoosh(0.5), 0.45)
+if PREVIAS and PV:
     add(fx, PV['de'] - 0.1, whoosh(), 0.45)
     add(fx, PV['x3'], pop(1300), 0.35)
     add(fx, PV['sai'] - 0.1, whoosh(), 0.45)
-add(fx, T['outros']['de'], pop(900), 0.3)
-# o prompt: digitando as palavras dele, envia
-add(fx, PR['de'] - 0.1, whoosh(), 0.45)
-for t0 in PR['palavras']:
-    for j in range(3):
-        add(fx, t0 + j * 0.05, tique(), 0.35)
-add(fx, PR['palavras'][-1], pop(1200), 0.35)
-add(fx, PR['sai'] - 0.1, whoosh(), 0.4)
-# fecho: o campo sobe, EDIÇÃO digitada, envia, a DM chega
-add(fx, FE['comenta'] + 0.2, whoosh(0.35), 0.35)
-for j in range(6):
-    add(fx, FE['edicao'] + j * 0.07, tique(), 0.4)
-add(fx, FE['embaixo'], pop(1100), 0.35)
-add(fx, FE['mandar'] - 0.1, whoosh(0.4), 0.4)
-add(fx, FE['dm'], pop(1300), 0.4)
-add(fx, S['de'] + 0.05, grave(), 0.6)
+if T['outros']:
+    add(fx, T['outros']['de'], pop(900), 0.3)
+if PR and PR['palavras']:  # o prompt: digitando as palavras dele, envia
+    add(fx, PR['de'] - 0.1, whoosh(), 0.45)
+    for t0 in PR['palavras']:
+        for j in range(3):
+            add(fx, t0 + j * 0.05, tique(), 0.35)
+    add(fx, PR['palavras'][-1], pop(1200), 0.35)
+    add(fx, PR['sai'] - 0.1, whoosh(), 0.4)
+if FE:  # fecho: o campo sobe, a palavra digitada, envia, a DM chega
+    add(fx, FE['comenta'] + 0.2, whoosh(0.35), 0.35)
+    for j in range(6):
+        add(fx, FE['edicao'] + j * 0.07, tique(), 0.4)
+    add(fx, FE['embaixo'], pop(1100), 0.35)
+    add(fx, FE['mandar'] - 0.1, whoosh(0.4), 0.4)
+    add(fx, FE['dm'], pop(1300), 0.4)
+if S:
+    add(fx, S['de'] + 0.05, grave(), 0.6)
 
-mix = cama + fx
-mix /= np.max(np.abs(mix)) + 1e-9
+# a mesma régua de volume com ou sem a cama: os efeitos saem no mesmo nível nos dois casos
+ref = cama + fx
+mix = ref if '--cama' in sys.argv else fx
+mix = mix / (np.max(np.abs(ref)) + 1e-9)
 mix *= 10 ** (-9 / 20)
 est = np.stack([mix, mix], axis=1)
 nome = 'trilha_previas.wav' if PREVIAS else 'trilha.wav'

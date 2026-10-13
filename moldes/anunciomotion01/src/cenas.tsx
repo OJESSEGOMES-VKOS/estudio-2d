@@ -1,6 +1,6 @@
 import React from 'react';
 import {OffthreadVideo, Sequence, staticFile} from 'remotion';
-import {C, E, FPS, SANS, T, mola, rnd, tw, useT, w} from './tema';
+import {C, E, FPS, SANS, T, cena, marca, mola, rnd, tw, useT} from './tema';
 import {Aneis, Fundo, G, IconeVidro, Particulas, ab, brilho, hexA} from './ui';
 
 /**
@@ -136,15 +136,15 @@ const Placa: React.FC<{x: number; y: number; larg: number; alt: number; rx?: num
 /* ================================================================ S1: "Esse vídeo está sendo 100% editado pelo Claude." */
 export const S1: React.FC = () => {
 	const {t} = useT();
-	const cem = w(4);
+	const cem = marca('cem');
 	return (
 		<>
 			<Fundo tom="marca" />
 			<Particulas n={26} semente={2} de={0} cor={C.vClaro} />
-			<Aneis de={w(0)} cx={500} cy={760} r0={250} passo={115} n={4} cor={C.v} />
+			<Aneis de={marca('inicio')} cx={500} cy={760} r0={250} passo={115} n={4} cor={C.v} />
 			{/* antes do número: o play de vidro no centro, que dá lugar ao contador em "100%" */}
 			{t < cem + 0.2 && (
-				<div style={ab(500 - 130, 760 - 130, {...pop(t, w(0) - 0.05), opacity: (1 - tw(t, cem - 0.08, cem + 0.12, 0, 1)) * Math.min(1, mola(t, w(0) - 0.05) * 2)})}>
+				<div style={ab(500 - 130, 760 - 130, {...pop(t, marca('inicio') - 0.05), opacity: (1 - tw(t, cem - 0.08, cem + 0.12, 0, 1)) * Math.min(1, mola(t, marca('inicio') - 0.05) * 2)})}>
 					<IconeVidro tam={260} giroY={Math.sin(t * 1.6) * 16} giroX={Math.cos(t * 1.2) * 6}>
 						{GL.play(140)}
 					</IconeVidro>
@@ -158,15 +158,15 @@ export const S1: React.FC = () => {
 /* ================================================================ S2 (claro): "Ele foi criado justamente para" */
 export const S2: React.FC = () => {
 	const {t} = useT();
-	const de = T.cenas[1].de_q / FPS;
+	const de = cena('S2').de;
 	const k = mola(t, de, {damping: 17, stiffness: 90, mass: 1});
 	const clipes = [
-		{tr: 0, x: 0, l: 34, de: w(8), cor: C.vFundo},
-		{tr: 0, x: 36, l: 26, de: w(9), cor: C.tinta},
-		{tr: 1, x: 10, l: 30, de: w(10), cor: '#7FE3B8'},
-		{tr: 0, x: 64, l: 34, de: w(11), cor: C.vFundo},
-		{tr: 1, x: 44, l: 40, de: w(12), cor: C.tinta},
-		{tr: 2, x: 0, l: 96, de: w(10), cor: '#BFE9D6'},
+		{tr: 0, x: 0, l: 34, de: marca('clipe1'), cor: C.vFundo},
+		{tr: 0, x: 36, l: 26, de: marca('clipe2'), cor: C.tinta},
+		{tr: 1, x: 10, l: 30, de: marca('clipe3'), cor: '#7FE3B8'},
+		{tr: 0, x: 64, l: 34, de: marca('clipe4'), cor: C.vFundo},
+		{tr: 1, x: 44, l: 40, de: marca('clipe5'), cor: C.tinta},
+		{tr: 2, x: 0, l: 96, de: marca('clipe3'), cor: '#BFE9D6'},
 	];
 	const cab = tw(t, de, de + 1.5, 4, 92, (x) => x);
 	return (
@@ -197,8 +197,8 @@ export const S2: React.FC = () => {
 /* ================================================================ S3: "te mostrar a diferença entre vários modelos que eu criei e melhorei" */
 export const S3: React.FC = () => {
 	const {t} = useT();
-	const ents = [w(16), w(18), w(19)];
-	const melhorei = w(24);
+	const ents = [marca('placa1'), marca('placa2'), marca('placa3')];
+	const melhorei = marca('melhorei');
 	const acesa = tw(t, melhorei, melhorei + 0.25, 0, 1);
 	const kc = mola(t, melhorei + 0.05, {damping: 11, stiffness: 170});
 	const pos = [
@@ -234,13 +234,13 @@ export const S3: React.FC = () => {
 /* ================================================================ S4: "para editar qualquer tipo de vídeo usando o Claude." */
 export const S4: React.FC = () => {
 	const {t} = useT();
-	const de = T.cenas[3].de_q / FPS;
+	const de = cena('S4').de;
 	const k = mola(t, de, {damping: 12, stiffness: 110, mass: 0.9});
 	const orb = [
-		{de: w(27), g: GL.mic},
-		{de: w(28), g: GL.camera},
-		{de: w(30), g: GL.celular},
-		{de: w(31), g: GL.claquete},
+		{de: marca('orbita1'), g: GL.mic},
+		{de: marca('orbita2'), g: GL.camera},
+		{de: marca('orbita3'), g: GL.celular},
+		{de: marca('orbita4'), g: GL.claquete},
 	];
 	return (
 		<>
@@ -274,9 +274,9 @@ export const S4: React.FC = () => {
 /* ================================================================ S5: "Inclusive, se você estiver no Instagram agora," */
 export const S5: React.FC = () => {
 	const {t} = useT();
-	const de = T.cenas[4].de_q / FPS;
+	const de = cena('S5').de;
 	const k = mola(t, de, {damping: 18, stiffness: 170, mass: 0.8});
-	const insta = w(39);
+	const insta = marca('coracao');
 	const kh = mola(t, insta, {damping: 9, stiffness: 220});
 	const p = t - de;
 	const L = 400;
@@ -312,9 +312,9 @@ export const S5: React.FC = () => {
 /* ================================================================ S6 (claro): "você está vendo apenas um desses modelos." */
 export const S6: React.FC = () => {
 	const {t} = useT();
-	const de = T.cenas[5].de_q / FPS;
-	const apenas = w(44);
-	const um = w(45);
+	const de = cena('S6').de;
+	const apenas = marca('apenas');
+	const um = marca('um');
 	const apaga = tw(t, apenas, apenas + 0.2, 0, 1);
 	const ku = mola(t, um, {damping: 13, stiffness: 150});
 	return (
@@ -344,6 +344,7 @@ export const S6: React.FC = () => {
 const PREV = {w: 330, h: 587, x: [290, 710], y: 560};
 export const Previas: React.FC<{nomes: [string, string]}> = ({nomes}) => {
 	const {t} = useT();
+	if (!T.previas) return null; // o plano sem "previas": fica só o ícone de avanço
 	const de = T.previas.de_q / FPS;
 	if (t < de) return null;
 	return (
@@ -386,11 +387,11 @@ const Seta: React.FC<{d: string; ponta: string; de: number}> = ({d, ponta, de}) 
 
 export const S7: React.FC<{previas: boolean; nomes: [string, string]}> = ({previas, nomes}) => {
 	const {t} = useT();
-	const de = T.cenas[6].de_q / FPS;
-	const pv = T.previas.de_q / FPS;
-	const acel = w(58);
+	const de = cena('S7').de;
+	const pv = T.previas ? T.previas.de_q / FPS : 0;
+	const acel = marca('aceleradas');
 	const k = mola(t, de + 0.1, {damping: 12, stiffness: 120});
-	const saiIcone = previas ? tw(t, pv - 0.15, pv + 0.1, 0, 1) : 0;
+	const saiIcone = previas && T.previas ? tw(t, pv - 0.15, pv + 0.1, 0, 1) : 0;
 	const corre = t > acel ? t - acel : -1;
 	return (
 		<>
@@ -415,8 +416,8 @@ export const S7: React.FC<{previas: boolean; nomes: [string, string]}> = ({previ
 				})}
 			{previas && <Previas nomes={nomes} />}
 			{/* "aqui em cima": duas setas desenhadas apontando para o alto */}
-			<Seta d="M 90 1080 C 60 980, 80 930, 120 880" ponta="M 96 902 L 120 878 L 140 906" de={w(55)} />
-			<Seta d="M 910 1080 C 940 980, 920 930, 880 880" ponta="M 860 906 L 880 878 L 904 902" de={w(55) + 0.06} />
+			<Seta d="M 90 1080 C 60 980, 80 930, 120 880" ponta="M 96 902 L 120 878 L 140 906" de={marca('setas')} />
+			<Seta d="M 910 1080 C 940 980, 920 930, 880 880" ponta="M 860 906 L 880 878 L 904 902" de={marca('setas') + 0.06} />
 		</>
 	);
 };
@@ -424,8 +425,8 @@ export const S7: React.FC<{previas: boolean; nomes: [string, string]}> = ({previ
 /* ================================================================ S8: "Mas se você quiser realmente ver [outros modelos de edição] como esse e aprender" */
 export const S8: React.FC = () => {
 	const {t} = useT();
-	const de = T.cenas[7].de_q / FPS;
-	const outros = w(68);
+	const de = cena('S8').de;
+	const outros = marca('outros');
 	const foco = tw(t, outros - 0.1, outros + 0.3, 0, 1);
 	const planos = [
 		{x: 170, y: 520, z: 0.8, v: 0},
@@ -454,9 +455,9 @@ export const S8: React.FC = () => {
 /* ================================================================ S9 (claro): "a como usar isso nos seus vídeos," */
 export const S9: React.FC = () => {
 	const {t} = useT();
-	const de = T.cenas[8].de_q / FPS;
-	const usar = w(78);
-	const videos = w(82);
+	const de = cena('S9').de;
+	const usar = marca('usar');
+	const videos = marca('videos');
 	const liga = tw(t, usar, usar + 0.2, 0, 1, E.inOut);
 	const kb = mola(t, de, {damping: 15, stiffness: 150});
 	const cur = tw(t, de + 0.05, usar - 0.02, 0, 1, E.inOut);
@@ -490,9 +491,9 @@ export const S9: React.FC = () => {
 /* ================================================================ S10: comenta "EDIÇÃO" aqui embaixo que eu vou te mandar na sua DM agora. */
 export const S10: React.FC = () => {
 	const {t} = useT();
-	const de = T.cenas[9].de_q / FPS;
-	const ed = w(84);
-	const emb = w(86);
+	const de = cena('S10').de;
+	const ed = marca('edicao');
+	const emb = marca('embaixo');
 	return (
 		<>
 			<Fundo tom="marca" />

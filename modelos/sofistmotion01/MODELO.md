@@ -285,18 +285,18 @@ material deles. Mockup leva a tela de quem está anunciando; prova leva prova re
 
 ## 13. Produção com o que a casa tem
 
-A produção segue no **Remotion**, num projeto em `conteudo/AAAA-MM-DD-sofistmotion01-<tema>/` (a Máquina de
-Conteúdo só quando o dono pedir). A régua de qualidade é o `conteudo/2026-09-30-promo-saas-2d/` (tempos num
+A produção segue no **Remotion**, num projeto em `videos/AAAA-MM-DD-sofistmotion01-<tema>/` (a Máquina de
+Conteúdo só quando o dono pedir). A régua de qualidade é o `metodo/regua/2026-09-30-promo-saas-2d/` (tempos num
 arquivo só, conferidos por script).
 
 | Precisa | Ferramenta | Estado |
 |---|---|---|
-| Transcrição palavra a palavra | `projetos/maquina-de-conteudo/tools/transcribe.py` + `align.py` | pronto |
+| Transcrição palavra a palavra | `tools/transcribe.py` + `align.py` | pronto |
 | Tipografia que se monta, contorno neon, desfoque, digitação, contador, anéis, roleta, pílulas, hexágonos, relógio, setas, elipse, flashes, partículas | Remotion (SVG + CSS; partículas com `random(seed)` para o render ser igual sempre) | a construir como componentes do modelo |
 | Brilho "neon de verdade" | pilha de sombras / filtro SVG: **núcleo quase branco + halo colorido largo**. Sem isso o Ouro fica chapado | a construir |
 | Cartões em carrossel 3D, mockup com leve giro | CSS 3D dentro do Remotion (perspectiva + rotação) com a tela real dentro | a construir |
 | Fontes | Inter e Instrument Serif pelo `@remotion/google-fonts` | pronto |
-| Trilha e efeitos (whoosh, flash, clique) | `estudio-2d/kit/audio_ia.py` (ElevenLabs) | pronto, com gasto |
+| Trilha e efeitos (whoosh, flash, clique) | `kit/audio_ia.py` (ElevenLabs) | pronto, com gasto |
 | Textura de fumaça, explosão de quadrinho | `kit/gerar.py` (kie.ai) ou desenhado em SVG | pronto, com gasto |
 | Gravar navegação em site público para os cartões | navegador automatizado (playwright) | conexão disponível |
 
@@ -377,7 +377,7 @@ No sofistmotion01 ele vira assim:
 
 | Vídeo | Estrutura / registro | Saída |
 |---|---|---|
-| Vitrine dos modelos (2026-10-12): a fala da vitrine sem rosto, 30 s | A (anúncio) adaptada, com a chamada falada virando T20 / **Ouro na Noite em 9:16** | `conteudo/2026-10-10-vitrine-modelos/sofistmotion01/out/vitrine-sofistmotion01.mp4` (31,7 s, -14 LUFS; hardlink em `exemplos/`). 10 telas: T1+T3, T2, T8, T6, T2, T4, T9+T10+T3, T7, T5, T20. Componentes reaproveitáveis em `src/base.tsx`, `src/objetos.tsx`, `src/cenas.tsx`; tempos em `src/tempos.json`, conferidos por `scripts/conferir.py` |
+| Vitrine dos modelos (2026-10-12): a fala da vitrine sem rosto, 30 s | A (anúncio) adaptada, com a chamada falada virando T20 / **Ouro na Noite em 9:16** | `modelos/sofistmotion01/exemplos/vitrine-sofistmotion01.mp4` (31,7 s, -14 LUFS; hardlink em `exemplos/`). 10 telas: T1+T3, T2, T8, T6, T2, T4, T9+T10+T3, T7, T5, T20. Componentes reaproveitáveis em `src/base.tsx`, `src/objetos.tsx`, `src/cenas.tsx`; tempos em `src/tempos.json`, conferidos por `scripts/conferir.py` |
 
 **O que a vitrine ensinou (aplicar nos próximos):**
 - Fala rápida (3,25 palavras/s) **não se aperta**: cortar pausa só piora o tempo de leitura. A regra da §15.2 vale

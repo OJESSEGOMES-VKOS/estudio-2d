@@ -9,7 +9,8 @@ const previas = args.includes('--previas');
 const tempos = args.filter((a) => a !== '--previas').map(Number);
 fs.mkdirSync('conferencia', {recursive: true});
 const serve = await bundle({entryPoint: path.resolve('src/index.ts')});
-const props = {previas, nomesPrevias: ['modelodinamico01', 'modelopadrao01']};
+// as props são as padrão do vídeo; PROPS=<arquivo.json> usa as mesmas do render, e --previas liga as prévias por cima
+const props = {...(process.env.PROPS ? JSON.parse(fs.readFileSync(process.env.PROPS, 'utf-8')) : {}), ...(previas ? {previas: true} : {})};
 const comp = await selectComposition({serveUrl: serve, id: 'VitrineYoutubeEdition01', inputProps: props});
 for (const t of tempos) {
 	const out = `conferencia/q_${t.toFixed(2)}${previas ? '_previas' : ''}.png`;

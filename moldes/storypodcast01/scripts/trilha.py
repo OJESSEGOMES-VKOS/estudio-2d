@@ -1,7 +1,11 @@
 """Trilha do storypodcast01: cama contínua por baixo da voz (MODELO §10: as refs têm chão de som de -24,6 a -28,3 dB,
 provável trilha contínua). Pad escuro e frio de podcast de reflexão, 4 acordes lentos (Lá menor, Fá, Dó, Mi menor), com
 um sopro grave discreto na entrada do P&B e um whoosh curto no chicote. Corte seco no fim, como o vídeo.
-Saída: public/trilha.wav.  uso (de dentro do molde): ../../.venv/Scripts/python.exe scripts/trilha.py [--saida arquivo.wav]
+Saída: public/trilha.wav (pad + sopro + whoosh: a música, opção) e public/efeitos.wav (só o sopro e o whoosh, no mesmo
+nível em que estão na trilha: o padrão do modelo, que o mixar.sh usa quando a música está desligada).
+A duração é a de src/Reel.tsx (última palavra + 0,2 s). Num vídeo novo, refaça os EVENTOS abaixo (índices das palavras
+do P&B e da chamada, os mesmos de PLANOS/CHICOTE em src/Reel.tsx); None tira o efeito.
+uso (de dentro do molde): ../../.venv/Scripts/python.exe scripts/trilha.py [--saida arquivo.wav]
 """
 import json, sys
 from pathlib import Path
@@ -13,7 +17,7 @@ from scipy.signal import butter, sosfilt
 AQUI = Path(__file__).resolve().parent.parent
 PS = json.loads((AQUI / 'src' / 'palavras.json').read_text(encoding='utf-8'))
 SR = 48000
-D = 29.83  # = DURACAO do src/Reel.tsx (corte seco 0,2 s depois da última palavra); muda a cada vídeo
+D = round(PS[-1]['end'] + 0.2, 2)  # = DURACAO do src/Reel.tsx (corte seco 0,2 s depois da última palavra)
 N = int(D * SR)
 tt = np.arange(N) / SR
 rng = np.random.default_rng(7)
@@ -44,17 +48,28 @@ def add(buf, t, s, g):
         buf[i:j] += g * s[:j - i]
 
 
+# ================================================================ EVENTOS (o plano do som; None tira o efeito)
+PB_PALAVRA = 41  # 1ª palavra do plano em P&B (o sopro entra no clarão)
+CHICOTE_PALAVRA = 83  # 1ª palavra da chamada (o whoosh antecede o chicote)
+for nome, i in (('PB_PALAVRA', PB_PALAVRA), ('CHICOTE_PALAVRA', CHICOTE_PALAVRA)):
+    if i is not None and not 0 <= i < len(PS):
+        sys.exit(f'scripts/trilha.py: {nome} = {i}, mas a fala tem {len(PS)} palavras (0 a {len(PS) - 1}). '
+                 'Ponha o índice do plano novo de src/Reel.tsx ou None.')
+
 fx = np.zeros(N)
-pb = PS[41]['start'] - 0.06  # entrada do P&B (clarão)
 tb = np.arange(int(1.6 * SR)) / SR
-add(fx, pb - 0.02, np.sin(2 * np.pi * 48 * tb * (1 - 0.2 * tb)) * np.exp(-tb * 2.6), 0.45)
 nw = int(0.35 * SR)
-add(fx, PS[83]['start'] - 0.06 - 0.2, bp(rng.standard_normal(nw), 400, 4000) * np.sin(np.linspace(0, np.pi, nw)) ** 2, 0.18)
+if PB_PALAVRA is not None:
+    pb = PS[PB_PALAVRA]['start'] - 0.06  # entrada do P&B (clarão)
+    add(fx, pb - 0.02, np.sin(2 * np.pi * 48 * tb * (1 - 0.2 * tb)) * np.exp(-tb * 2.6), 0.45)
+if CHICOTE_PALAVRA is not None:
+    add(fx, PS[CHICOTE_PALAVRA]['start'] - 0.06 - 0.2, bp(rng.standard_normal(nw), 400, 4000) * np.sin(np.linspace(0, np.pi, nw)) ** 2, 0.18)
 
 mix = pad * np.minimum(1, tt / 1.5) + fx
 mix[-int(0.01 * SR):] *= np.linspace(1, 0, int(0.01 * SR))
-mix /= np.max(np.abs(mix)) + 1e-9
-mix *= 10 ** (-6 / 20)
 saida = Path(sys.argv[sys.argv.index('--saida') + 1]) if '--saida' in sys.argv else AQUI / 'public' / 'trilha.wav'
-wavfile.write(saida, SR, (np.stack([mix, mix], 1) * 32767).astype(np.int16))
-print(saida, D)
+efeitos = saida.with_name(saida.name.replace('trilha', 'efeitos') if 'trilha' in saida.name else saida.stem + '_efeitos.wav')
+for arq, x in ((saida, mix), (efeitos, fx)):
+    x = x / (np.max(np.abs(mix)) + 1e-9) * 10 ** (-6 / 20)
+    wavfile.write(arq, SR, (np.stack([x, x], 1) * 32767).astype(np.int16))
+print(saida, efeitos, D)

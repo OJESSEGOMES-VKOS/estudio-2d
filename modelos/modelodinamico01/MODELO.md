@@ -1,7 +1,5 @@
 # modelodinamico01
 
-> **Pacote no motor:** `projetos/maquina-de-conteudo/motor/pacotes/modelodinamico01/` (versão 1), em prova até o portão do dono. A comparação com o último vídeo aprovado está em `projetos/maquina-de-conteudo/docs/etapa-7/modelodinamico01.md`.
-
 Modelo de edição de Reel montado olhando quadro a quadro 3 Reels que o Jessé escolheu
 (`referencias/`). Tudo o que ele ensinar dizendo "modelodinâmico01" entra **só aqui**. O que foi
 feito antes (reel v1 a v4, `metodo/laboratorio/licoes-reel-01.md`) é o **modelopadrao01** e não
@@ -96,4 +94,4 @@ perfil com Seguir clicado virando "Seguindo" (ref3).
 
 | Vídeo | Base | Saída |
 |---|---|---|
-| Reel "editado pelo Claude" | `cru/decupado.mp4` (decupado à mão pelo Jessé) | `conteudo/2026-10-05-reel-editado-pelo-claude/out/reel-dinamico01.mp4` |
+| Reel "editado pelo Claude" | `cru/decupado.mp4` (decupado à mão pelo Jessé) | `modelos/modelodinamico01/exemplos/reel-editado-pelo-claude.mp4` |

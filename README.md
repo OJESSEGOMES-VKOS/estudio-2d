@@ -37,8 +37,25 @@ Abra a pasta no Claude Code (o `CLAUDE.md` já orienta o Claude) e peça, por ex
 storypodcast01"*. Por baixo, o caminho é:
 
 1. `.venv/Scripts/python.exe tools/novo-video.py storypodcast01 minha-gravacao.mp4 2026-10-20-meu-tema`
-2. O Claude lê `modelos/storypodcast01/MODELO.md` e `REGRAS.md` e refaz o plano frase a frase sobre a sua fala.
+   (se o Whisper errar um nome sempre do mesmo jeito, corrija na hora: `--trocar Cloud=Claude`). A pasta `base/` que
+   nasce no vídeo guarda a preparação original (fala, voz, palavras, rosto). Errou uma palavra depois de criado?
+   `.venv/Scripts/python.exe tools/trocar.py videos/2026-10-20-meu-tema Claudio=Claude` corrige sem rodar o Whisper de
+   novo. Narração sem imagem (mp3/wav) também entra: vira um vídeo preto em pé, para os modelos sem pessoa gravada.
+   O mesmo comando adapta a sua gravação ao ponto de partida do modelo (`tools/adaptar.py`): o rosto no tamanho e na
+   altura em que o modelo foi calibrado e a mesma luz de partida. Sem isso, uma gravação mais perto, mais baixa ou mais
+   clara sai com a cabeça cortada e a cor errada.
+2. O Claude lê `modelos/storypodcast01/MODELO.md`, `REGRAS.md` e olha `modelos/storypodcast01/referencia.jpg` (quadros
+   do vídeo aprovado do modelo) e `modelos/storypodcast01/CORRECOES.md`, e refaz o plano frase a frase sobre a sua fala.
 3. Confere com o checador do molde, olha os quadros e renderiza (`QUEM=eu sh tools/com-trava.sh npx remotion render ...`).
+   A trava põe um render por vez e apaga as sobras do Remotion no fim.
+4. Confere se parece o modelo: `.venv/Scripts/python.exe tools/parece.py videos/<pasta>/out/final.mp4 <modelo>`. Ele
+   mede luz, cor, enquadramento do rosto e ritmo contra a assinatura do modelo (`modelos/<modelo>/assinatura.json`) e
+   grava uma folha com o seu vídeo embaixo da referência. Reprovou, o vídeo ainda não está pronto.
+
+No macOS e no Linux, troque `.venv/Scripts/python.exe` por `.venv/bin/python` em todos os comandos.
+
+**Dica de gravação:** deixe 1 segundo de silêncio depois da última frase. Os modelos seguram a última palavra na tela
+um pouco depois da fala; sem essa sobra, o último quadro fica parado.
 
 ## Os modelos
 | Com a pessoa gravada | Sem gravação de pessoa |
@@ -47,8 +64,18 @@ storypodcast01"*. Por baixo, o caminho é:
 
 Os moldes vêm sem a mídia do vídeo de origem (gravação, imagens geradas, trilhas): para ver um modelo funcionando, rode
 `novo-video.py` com uma gravação sua. Cada molde traz o plano do vídeo de origem, preso àquela fala; o molde trava de
-propósito se a fala nova não bater, e é aí que o Claude refaz o plano para a sua fala. Moldes que usam imagens
-(superpodcast01, modelodinamico02, anunciocanvas01) dizem no `LEIA.md` quais gerar ou buscar com o `kit/`.
+propósito se a fala nova não bater, e é aí que o Claude refaz o plano para a sua fala. Cada molde tem no `LEIA.md` a
+seção **"Vídeo novo"**: o que refazer, as chaves, o conferidor, o render e a mixagem. **O padrão de cada modelo é o
+vídeo aprovado dele**: o que aparece nele (tratamento de cor, palco, efeitos sonoros) vem ligado, e só vem desligado
+o que o `modelos/<modelo>/CORRECOES.md` manda desligar. As correções do criador ficam nesse arquivo e valem acima
+do MODELO.md e do código.
+
+O que o vídeo de origem tinha e você mesmo providencia:
+- **Prévias** (os clipes acelerados em cima, em alguns moldes): faça de vídeos seus já prontos com
+  `tools/previa.py <seu-video.mp4> videos/<pasta> 1 --de 10` (e `2` para a segunda). Nunca vídeo de terceiro.
+- **Cartões de colagem** (superpodcast01): `tools/cards.py`, a partir dos seus vídeos e da sua gravação.
+- **Imagens geradas ou buscadas** (palco, B-roll, cenários): o `LEIA.md` do molde diz quais, com o comando do `kit/`.
+  Imagem por IA é opção sua, nunca obrigação.
 
 ## Licença e créditos
 Licença **Apache 2.0** (`LICENSE`). Você pode usar, modificar e redistribuir, inclusive comercialmente, **desde que

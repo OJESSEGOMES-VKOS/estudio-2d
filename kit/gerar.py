@@ -26,7 +26,7 @@ def chave():
             if linha.strip().startswith('KIE_API_KEY='):
                 k = linha.split('=', 1)[1].strip().strip('"\'')
     if not k:
-        sys.exit('Falta a chave da kie.ai: cole em projetos/estudio-2d/kit/.env (KIE_API_KEY=...).')
+        sys.exit('Falta a chave da kie.ai: cole em kit/.env (KIE_API_KEY=...).')
     return k
 
 

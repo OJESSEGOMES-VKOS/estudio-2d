@@ -1,21 +1,29 @@
 """Trilha do youtubeedition01 (MODELO §10): cama contínua por baixo da voz o vídeo inteiro (o chão constante de S, D e
 J), voz sempre na frente; efeito curto e discreto na entrada de gráfico (a proposta de partida do §10).
 Clima de vídeo de método no YouTube: piano elétrico macio em Fá maior (Fmaj7, Am7, Dm7, C), baixo redondo, bumbo
-leve a 96 bpm e chocalho; um sopro em cada giro do cartão (5,24 e 21,91), na tela de reels (11,75) e um toque curto
-no 100% (1,20), no nome do modelo (13,24) e no EDIÇÃO (27,35). Sintetizada aqui (sem música de terceiro).
+leve a 96 bpm e chocalho; um sopro em cada giro do cartão e na tela de reels, um toque curto em cada título e na
+palavra-chave do pedido. Sintetizada aqui (sem música de terceiro). A duração sai da fala (src/palavras.json, 0,7 s
+depois da última palavra, a mesma do vídeo); os sopros e toques vêm por argumento, e o `node scripts/checar.mjs` imprime
+o comando com os deste plano. Música é opção: o vídeo sai sem ela se você não rodar isto.
 Saída: public/trilha.wav. Encanamento do trilha.py do superpodcast01 da vitrine.
-uso: ../../.venv/Scripts/python.exe scripts/trilha.py   (SAIDA=<pasta> grava fora de public/)
+uso: ../../.venv/Scripts/python.exe scripts/trilha.py [--sopros 5.24 11.75 21.91] [--toques 1.2 13.24 27.35]
+     (SAIDA=<pasta> grava fora de public/; os números acima são os da vitrine)
 """
-import os
+import argparse, json, os
 from pathlib import Path
 
 import numpy as np
 from scipy.io import wavfile
 from scipy.signal import butter, sosfilt
 
+ap = argparse.ArgumentParser()
+ap.add_argument('--sopros', nargs='*', type=float, default=[], help='segundos dos giros do cartão e da tela de reels')
+ap.add_argument('--toques', nargs='*', type=float, default=[], help='segundos dos títulos e da palavra-chave do pedido')
+a = ap.parse_args()
 AQUI = Path(__file__).resolve().parent.parent
 SR = 48000
-D = 910 / 30
+PS = json.loads((AQUI / 'src' / 'palavras.json').read_text(encoding='utf-8'))
+D = round((PS[-1]['end'] + 0.7) * 30) / 30  # o DURACAO_Q do src/plano.ts
 N = int(D * SR)
 tt = np.arange(N) / SR
 rng = np.random.default_rng(7)
@@ -88,11 +96,11 @@ while t < D:
 fx = np.zeros(N)
 nw = int(0.42 * SR)
 sopro = bp(rng.standard_normal(nw), 600, 7000) * np.sin(np.linspace(0, np.pi, nw)) ** 2
-for t0 in (5.24, 11.75, 21.91):
+for t0 in a.sopros:
     add(fx, t0 - 0.06, sopro, 0.5)
 tq = np.arange(int(0.25 * SR)) / SR
 toque = (np.sin(2 * np.pi * 1320 * tq) * 0.6 + np.sin(2 * np.pi * 1980 * tq) * 0.3) * np.exp(-tq * 28)
-for t0 in (1.20, 13.24, 27.35):
+for t0 in a.toques:
     add(fx, t0, toque, 0.35)
 
 cama = ep * 0.62 + bat * 0.30

@@ -242,11 +242,11 @@ Fontes: Anton (palavra-chave), Poppins (pequena), Sacramento (manuscrita), Cormo
 
 | precisa | ferramenta | estado |
 |---|---|---|
-| transcrição palavra a palavra | `projetos/maquina-de-conteudo/tools/transcribe.py` + `align.py` | pronto |
-| posição do rosto (lado do texto, escada de zoom, reenquadre) | `maquina-de-conteudo/tools/enquadrar.py` (YuNet) | pronto |
+| transcrição palavra a palavra | `tools/transcribe.py` + `align.py` | pronto |
+| posição do rosto (lado do texto, escada de zoom, reenquadre) | `tools/enquadrar.py` (YuNet) | pronto |
 | grade escura petróleo, P&B, clarão | Remotion (filtro CSS por plano) ou ffmpeg antes | a montar |
 | bloco lateral, palavra central, legenda, narração, revelação letra a letra, piscar, brilho azul | Remotion, componentes novos | a montar |
-| imagens de apoio | `estudio-2d/kit/buscar.py` (banco aberto, com `ORIGEM.md`); `kit/gerar.py` + `kit/video.py` (atmosfera, sem pessoa real; o clipe sai em 480p, serve só pequeno ou muito escuro) | pronto, com gasto |
+| imagens de apoio | `kit/buscar.py` (banco aberto, com `ORIGEM.md`); `kit/gerar.py` + `kit/video.py` (atmosfera, sem pessoa real; o clipe sai em 480p, serve só pequeno ou muito escuro) | pronto, com gasto |
 | trilha | `kit/audio_ia.py` (ElevenLabs) | pronto, com gasto |
 
 Fluxo:
@@ -329,7 +329,7 @@ imagem"): grade, recorte de fundo e o tamanho/estilo das palavras gigantes color
 
 | data | peça | observação |
 |---|---|---|
-| 2026-10-10 | vitrine dos modelos (`conteudo/2026-10-10-vitrine-modelos/storypodcast01/`, 29,8 s, 9:16) | 1ª aplicação, ainda sem o olho do Jessé: parede bege virou breu petróleo com recorte RVM (`scripts/grade.py`), Anton condensada a 0,88 para a proporção das refs, 11 planos de uma câmera, 15 palavras-chave, P&B 1 vez; componentes do modelo em `src/Reel.tsx` |
+| 2026-10-10 | vitrine dos modelos (`moldes/storypodcast01/`, 29,8 s, 9:16) | 1ª aplicação, ainda sem o olho do Jessé: parede bege virou breu petróleo com recorte RVM (`scripts/grade.py`), Anton condensada a 0,88 para a proporção das refs, 11 planos de uma câmera, 15 palavras-chave, P&B 1 vez; componentes do modelo em `src/Reel.tsx` |
 | 2026-10-12 | vitrine, revisão 1 (correções do Jessé) | regras do §18b: 6 cortes, legenda em 2 posições, sem manuscrita, sem o nome do modelo, pedaços >= 1,5 s, props `musica` e `efeitoFundo` |
 
 ## 20. Em aberto

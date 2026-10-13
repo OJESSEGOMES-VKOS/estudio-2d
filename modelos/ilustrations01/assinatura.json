@@ -1,0 +1,15 @@
+{
+ "modelo": "ilustrations01",
+ "gerado_de": "vitrine-ilustrations01.mp4",
+ "saida": {
+  "video": "vitrine-ilustrations01.mp4",
+  "segundos": 30.2,
+  "formato": "1080x1920",
+  "brilho": 6.53,
+  "contraste": 8.0,
+  "saturacao": 4.64,
+  "temperatura": -0.04,
+  "tom": 0.08,
+  "cortes_min": 0.0
+ }
+}

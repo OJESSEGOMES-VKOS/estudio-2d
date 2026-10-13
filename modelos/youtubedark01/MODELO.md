@@ -1,7 +1,5 @@
 # youtubedark01
 
-> **Pacote no motor:** `projetos/maquina-de-conteudo/motor/pacotes/youtubedark01/` (versão 1), em prova até o portão do dono. A comparação com o último vídeo aprovado está em `projetos/maquina-de-conteudo/docs/etapa-7/youtubedark01.md`.
-
 Primeiro modelo do estilo **YouTube Dark**: vídeos de canal sem rosto ("perfil dark"), em 16:9 e 9:16.
 Montado olhando quadro a quadro 8 vídeos de 3 canais que o Jessé escolheu, lendo o roteiro de cada um
 pela legenda e medindo o ritmo de cortes. Diferente dos outros modelos, este cobre **direção** (roteiro e
@@ -10,7 +8,7 @@ cenas) além da edição. Tudo o que ele ensinar dizendo "youtubedark01" entra *
 Ferramentas em `analise/`: `cenas.py` (detecta cada corte, faz a folha com 1 quadro por cena, mede o ritmo
 e limpa o roteiro da legenda). Folhas: `refN_cenas_XX.png` (uma por cena), `refN_t_XX.png` (1 quadro a cada
 2 s), `qN_01.png` (6 qps nos momentos-chave). Roteiros: `refN_roteiro.txt`. Ritmo: `refN_cortes.txt`.
-Download: `projetos/estudio-2d/tools/.venv-ytdlp` (yt-dlp).
+Download: `tools/.venv-ytdlp` (yt-dlp).
 
 | | Canal | Vídeo | Formato | Duração | Cenas | Mediana por cena |
 |---|---|---|---|---|---|---|
@@ -194,5 +192,5 @@ deserve. Grace gives what we do not deserve.") em 35 s.
 
 | Vídeo | Família | Saída |
 |---|---|---|
-| HOJE (procrastinação, 32 s, 9:16, sem voz; sombra diz "amanhã") | A | `conteudo/2026-10-06-youtubedark-hoje/out/hoje-youtubedark.mp4` |
-| Vitrine dos modelos (30,4 s, 9:16, narrado com a voz do Jessé; prévias superpodcast01 + youtubeedition01) | B (identidade escura) | `conteudo/2026-10-10-vitrine-modelos/youtubedark01/out/vitrine-youtubedark01.mp4` |
+| HOJE (procrastinação, 32 s, 9:16, sem voz; sombra diz "amanhã") | A | `modelos/youtubedark01/exemplos/hoje-youtubedark.mp4` |
+| Vitrine dos modelos (30,4 s, 9:16, narrado com a voz do Jessé; prévias superpodcast01 + youtubeedition01) | B (identidade escura) | `modelos/youtubedark01/exemplos/vitrine-youtubedark01.mp4` |

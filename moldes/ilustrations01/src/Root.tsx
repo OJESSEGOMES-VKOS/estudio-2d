@@ -10,6 +10,6 @@ export const Root: React.FC = () => (
 		fps={FPS}
 		width={1080}
 		height={1920}
-		defaultProps={{previas: false, nomesPrevias: ['storypodcast01', 'youtubeedition01'] as [string, string], musica: false, efeitos: false}}
+		defaultProps={{previas: false, nomesPrevias: ['storypodcast01', 'youtubeedition01'] as [string, string], musica: false, efeitos: true}}
 	/>
 );

@@ -1,12 +1,12 @@
 import React from 'react';
 import {Composition} from 'remotion';
-import {Corte, DURACAO, FPS} from './Corte';
+import {Corte, FPS, QUADROS} from './Corte';
 
 export const Root: React.FC = () => (
 	<Composition
 		id="VitrinePregacao"
 		component={Corte}
-		durationInFrames={Math.floor(DURACAO * FPS)}
+		durationInFrames={QUADROS}
 		fps={FPS}
 		width={1080}
 		height={1920}

@@ -2,14 +2,38 @@ import React from 'react';
 import {Easing, interpolate, spring, useCurrentFrame} from 'remotion';
 import {loadFont as loadGeist} from '@remotion/google-fonts/Geist';
 import {loadFont as loadMono} from '@remotion/google-fonts/GeistMono';
-import T from './tempos.json'; // scripts/gerar_tempos.py (o plano, preso às palavras)
+import TJ from './tempos.json'; // scripts/gerar_tempos.py (o plano, preso às palavras)
 import PALAVRAS from './palavras.json'; // entrada padrão: [{text,start,end}]
-import R from './rosto_med.json'; // scripts/rosto.py: enquadramento por trecho (mediana de olhos, largura, queixo)
+import RJ from './rosto_med.json'; // scripts/rosto.py: enquadramento por trecho (mediana de olhos, largura, queixo)
 
-export const P = {
-	duracao: T.duracao,
-	palavras: (PALAVRAS as {text: string; start: number; end: number}[]).map((p) => ({texto: p.text, de: p.start, ate: p.end})),
+/** o plano (src/tempos.json). Tela que o vídeo não usa vem null de scripts/gerar_tempos.py e some. */
+type Tela<K extends keyof typeof TJ> = (typeof TJ)[K] | null;
+export type Tempos = Omit<typeof TJ, 'editor' | 'modelos' | 'celular' | 'previas' | 'outros' | 'prompt' | 'fecho' | 'silencio' | 'titulos'> & {
+	editor: Tela<'editor'>;
+	modelos: Tela<'modelos'>;
+	celular: Tela<'celular'>;
+	previas: Tela<'previas'>;
+	outros: Tela<'outros'>;
+	prompt: Tela<'prompt'>;
+	fecho: Tela<'fecho'>;
+	silencio: Tela<'silencio'>;
+	titulos: {editor: {i0: number; grupos: number[]} | null; celular: {i0: number; grupos: number[]} | null};
+	fala?: {palavras: number; fim: number};
 };
+const T = TJ as unknown as Tempos;
+const R = RJ as typeof RJ & {fala?: {palavras: number; fim: number}};
+const palavras = (PALAVRAS as {text: string; start: number; end: number}[]).map((p) => ({texto: p.text, de: p.start, ate: p.end}));
+/* 2026-10-13 (teste do estúdio aberto): o plano e o enquadramento têm de ser desta fala; se não, para com o que rodar */
+const marca = (x?: {palavras: number; fim: number}) => !!x && palavras.length > 0 && x.palavras === palavras.length && x.fim === palavras[palavras.length - 1].ate;
+if (!palavras.length) throw new Error('src/palavras.json está vazio: este molde precisa da fala transcrita (tools/preparar.py ou tools/novo-video.py).');
+if (!marca(T.fala))
+	throw new Error(
+		'src/tempos.json é de outra fala. Refaça o bloco "O PLANO" de scripts/gerar_tempos.py para a fala nova e rode ../../.venv/Scripts/python.exe scripts/gerar_tempos.py (ele para e diz a linha se uma palavra do plano não existe na fala). LEIA.md, "Vídeo novo".',
+	);
+if (!marca(R.fala) || R.trechos.length !== T.blocos.length)
+	throw new Error('src/rosto_med.json é de outra gravação ou de outros blocos. Rode ../../.venv/Scripts/python.exe scripts/rosto.py (depois do gerar_tempos.py).');
+
+export const P = {duracao: T.duracao, palavras};
 export {T, R};
 export const FPS = T.fps;
 
@@ -71,16 +95,17 @@ export const blocoDe = (t: number) => {
 	return k;
 };
 
-/** as prévias de outros modelos (prop da composição); com `previas: false` nada delas aparece */
-export type Previas = {previas: boolean; nomesPrevias: [string, string]};
-export const PreviasCtx = React.createContext<Previas>({previas: false, nomesPrevias: ['', '']});
+/** as prévias de outros modelos e o perfil (props da composição); com `previas: false` nada delas aparece; arroba e
+ * foto vazios escondem o elemento */
+export type Previas = {previas: boolean; nomesPrevias: [string, string]; arroba: string; foto: string};
+export const PreviasCtx = React.createContext<Previas>({previas: false, nomesPrevias: ['', ''], arroba: '', foto: ''});
 export const usePrevias = () => React.useContext(PreviasCtx);
 
 /** telas divididas (M05): os modelos, as prévias (só com previas) e o prompt. Saída = começa no `sai` e leva 0,4 s */
 const divididos = (previas: boolean): [number, number][] => [
-	[T.modelos.de, T.modelos.sai],
-	...(previas ? ([[T.previas.de, T.previas.sai]] as [number, number][]) : []),
-	[T.prompt.de, T.prompt.sai],
+	...(T.modelos ? ([[T.modelos.de, T.modelos.sai]] as [number, number][]) : []),
+	...(previas && T.previas ? ([[T.previas.de, T.previas.sai]] as [number, number][]) : []),
+	...(T.prompt ? ([[T.prompt.de, T.prompt.sai]] as [number, number][]) : []),
 ];
 export const pDividido = (t: number, previas: boolean) => {
 	let p = 0;
@@ -90,8 +115,8 @@ export const pDividido = (t: number, previas: boolean) => {
 export const DIVISA = 960;
 
 /** fases em que o rosto mora dentro de uma moldura (editor, celular) e o título no topo é o texto dito */
-export const noEditor = (t: number) => t >= T.editor.de - 0.4 && t < T.editor.devolve + 0.3;
-export const noCelular = (t: number) => t >= T.celular.de - 0.05 && t < T.celular.devolve + 0.3;
+export const noEditor = (t: number) => !!T.editor && t >= T.editor.de - 0.4 && t < T.editor.devolve + 0.3;
+export const noCelular = (t: number) => !!T.celular && t >= T.celular.de - 0.05 && t < T.celular.devolve + 0.3;
 
 export const SOMBRA = '0 18px 40px rgba(60,48,30,0.16), 0 2px 6px rgba(60,48,30,0.10)';
 

@@ -8,15 +8,20 @@ import RT from './rosto.json'; // entrada padrão: [[t,cx,cy,h]] a cada 0,25 s
 import R from './rosto_med.json'; // scripts/rosto.py: mediana de olhos, largura e queixo (px no quadro 1080)
 
 /**
- * Vitrine dos modelos, no modelodinamico01 (projetos/estudio-2d/modelos/modelodinamico01/MODELO.md).
- * DURACAO é a duração da fala (public/voz.wav) arredondada a 0,01 s; muda a cada vídeo.
+ * Vitrine dos modelos, no modelodinamico01 (../../modelos/modelodinamico01/MODELO.md).
+ * 2026-10-13 (teste do estúdio aberto): a duração vem das palavras, toda palavra do plano é conferida contra a fala ao
+ * carregar (w e iw param com a mensagem do que refazer) e o rosto médio tem de ser desta gravação.
  */
 export const FPS = 30;
-export const DURACAO = 30.36;
-export const P = {
-	duracao: DURACAO,
-	palavras: (PALAVRAS as {text: string; start: number; end: number}[]).map((p) => ({texto: p.text, de: p.start, ate: p.end})),
-};
+const palavras = (PALAVRAS as {text: string; start: number; end: number}[]).map((p) => ({texto: p.text, de: p.start, ate: p.end}));
+if (!palavras.length) throw new Error('src/palavras.json está vazio: este molde precisa da fala transcrita (tools/preparar.py ou tools/novo-video.py).');
+/** fim da última palavra + 0,73 s (na vitrine: 29,63 + 0,73 = 30,36 s, a duração da voz) */
+export const DURACAO = Math.round((palavras[palavras.length - 1].ate + 0.73) * 100) / 100;
+export const P = {duracao: DURACAO, palavras};
+/* src/rosto_med.json (scripts/rosto.py) guarda de qual fala ele é; se a gravação mudou, para aqui */
+const RM = R as typeof R & {fala?: {palavras: number; fim: number}; quadros?: number};
+if (!RM.fala || !RM.quadros || RM.fala.palavras !== palavras.length || RM.fala.fim !== palavras[palavras.length - 1].ate)
+	throw new Error('src/rosto_med.json é de outra gravação. Rode ../../.venv/Scripts/python.exe scripts/rosto.py (mede o rosto de public/fala.mp4) e carregue de novo.');
 export {R};
 
 export const C = {
@@ -67,13 +72,19 @@ export const rostoX = (t: number) => {
 	return m * 1080;
 };
 
-/** início da n-ésima ocorrência da palavra (sem pontuação, sem caixa) */
-const limpa = (s: string) => s.toLowerCase().replace(/[.,!?]/g, '');
-export const w = (texto: string, n = 1) => {
+/** a palavra sem maiúscula, acento e pontuação (o Whisper varia nisso) */
+export const limpa = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9%]/g, '');
+/** índice (em src/palavras.json) da n-ésima vez que a palavra é dita; se a fala não tem, para com o que refazer */
+export const iw = (texto: string, n = 1) => {
 	let k = 0;
-	for (const p of P.palavras) if (limpa(p.texto) === limpa(texto) && ++k === n) return p.de;
-	throw new Error(`palavra não achada: ${texto} #${n}`);
+	for (let i = 0; i < P.palavras.length; i++) if (limpa(P.palavras[i].texto) === limpa(texto) && ++k === n) return i;
+	throw new Error(
+		`O plano não bate com a fala de src/palavras.json: \`${n > 1 ? `w('${texto}', ${n})` : `w('${texto}')`}\` pede a ${n}ª vez que se diz "${texto}", e a fala ${k ? `só tem ${k}` : 'não tem nenhuma'}.\n` +
+			'Refaça o plano para a fala nova (LEIA.md, "Vídeo novo": base() em src/tema.ts, as cenas de src/Cenas.tsx e CHAVE em src/Legenda.tsx) e rode node scripts/cobertura.mjs, que lista todas as palavras que faltam.',
+	);
 };
+/** início da n-ésima ocorrência da palavra */
+export const w = (texto: string, n = 1) => P.palavras[iw(texto, n)].de;
 
 /* ---------------------------------------------------------------- as cenas, frase a frase */
 /** corte seco 2 quadros antes da palavra que abre a cena (ref1/ref2: troca de modo sem transição) */
@@ -96,8 +107,8 @@ export const montaCenas = (previas: boolean): Cena[] => {
 	return b.map(([id, modo, de, topo], i) => ({id, modo, de, ate: i + 1 < b.length ? b[i + 1][2] : DURACAO, legendaTopo: topo}));
 };
 
-/** as prévias ligadas ou não (prop da composição) chegam a todo lugar por contexto */
-export const Previas = React.createContext<{previas: boolean; nomesPrevias: [string, string]}>({previas: false, nomesPrevias: ['', '']});
+/** as prévias ligadas ou não e o perfil (props da composição) chegam a todo lugar por contexto; arroba e foto vazios escondem o elemento */
+export const Previas = React.createContext<{previas: boolean; nomesPrevias: [string, string]; arroba: string; foto: string}>({previas: false, nomesPrevias: ['', ''], arroba: '', foto: ''});
 export const useCenas = () => {
 	const {previas} = React.useContext(Previas);
 	return React.useMemo(() => montaCenas(previas), [previas]);

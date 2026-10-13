@@ -27,7 +27,11 @@ const montar = (specs: Spec[]): Cena[] => {
 };
 
 const ab = (x: number, y: number, extra: React.CSSProperties = {}): React.CSSProperties => ({position: 'absolute', left: x, top: y, ...extra});
-const img = (n: string) => staticFile(`d1/${n}`);
+/** o perfil (props da composição) na assinatura do fecho; vazio esconde */
+export const Perfil = React.createContext({arroba: '', foto: ''});
+/** os quadros reais que enchem a palavra "frame" (arquivos em public/; null = a palavra em cor sólida). Num vídeo novo:
+ * ffmpeg -ss <segundo> -i public/fala.mp4 -frames:v 1 -q:v 3 public/quadros/f600.jpg (um quadro da sua gravação) */
+const FRAME_FOTOS: [string | null, string | null] = ['quadros/f600.jpg', 'quadros/f602.jpg'];
 const cores = (f: 'E' | 'L') => (f === 'E' ? {fg: C.creme, acento: C.laranja, sub: 'rgba(251,239,230,0.82)'} : {fg: C.tinta, acento: C.creme, sub: 'rgba(26,13,8,0.8)'});
 
 /* ------------------------------------------------------------------ peças */
@@ -284,7 +288,7 @@ const Frame: React.FC = () => {
 					filter: `blur(${(1 - k) * 18}px)`,
 					transform: `scale(${1 + (t - at) * 0.03})`,
 					...(foto
-						? {backgroundImage: `url(${img(foto)})`, backgroundSize: 'cover', backgroundPosition: 'center 30%', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', WebkitTextStroke: `3px ${C.tinta}`}
+						? {backgroundImage: `url(${staticFile(foto)})`, backgroundSize: 'cover', backgroundPosition: 'center 30%', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', WebkitTextStroke: `3px ${C.tinta}`}
 						: {color: C.tinta}),
 				})}
 			>
@@ -294,9 +298,9 @@ const Frame: React.FC = () => {
 	};
 	return (
 		<>
-			{palavra('frame', 'q/f600.jpg', 360, marcas[0], 340)}
+			{palavra('frame', FRAME_FOTOS[0], 360, marcas[0], 340)}
 			{palavra('por', null, 760, marcas[1], 150)}
-			{palavra('frame', 'q/f602.jpg', 960, marcas[2], 340)}
+			{palavra('frame', FRAME_FOTOS[1], 960, marcas[2], 340)}
 			{marcas.map((m, i) =>
 				t >= m ? (
 					<div key={i} style={ab(0, [720, 920, 1320][i], {width: 1080, textAlign: 'center', fontFamily: MONO, fontSize: 32, color: C.tinta, opacity: i === 1 ? 0 : 0.75})}>
@@ -460,6 +464,7 @@ const Dial: React.FC = () => {
 
 const Assinatura: React.FC = () => {
 	const {t} = useT();
+	const {arroba, foto} = React.useContext(Perfil);
 	const c = CENAS.find((x) => x.id === 'segue')!;
 	const k = mola(t, c.de + 0.2, {damping: 16});
 	const s = w('segue');
@@ -468,17 +473,21 @@ const Assinatura: React.FC = () => {
 	const anel = tw(t, aqui, aqui + 0.45, 0, 1, E.inOut);
 	return (
 		<>
-			<div style={ab(370, 1000, {width: 340, height: 340, borderRadius: 170, padding: 10, boxSizing: 'border-box', background: `conic-gradient(${C.laranja}, #FEDA75, ${C.laranja})`, opacity: Math.min(1, k * 1.5), transform: `scale(${0.6 + 0.4 * k})`})}>
-				<Img src={img('foto.jpg')} style={{width: 320, height: 320, borderRadius: 160, objectFit: 'cover', border: `8px solid ${C.escuro}`, boxSizing: 'border-box'}} />
-			</div>
+			{foto && (
+				<div style={ab(370, 1000, {width: 340, height: 340, borderRadius: 170, padding: 10, boxSizing: 'border-box', background: `conic-gradient(${C.laranja}, #FEDA75, ${C.laranja})`, opacity: Math.min(1, k * 1.5), transform: `scale(${0.6 + 0.4 * k})`})}>
+					<Img src={staticFile(foto)} style={{width: 320, height: 320, borderRadius: 160, objectFit: 'cover', border: `8px solid ${C.escuro}`, boxSizing: 'border-box'}} />
+				</div>
+			)}
+			{arroba && (
 			<div style={ab(0, 1400, {width: 1080, textAlign: 'center', fontFamily: MONO, fontSize: 64, color: C.creme, opacity: kh, filter: `blur(${(1 - kh) * 16}px)`})}>
 				<span style={{position: 'relative', display: 'inline-block', padding: '0 20px'}}>
-					@ojessegomes
+					@{arroba}
 					<svg style={{position: 'absolute', left: '-6%', top: '-40%', width: '112%', height: '180%', overflow: 'visible', filter: `drop-shadow(0 0 16px ${C.laranja})`}} viewBox="0 0 100 100" preserveAspectRatio="none">
 						<ellipse cx={50} cy={50} rx={49} ry={46} fill="none" stroke={C.laranja} pathLength={1} strokeDasharray={1} strokeDashoffset={1 - anel} style={{strokeWidth: 6}} vectorEffect="non-scaling-stroke" />
 					</svg>
 				</span>
 			</div>
+			)}
 		</>
 	);
 };

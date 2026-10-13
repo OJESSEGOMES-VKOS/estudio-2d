@@ -25,7 +25,11 @@ SAI = AQUI / 'public' / 'fala_grade.mp4'
 ROSTO = json.loads((AQUI / 'src' / 'rosto.json').read_text(encoding='utf-8'))
 
 ESTUDIO = np.array([19, 26, 30], np.float32) / 255  # #131A1E
-sess = ort.InferenceSession(str(MOD / 'rvm_mobilenetv3_fp32.onnx'), providers=['CUDAExecutionProvider', 'CPUExecutionProvider'])
+# só os provedores que este onnxruntime tem; sem placa NVIDIA (ou sem o CUDA/cuDNN instalado) roda na CPU, sem o aviso
+# longo do onnxruntime (falha de verdade continua parando o script)
+ort.set_default_logger_severity(4)
+sess = ort.InferenceSession(str(MOD / 'rvm_mobilenetv3_fp32.onnx'), providers=[p for p in ('CUDAExecutionProvider', 'CPUExecutionProvider') if p in ort.get_available_providers()])
+print('recorte da pessoa na', 'placa de vídeo (CUDA)' if 'CUDAExecutionProvider' in sess.get_providers() else 'CPU (leva alguns minutos)', flush=True)
 RATIO = np.array([0.25], np.float32)
 
 yy = (np.arange(H, dtype=np.float32) / H)[:, None]

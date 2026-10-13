@@ -1,7 +1,5 @@
 # modelodinamico02
 
-> **Pacote no motor:** `projetos/maquina-de-conteudo/motor/pacotes/modelodinamico02/` (versão 1), em prova até o portão do dono. A comparação com o último vídeo aprovado está em `projetos/maquina-de-conteudo/docs/etapa-7/modelodinamico02.md`.
-
 Modelo de edição montado olhando quadro a quadro 3 Reels que o Jessé escolheu (`referencias/`).
 Tudo o que ele ensinar dizendo "modelodinâmico02" entra **só aqui**. Não mistura com o
 modelodinamico01 (palco + rosto + interface) nem com o modelopadrao01.
@@ -88,4 +86,4 @@ grande carregam a ideia.
 
 | Vídeo | Base | Saída |
 |---|---|---|
-| Reel "editado pelo Claude" (versão para o site do método) | `cru/decupado.mp4` (só a voz) | `conteudo/2026-10-05-reel-editado-pelo-claude/out/reel-dinamico02.mp4` |
+| Reel "editado pelo Claude" (versão para o site do método) | `cru/decupado.mp4` (só a voz) | `modelos/modelodinamico02/exemplos/reel-editado-pelo-claude.mp4` |
