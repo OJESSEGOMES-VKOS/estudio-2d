@@ -21,4 +21,4 @@ kit/.env
 *.mp3
 
 # a referencia propria de cada modelo vai junto
-!modelos/*/referencia/referencia.mp4
+!modelos/*/referencia/*.mp4

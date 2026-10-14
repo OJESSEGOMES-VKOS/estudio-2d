@@ -14,7 +14,8 @@ sonoros, ritmo de câmera) vem ligado; só fica desligado o que o `<modelo>.md` 
 1. Leia `README.md` e o `modelos/<modelo>/<modelo>.md` inteiro antes de qualquer edição.
 2. Estude o vídeo aprovado do modelo em `modelos/<modelo>/referencia/`: o `referencia.mp4` (com a voz), a `folha.jpg`
    (1 quadro por segundo) e o `mapa.json` (rosto, luz e cortes medidos a cada 0,25 s). Assista, tire os quadros que
-   precisar e meça. O vídeo tem que parecer o modelo, não o seu gosto.
+   precisar e meça. O `original.mp4` é o mesmo vídeo em qualidade cheia. O vídeo tem que parecer o modelo, não o seu
+   gosto; mas a referência mostra o jeito, não um roteiro para copiar: as telas, os textos e os cortes nascem da fala nova.
 3. Um vídeo novo nasce com `tools/novo-video.py <modelo> <gravacao> <AAAA-MM-DD-tema>` (nome que a transcrição errar:
    `--trocar Errado=Certo`) e vive em `videos/`. Ele já adapta a gravação ao ponto de partida do modelo
    (`tools/adaptar.py`: rosto no tamanho e na altura, luz de partida); não pule esse passo. Depois siga a seção do vídeo

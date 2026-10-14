@@ -5,7 +5,9 @@ bater com o código do molde, vale o que está aqui.
 
 **A referência é o `referencia/referencia.mp4`**, o vídeo aprovado do modelo (30 s, só a voz). Os tempos entre
 parênteses, como (6 s), apontam para ele. Do lado dele ficam a `folha.jpg` (1 quadro por segundo, com o segundo
-escrito) e o `mapa.json` (luz e cortes medidos a cada 0,25 s). Antes de editar, assista ao vídeo inteiro uma vez.
+escrito) e o `mapa.json` (luz e cortes medidos a cada 0,25 s). Antes de editar, assista ao vídeo inteiro uma vez. O mesmo vídeo em qualidade cheia está no `original.mp4` e o `original-16x9.mp4`, a versão deitada, para ler letra pequena e detalhe de tela.
+
+**A referência mostra o jeito do modelo, não um roteiro para copiar.** Siga a cara, os números e as regras; as telas, os textos e os cortes do vídeo novo nascem da fala nova. Não repita as cenas do aprovado só porque estão lá.
 
 ---
 

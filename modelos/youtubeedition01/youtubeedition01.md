@@ -5,7 +5,9 @@ bater com o código do molde, vale o que está aqui.
 
 **A referência é o `referencia/referencia.mp4`**, o vídeo aprovado do modelo (30,2 s, 9:16, com a voz). Os tempos entre
 parênteses, como (6 s), apontam para ele. Do lado dele ficam a `folha.jpg` (1 quadro por segundo) e o `mapa.json`
-(rosto, luz e cortes medidos a cada 0,25 s). Antes de editar, assista ao vídeo inteiro uma vez.
+(rosto, luz e cortes medidos a cada 0,25 s). Antes de editar, assista ao vídeo inteiro uma vez. O mesmo vídeo em qualidade cheia está no `original.mp4` e o `original-16x9.mp4`, a versão deitada, para ler letra pequena e detalhe de tela.
+
+**A referência mostra o jeito do modelo, não um roteiro para copiar.** Siga a cara, os números e as regras; as telas, os textos e os cortes do vídeo novo nascem da fala nova. Não repita as cenas do aprovado só porque estão lá.
 
 O modelo nasceu para o vídeo longo de YouTube em 16:9. O aprovado é a adaptação vertical, que está validada como está.
 As regras valem para os dois formatos; onde muda, está escrito.
