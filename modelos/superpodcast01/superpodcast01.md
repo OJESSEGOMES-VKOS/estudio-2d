@@ -10,6 +10,22 @@ tamanho e a quantidade de texto e de cortes do aprovado são a régua.
 
 ---
 
+## 0. Do seu jeito (o aluno preenche, se quiser)
+
+Escreva aqui, com as suas palavras, o que vale para todos os seus vídeos neste modelo. Pode ir somando com o tempo.
+
+- Meu nome e @ (só onde o modelo mostra):
+- Minha foto de perfil (nome do arquivo na pasta do estúdio):
+- Chamada do fim (o que peço para a pessoa fazer):
+- Gosto de:
+- Não quero:
+
+**Para o Claude:** leia esta seção antes de tudo e siga o que está nela. Ela decide o conteúdo e as opções da seção 7,
+mas não muda a cara do modelo (cores, fontes, posições, ritmo). Se um pedido daqui mudar a cara, avise antes de fazer.
+Quando a pessoa corrigir algo num vídeo e a correção valer para os próximos, ofereça anotar aqui, nas palavras dela.
+
+---
+
 ## 1. A cara do modelo
 
 Um trecho de conversa vira um minidocumentário: cada frase ganha a imagem do que está sendo dito.

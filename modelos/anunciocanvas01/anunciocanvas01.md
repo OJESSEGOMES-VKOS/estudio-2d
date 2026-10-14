@@ -14,6 +14,22 @@ anúncio. Nada disso se inventa e nada do aprovado se reaproveita.
 
 ---
 
+## 0. Do seu jeito (o aluno preenche, se quiser)
+
+Escreva aqui, com as suas palavras, o que vale para todos os seus vídeos neste modelo. Pode ir somando com o tempo.
+
+- Meu nome e @ (só onde o modelo mostra):
+- Minha foto de perfil (nome do arquivo na pasta do estúdio):
+- Chamada do fim (o que peço para a pessoa fazer):
+- Gosto de:
+- Não quero:
+
+**Para o Claude:** leia esta seção antes de tudo e siga o que está nela. Ela decide o conteúdo e as opções da seção 7,
+mas não muda a cara do modelo (cores, fontes, posições, ritmo). Se um pedido daqui mudar a cara, avise antes de fazer.
+Quando a pessoa corrigir algo num vídeo e a correção valer para os próximos, ofereça anotar aqui, nas palavras dela.
+
+---
+
 ## 1. A cara do modelo
 
 É um **anúncio**, não um documentário: narração de venda, sem apresentador, cada frase vira peças soltas num canvas

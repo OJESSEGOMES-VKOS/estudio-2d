@@ -21,7 +21,11 @@ Criado por **Jessé Gomes ([@OJESSEGOMES](https://instagram.com/ojessegomes))**.
 Tudo fica dentro da pasta: ambiente Python, Remotion, modelos de IA, caches e temporários.
 
 ## Instalar
-Precisa de Python 3.11 ou 3.12, Node.js 20+ e ffmpeg no PATH. Uma placa NVIDIA acelera a transcrição, mas não é
+**Jeito mais fácil:** abra o Claude Code numa pasta vazia e peça *"Instale o Estúdio 2D seguindo
+https://github.com/OJESSEGOMES-VKOS/estudio-2d/blob/main/PREPARAR.md"*. O Claude instala e baixa tudo sozinho,
+pedindo licença antes.
+
+**Na mão:** precisa de Python 3.11 ou 3.12, Node.js 20+ e ffmpeg no PATH. Uma placa NVIDIA acelera a transcrição, mas não é
 obrigatória.
 
 ```powershell
