@@ -17,7 +17,8 @@ sonoros, ritmo de câmera) vem ligado; só fica desligado o que o `<modelo>.md` 
    precisar e meça. O `original.mp4` é o mesmo vídeo em qualidade cheia. O vídeo tem que parecer o modelo, não o seu
    gosto; mas a referência mostra o jeito, não um roteiro para copiar: as telas, os textos e os cortes nascem da fala nova.
 3. Um vídeo novo nasce com `tools/novo-video.py <modelo> <gravacao> <AAAA-MM-DD-tema>` (nome que a transcrição errar:
-   `--trocar Errado=Certo`) e vive em `videos/`. Ele já adapta a gravação ao ponto de partida do modelo
+   `--trocar Errado=Certo`; achou o erro depois, `tools/trocar.py videos/<pasta> Errado=Certo` corrige sem transcrever
+   de novo) e vive em `videos/`. Ele já adapta a gravação ao ponto de partida do modelo
    (`tools/adaptar.py`: rosto no tamanho e na altura, luz de partida); não pule esse passo. Depois siga a seção do vídeo
    novo do `<modelo>.md`, com um `plano.md` frase a frase sobre `src/palavras.json`.
 4. Confira com prova, nesta ordem, e só chame de pronto quando tudo passar:

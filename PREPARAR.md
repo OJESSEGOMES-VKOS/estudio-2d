@@ -16,7 +16,7 @@ passo. Peça licença antes de instalar qualquer programa no computador. Se algo
 houve e tente o caminho alternativo; não despeje erro técnico na pessoa.
 
 ### 1. Conferir o espaço
-O estúdio ocupa uns 10 GB depois de pronto (a transcrição baixa mais 3 GB no primeiro vídeo). Confira se o disco da
+O estúdio ocupa uns 10 GB depois de pronto, já com o modelo de transcrição. Confira se o disco da
 pasta atual tem pelo menos **15 GB livres**. Se não tiver, avise e pare.
 
 ### 2. Os programas de base
@@ -36,11 +36,12 @@ Baixe `https://github.com/OJESSEGOMES-VKOS/estudio-2d/archive/refs/heads/main.zi
 GitHub.
 
 ### 4. Instalar
-- **Windows:** `pwsh -File instalar.ps1` (com placa NVIDIA: `pwsh -File instalar.ps1 -Gpu`).
+- **Windows:** `pwsh -File instalar.ps1`.
 - **macOS / Linux:** `sh instalar.sh`.
 
 O instalador deixa tudo dentro da pasta: ambiente Python, Remotion, modelos de IA e caches. Nada se espalha pelo
-computador. Ao terminar, apague a pasta `.tmp/pip-cache` (1,5 GB que só serviam para instalar).
+computador. Ele descobre sozinho se há placa NVIDIA e já baixa o modelo de transcrição certo para a máquina (o
+maior com placa, o médio sem). No fim, ele mesmo apaga o que só servia para instalar.
 
 ### 5. Conferir que funciona
 Confira as três partes, sem precisar de vídeo:
