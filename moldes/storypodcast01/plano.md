@@ -3,7 +3,7 @@
 > **2026-10-12:** a tabela abaixo é a 1ª versão. A revisão 1 juntou planos (6 cortes) e pedaços; a lista atual de
 > planos e pedaços está em `src/Reel.tsx` (PLANOS, PECAS) e sai impressa por `node scripts/cobertura.mjs`.
 
-Modelo: `../../modelos/storypodcast01/MODELO.md`, referência principal ref3 (9:16). Corte 2 quadros antes
+Modelo: `../../modelos/storypodcast01/storypodcast01.md`, referência principal ref3 (9:16). Corte 2 quadros antes
 da 1ª palavra do trecho (`c(i) = início da palavra i - 0,06`). Rosto medido em `src/rosto.json` (mediana por plano).
 
 Jeitos: **bloco** (lateral, topo 35,7% H, largura casada, zigue-zague), **central** (palavra gigante com a pequena por
@@ -28,7 +28,7 @@ busca / o sujeito, vermelho = custo, branco condensado = 2ª palavra forte ou re
 | P11 | 26,69–29,83 | comenta edição aqui embaixo que eu vou te mandar na sua DM agora. | bloco central embaixo: "comenta" / **EDIÇÃO** gigante / "aqui embaixo" / "que eu vou te mandar" → "na sua **DM** agora." | EDIÇÃO (momento 3) | azul, a mesma do P9 (a última frase repete a palavra, fecha o laço) | médio centrado (1,25), entra com chicote de 1 quadro; corte seco 0,2 s depois de "agora." | |
 
 Contas: 11 planos em 29,8 s (ref3: 9 em 28,8), 15 palavras-chave (ref3: 17), P&B uma vez (o modelo pede 1 a 2; a fala só
-tem um trecho de custo). Sem montagem de apoio: a fala não tem metáfora nem cena (MODELO §18.6).
+tem um trecho de custo). Sem montagem de apoio: a fala não tem metáfora nem cena (storypodcast01.md, seção 6, "Montagem de apoio").
 
 Fidelidade: a tela tira só vírgula de fim de linha. "Claude" sempre certo. O nome do modelo (momento 1) é o único texto
 que não é fala, como o BRIEF pede.

@@ -1,8 +1,11 @@
-"""Grade do storypodcast01 (MODELO.md §4 "O quadro" e §8): estúdio escuro e frio, pretos esmagados, pele quente.
+"""Grade do storypodcast01 (modelos/storypodcast01/storypodcast01.md, seção 1): estúdio escuro e frio, pretos esmagados, pele quente.
 A gravação tem parede bege clara, mais clara que a pele: um grade global não chega no Petróleo sem apagar o rosto.
 Então a pessoa é recortada com o Robust Video Matting (<estúdio>/tools/modelos/rvm_mobilenetv3_fp32.onnx)
 e o fundo vira breu petróleo desfocado (a própria luz da parede vira a variação do painel), enquanto a pessoa ganha
 contraste, sombra puxada para o frio e uma queda de luz lateral leve. Sai public/fala_grade.mp4 (sem som).
+Os números daqui são fixos (calibrados na gravação do aprovado). Num vídeo novo, depois deste passo rode, da raiz do
+estúdio, tools/adaptar.py videos/<v> storypodcast01 --desenho: ele leva o fala_grade.mp4 à luz do fala_grade.mp4 do
+molde (roupa, objeto claro e parede mudam o resultado do grade). Nunca compense no filtro do src/Reel.tsx.
 
 uso (de dentro do molde): ../../.venv/Scripts/python.exe scripts/grade.py              (vídeo inteiro)
                           ../../.venv/Scripts/python.exe scripts/grade.py 1 13 22      (só PNGs de teste em conferencia/)
@@ -109,6 +112,11 @@ def main():
         es.stdin.close()
         es.wait()
     print(f, 'quadros', SAI if es else 'testes')
+    # num vídeo novo (videos/<v>/), leva a luz do fala_grade.mp4 até a do aprovado logo em seguida (o molde em si não)
+    if es and '--saida' not in sys.argv and AQUI.parent.name == 'videos':
+
+        raiz = AQUI.parent.parent
+        subprocess.run([sys.executable, str(raiz / 'tools' / 'adaptar.py'), str(AQUI), 'storypodcast01', '--desenho'], check=True)
 
 
 main()

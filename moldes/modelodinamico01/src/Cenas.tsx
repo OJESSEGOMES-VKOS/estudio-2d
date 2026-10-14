@@ -1,6 +1,6 @@
 import React from 'react';
 import {Freeze, Img, OffthreadVideo, Sequence, staticFile} from 'remotion';
-import {C, DIVISA, E, FPS, MONO, Previas, SANS, SERIF, SOMBRA, montaCenas, mola, rostoX, tw, useT, w} from './tema';
+import {C, DIVISA, E, FPS, MONO, Previas, R, SANS, SERIF, SOMBRA, montaCenas, mola, rostoX, tw, useT, w} from './tema';
 import {CardPalco, ChipClaude, Cursor, Faisca, Fala, FalaEm, RostoPalco, Selecao, Titulo, Troca, pop} from './ui';
 
 /** os tempos dos cortes são os mesmos com ou sem prévias (só o modo da cena das prévias muda) */
@@ -86,11 +86,14 @@ const TelaReels: React.FC<{largura: number; altura: number; raio: number; s: num
 };
 
 /* ---------------------------------------------------------------- M3: dividido. Em cima o visual, embaixo o rosto */
+/** largura do rosto (px) da gravação do vídeo aprovado: no dividido o rosto fica do mesmo tamanho que lá (26% a 28% da
+ * altura do quadro) mesmo que a gravação nova tenha o rosto mais perto ou mais longe; no aprovado a escala dá 1 */
+const LARGURA_APROVADO = 398.6;
 const Dividido: React.FC<{children: React.ReactNode}> = ({children}) => (
 	<>
 		<div style={ab(0, 0, {width: 1080, height: DIVISA, overflow: 'hidden'})}>{children}</div>
 		<div style={ab(0, 0, {width: 1080, height: 1920, clipPath: `inset(${DIVISA}px 0 0 0)`})}>
-			<FalaEm s={1} cx={540} oy={1170} />
+			<FalaEm s={LARGURA_APROVADO / R.largura} cx={540} oy={1170} />
 		</div>
 	</>
 );

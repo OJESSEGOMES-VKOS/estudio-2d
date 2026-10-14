@@ -12,7 +12,7 @@ if [ $# -ge 3 ]; then V="$1"; S="$2"; O="$3"; else V="${1:-out/so-video.mp4}"; S
 VOZ=public/voz.wav
 REF="$S"
 if [ -z "$S" ] && [ -f public/efeitos.wav ]; then S=public/efeitos.wav; REF=public/trilha.wav; fi
-lufs() { ffmpeg -hide_banner -nostats -i "$1" -af "$2ebur128" -f null - 2>&1 | grep -E "^\s+I:" | tail -1 | awk '{print $2}'; }
+lufs() { ffmpeg -nostdin -hide_banner -nostats -i "$1" -af "$2ebur128" -f null - 2>&1 | grep -E "^\s+I:" | tail -1 | awk '{print $2}'; }
 PRE="highpass=f=80,acompressor=threshold=-20dB:ratio=3:attack=8:release=120:makeup=2,"
 DUR=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$V")
 if [ -n "$S" ]; then
@@ -27,7 +27,7 @@ else
   set -- -i "$V" -i "$VOZ"
   MIX="[1:a]aresample=48000,${PRE}apad,atrim=0:$DUR"
 fi
-J=$(ffmpeg -hide_banner -nostats "$@" -filter_complex "$MIX,loudnorm=I=-14:TP=-1.2:LRA=11:print_format=json" -f null - 2>&1 | sed -n '/^{/,/^}/p')
+J=$(ffmpeg -nostdin -hide_banner -nostats "$@" -filter_complex "$MIX,loudnorm=I=-14:TP=-1.2:LRA=11:print_format=json" -f null - 2>&1 | sed -n '/^{/,/^}/p')
 g() { echo "$J" | grep "\"$1\"" | sed 's/.*: "\(.*\)".*/\1/'; }
-ffmpeg -hide_banner -loglevel error -y "$@" -filter_complex "$MIX,loudnorm=I=-14:TP=-1.2:LRA=11:measured_I=$(g input_i):measured_TP=$(g input_tp):measured_LRA=$(g input_lra):measured_thresh=$(g input_thresh):offset=$(g target_offset):linear=true,aresample=48000[a]" -map 0:v -map "[a]" -c:v copy -c:a aac -b:a 256k -movflags +faststart "$O"
-ffmpeg -hide_banner -nostats -i "$O" -af ebur128=peak=true -f null - 2>&1 | grep -E "^\s+(I:|Peak:)"
+ffmpeg -nostdin -hide_banner -loglevel error -y "$@" -filter_complex "$MIX,loudnorm=I=-14:TP=-1.2:LRA=11:measured_I=$(g input_i):measured_TP=$(g input_tp):measured_LRA=$(g input_lra):measured_thresh=$(g input_thresh):offset=$(g target_offset):linear=true,aresample=48000[a]" -map 0:v -map "[a]" -c:v copy -c:a aac -b:a 256k -movflags +faststart "$O"
+ffmpeg -nostdin -hide_banner -nostats -i "$O" -af ebur128=peak=true -f null - 2>&1 | grep -E "^\s+(I:|Peak:)"

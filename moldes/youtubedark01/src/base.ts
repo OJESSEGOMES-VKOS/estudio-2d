@@ -4,7 +4,7 @@ import TEMPOS from './tempos.json';
 import PS_RAW from './palavras.json';
 
 /**
- * youtubedark01, família B (explicação ilustrada, com narração), identidade escura (MODELO §3B "Finance"):
+ * youtubedark01, família B (explicação ilustrada, com narração), identidade escura (modelos/youtubedark01/youtubedark01.md §1):
  * fundo preto, o personagem do curta aprovado (feijão creme), luz dourada de cima, verde neon só no objeto-chave.
  * Uma ilustração parada por frase, corte seco na palavra, câmera parada.
  * Fonte única: Comic Neue (a do curta aprovado), 400 e 700.
@@ -30,7 +30,7 @@ const limpa = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').
 		const j = k >= 0 ? k : Math.min(plano.length, fala.length);
 		pare(
 			`O plano não bate com a fala. src/tempos.json foi feito para outra fala: na palavra ${j + 1} o plano tem "${plano[j] ?? '(fim)'}" e src/palavras.json tem "${fala[j] ?? '(fim)'}". ` +
-				'Refaça "cenas", "blocos", "fixo", "marcas", "texto" e "duracao_q" em src/tempos.json e as ilustrações em src/Cenas.tsx sobre a fala nova (LEIA, "Vídeo novo"), e cole o texto da fala nova no campo "fala" (linha 2).',
+				'Refaça "cenas", "blocos", "fixo", "marcas", "texto" e "duracao_q" em src/tempos.json e as ilustrações em src/Cenas.tsx sobre a fala nova (modelos/youtubedark01/youtubedark01.md §9), e cole o texto da fala nova no campo "fala" (linha 2).',
 		);
 	}
 	const n = PS.length;

@@ -9,7 +9,7 @@ mora aqui, um perfil por criador (`perfis/<criador>/PERFIL.md`), e cresce a cada
 
 | Camada | Onde | O que guarda | Quem muda |
 |---|---|---|---|
-| **Núcleo** | `MODELO.md` | O catálogo de recursos, os gatilhos (quando cada recurso entra), as regras de leitura, de tempo e de honestidade, a conferência | Só o dono do sistema, por decisão explícita, como versão nova (nunca por causa de um criador) |
+| **Núcleo** | `youtubeedition01.md` | O catálogo de recursos, os gatilhos (quando cada recurso entra), as regras de leitura, de tempo e de honestidade, a conferência | Só o dono do sistema, por decisão explícita, como versão nova (nunca por causa de um criador) |
 | **Perfil** | `perfis/<criador>/PERFIL.md` | Quem é o criador na tela: voz, ritmo natural, bordões, cenário, marca visual, peças recorrentes, preferências e vetos | Cresce com o uso, pelas regras abaixo |
 | **Vídeo** | `plano.md` do vídeo | As decisões daquele vídeo | O próprio vídeo |
 

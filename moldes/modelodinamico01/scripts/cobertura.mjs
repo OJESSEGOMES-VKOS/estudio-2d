@@ -3,7 +3,7 @@
 // uso (de dentro da pasta do vídeo ou do molde): node scripts/cobertura.mjs
 // Confere: 1) toda palavra do plano (w('palavra', n) e iw(...) em src/) existe na fala; 2) toda palavra dita aparece na
 // legenda enquanto é dita; 3) pedaço >= 1,5 s e palavra >= 0,4 s depois de nascer; 4) nenhuma palavra duas vezes; 5) no
-// máximo 4 linhas; 6) um lugar por modo (MODELO §2); 7) legenda e títulos dentro da zona segura (x 60-940, y 250-1500).
+// máximo 2 linhas; 6) um lugar por modo (MODELO §2); 7) legenda e títulos dentro da zona segura (x 60-940, y 250-1500).
 import {build} from 'esbuild';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -115,9 +115,10 @@ for (const previas of [false, true]) {
 	const curtos = [], linhas = [];
 	for (const e of ex) {
 		const d = e.ate - e.de;
-		if (d < 1.5) curtos.push(`"${e.texto}" fica ${fmt(d)} s`);
-		for (const i of e.ids) if (e.ate - PB[i].start < 0.4) curtos.push(`"${PB[i].text}" em "${e.texto}" fica ${fmt(e.ate - PB[i].start)} s`);
-		if (e.linhas > 4) linhas.push(`"${e.texto}" com ~${e.linhas} linhas`);
+		// pedaço cheio (juntar() parou em MAX_LINHAS porque a fala é rápida): basta 1 s, e as palavras dele não têm o mínimo de 0,4 s
+		if (d < (e.cheio ? 1 : 1.5)) curtos.push(`"${e.texto}" fica ${fmt(d)} s${e.cheio ? ' (cheio: mín. 1 s)' : ''}`);
+		for (const i of e.ids) if (!e.cheio && e.ate - PB[i].start < 0.4) curtos.push(`"${PB[i].text}" em "${e.texto}" fica ${fmt(e.ate - PB[i].start)} s`);
+		if (e.linhas > 2) linhas.push(`"${e.texto}" com ~${e.linhas} linhas`);
 	}
 	const vezes = PB.map(() => 0);
 	ex.forEach((e) => e.ids.forEach((i) => vezes[i]++));
@@ -131,7 +132,7 @@ for (const previas of [false, true]) {
 	console.log(`${curtos.length} curtos (mín. 1,5 s por pedaço e 0,4 s por palavra)${curtos.length ? `: com MIN_PEDACO = ${MIN_PEDACO} (${L_MIN}); ponha 1.5 para os pedaços se juntarem; se ainda sobrar, a cena acaba cedo demais (mude o corte em base(), src/tema.ts)` : ''}`);
 	curtos.slice(0, 12).forEach((x) => console.log('  ' + x)); if (curtos.length > 12) console.log(`  ... e mais ${curtos.length - 12}`);
 	console.log(`${repetidas.length} palavras exibidas mais de uma vez`); repetidas.forEach((x) => console.log('  ' + x));
-	console.log(`${linhas.length} pedaços com mais de 4 linhas${linhas.length ? ': diminua MIN_PEDACO' : ''}`); linhas.forEach((x) => console.log('  ' + x));
+	console.log(`${linhas.length} pedaços com mais de 2 linhas${linhas.length ? ": diminua MIN_PEDACO" : ""}`); linhas.forEach((x) => console.log('  ' + x));
 	console.log(`lugares da legenda por modo (MODELO §2, um por modo): ${Object.entries(lugares).map(([m, ys]) => `${m} ${[...ys].join('/')}`).join(', ')}`);
 	const varios = Object.entries(lugares).filter(([m, ys]) => ys.size > 1 && m !== 'motion'); // motion: em cima só no fecho (MODELO §2, ref3)
 	console.log(`${fora.length} pedaços fora da zona segura (x ${ZONA.esq}-${ZONA.dir}, y ${ZONA.topo}-${ZONA.base})${fora.length ? `: suba a legenda do modo (LUGAR em ${onde('export const LUGAR')}) ou encurte o pedaço` : ''}`);
@@ -139,10 +140,11 @@ for (const previas of [false, true]) {
 	if (buracos.length || curtos.length || repetidas.length || linhas.length || varios.length || fora.length) reprova = true;
 }
 
-// 7. títulos do palco (src/ui.tsx Titulo): topo 205 com duas linhas, 255 com uma; largura pela fonte
+// 7. títulos do palco (src/ui.tsx Titulo) das cenas vivas: topo 205 com duas linhas (fora da zona: num vídeo novo, título de 1 linha), 255 com uma
 const titulos = [];
 for (const {f, linhas} of FONTES)
 	linhas.forEach((l, i) => {
+		if (!conta(f, i)) return; // só títulos de cenas que base() usa (o mesmo filtro da checagem 1)
 		const m = l.match(/<Titulo serif="([^"]*)"(?: sans="([^"]*)")?/);
 		if (!m) return;
 		const topo = m[2] ? 205 : 255;

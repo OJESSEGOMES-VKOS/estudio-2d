@@ -2,12 +2,12 @@ import React from 'react';
 import {AbsoluteFill, OffthreadVideo, Sequence, staticFile} from 'remotion';
 import {Boneco, Pose} from './Boneco';
 import {ALT_PE, EM_PE, SENTADO} from './Poses';
-import {C, E, FONTE, FPS, NEON_OURO, NEON_VERDE, T, ini, marca, tw, txt} from './base';
+import {C, E, FONTE, FPS, NEON_OURO, NEON_VERDE, T, cena, ini, lerp, marca, tw, txt} from './base';
 import {Cama, Facho, Janela, Luminaria, Mesa, Parede, Poeira, Svg} from './Cenarios';
 import {Avanco, Cadeira, Cartao, Icone} from './Objetos';
 
 /**
- * Família B: uma ilustração PARADA por frase (MODELO §3B: "câmera parada, sem zoom nem pan"; o movimento vem do corte).
+ * Família B: uma ilustração PARADA por frase (youtubedark01.md §4: "câmera parada"; o movimento vem do corte).
  * Só respiração/piscada do personagem e a poeira na luz dão vida. Chão em y 1140; legenda abaixo (y 1185-1490).
  */
 type P = {f: number};
@@ -316,7 +316,87 @@ export const S11: React.FC<P> = ({f}) => {
 	);
 };
 
-export const CENAS: Record<string, React.FC<P>> = {S1, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11};
+/* Exemplos reaproveitáveis (cenas de um vídeo novo feito pelo youtubedark01.md; o aprovado não usa nenhuma):
+ * N2 grava no celular e manda o arquivo (marca "mandei"), N3 três cartões que acendem um por vez (marcas "corte",
+ * "legenda", "tela"), N4 a tela que edita sozinha e o visto (marca "decidiu"). Para usar, ponha as marcas no plano. */
+// N2 "Eu só gravei e mandei o arquivo." grava no celular; em "mandei" o cartão do arquivo voa da mão para a direita
+export const N2: React.FC<P> = ({f}) => {
+	const t = sec(f);
+	const k = tw(f, marca('mandei'), marca('mandei') + 12, 0, 1, E.out);
+	const cx = lerp(430, 720, k);
+	const cy = lerp(700, 520, k);
+	const w = lerp(70, 170, k);
+	return (
+		<AbsoluteFill style={{background: C.preto}}>
+			<Svg>
+				<Fundo id="n2" />
+				<Luz cx={360} w0={70} w1={520} id="n2a" op={0.85} />
+				<Luz cx={800} w0={50} w1={340} id="n2b" op={0.5} />
+				<Poeira t={t} x={120} y={300} w={840} h={800} n={20} op={0.4} cor={C.ouroClaro} seed={12} />
+				{k > 0 ? <path d={`M 450 760 Q 600 560 ${cx - 10} ${cy + 140}`} fill="none" stroke={C.giz} strokeWidth={5} strokeDasharray="14 16" strokeLinecap="round" opacity={0.6 * k} /> : null}
+				<Boneco p={emPe(330, 1.0, {abre: 0.4, mF: [96, -130], jF: [0, 1], mT: [-28, 14], olhos: 'aberto', boca: 'leve', olhar: [1, -0.2]})} t={t} id="n2" celular={{luz: 0.6, ang: 0}} />
+				{k > 0 ? <Cartao x={cx - w / 2} y={cy - (w * 16) / 18} w={w} tipo="play" estado="verde" rot={lerp(-12, 4, k)} /> : null}
+			</Svg>
+		</AbsoluteFill>
+	);
+};
+
+// N3 "Cada corte, cada legenda, cada tela" três cartões sob três focos, acendem um por vez
+export const N3: React.FC<P> = ({f}) => {
+	const t = sec(f);
+	const xs = [150, 455, 760];
+	const tipos = ['divide', 'leg', 'grade'] as const;
+	const quando = [marca('corte'), marca('legenda'), marca('tela')];
+	return (
+		<AbsoluteFill style={{background: C.preto}}>
+			<Svg>
+				<Fundo id="n3" />
+				{xs.map((x, i) => (
+					<Luz key={i} cx={x + 85} w0={50} w1={300} base={CHAO} op={f >= quando[i] ? 0.9 : 0.35} id={`n3${i}`} />
+				))}
+				{xs.map((x, i) => (
+					<Cartao key={i} x={x} y={430} w={170} tipo={tipos[i]} estado={f >= quando[i] ? 'verde' : 'apagado'} />
+				))}
+				<Boneco p={emPe(540, 0.72, {abre: 0.9, mF: [30, 10], mT: [-30, 10], olhos: 'aberto', boca: 'o', olhar: [0, -1]})} t={t} id="n3" />
+			</Svg>
+		</AbsoluteFill>
+	);
+};
+
+// N4 "que você está vendo aqui foi ele que decidiu e editou." a tela edita sozinha; o visto em "decidiu"
+export const N4: React.FC<P> = ({f}) => {
+	const t = sec(f);
+	const de = cena('N4').de_q;
+	const ok = tw(f, marca('decidiu'), marca('decidiu') + 8, 0, 1, E.out);
+	return (
+		<AbsoluteFill style={{background: C.preto}}>
+			<Svg>
+				<Fundo id="n4" />
+				<Luz cx={600} w1={720} id="n4" op={0.85} />
+				<Poeira t={t} x={260} y={300} w={640} h={800} n={22} op={0.45} cor={C.ouroClaro} seed={4} />
+				<rect x={410} y={470} width={420} height={330} rx={16} fill="#0d0f13" stroke={C.giz} strokeWidth={6} />
+				<rect x={600} y={800} width={40} height={60} fill={C.movel} stroke={C.movelLinha} strokeWidth={3} />
+				<rect x={540} y={856} width={160} height={12} rx={5} fill={C.movel} stroke={C.movelLinha} strokeWidth={3} />
+				{[0, 1, 2].map((r) =>
+					[0, 1, 2, 3].map((c) => {
+						const x = 440 + c * 92 + ((r * 23) % 40);
+						const w = 64 + ((r + c) % 3) * 8;
+						if (x + w > 800) return null;
+						const n = de + 4 + (r * 4 + c) * 3;
+						const v = f >= n;
+						return <rect key={`${r}${c}`} x={x} y={510 + r * 58} width={w} height={40} rx={6} fill={v ? '#0b2a18' : '#1c1e24'} stroke={v ? C.verde : C.apagado} strokeWidth={3.5} style={v ? {filter: NEON_VERDE} : undefined} />;
+					}),
+				)}
+				{ok > 0 ? (
+					<path d="M 560 740 L 605 775 L 690 700" fill="none" stroke={C.verde} strokeWidth={14} strokeLinecap="round" strokeLinejoin="round" pathLength={1} strokeDasharray="1 1" strokeDashoffset={1 - ok} style={{filter: NEON_VERDE}} />
+				) : null}
+				<Boneco p={emPe(230, 0.95, {abre: 0.3, mF: [-20, 10], mT: [-40, 10], olhos: 'aberto', boca: 'leve', olhar: [1, -0.4]})} t={t} id="n4" />
+			</Svg>
+		</AbsoluteFill>
+	);
+};
+
+export const CENAS: Record<string, React.FC<P>> = {S1, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, N2, N3, N4};
 
 // ---------------------------------------------------------------- texto
 const ESTILO_TXT = (fs: number, cor: string, brilho?: string): React.CSSProperties => ({
@@ -352,10 +432,11 @@ export const Legenda: React.FC<{f: number}> = ({f}) => {
 	if (!b) return null;
 	const c = T.cenas.find((k) => k.id === b.cena)!;
 	const {fs, y0, passo} = T.legenda;
+	const cx = (T.legenda as {cx?: number}).cx ?? 540; // centro da legenda; sem "cx" no plano, 540 (o aprovado)
 	return (
 		<AbsoluteFill>
 			{b.linhas.map((l, k) => (
-				<div key={k} style={{position: 'absolute', left: 0, width: 1080, top: y0 + k * passo - fs * 0.5, height: fs, textAlign: 'center', whiteSpace: 'nowrap'}}>
+				<div key={k} style={{position: 'absolute', left: cx - 540, width: 1080, top: y0 + k * passo - fs * 0.5, height: fs, textAlign: 'center', whiteSpace: 'nowrap'}}>
 					{l.map((i, j) => (
 						<React.Fragment key={i}>
 							{j > 0 && <span style={{display: 'inline-block', width: fs * 0.28}} />}

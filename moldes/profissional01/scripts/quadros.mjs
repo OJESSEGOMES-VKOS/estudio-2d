@@ -10,11 +10,17 @@ const previas = args.includes('--previas');
 const tempos = args.filter((a) => a !== '--previas').map(Number);
 const escala = Number(process.env.ESCALA || 0.5);
 fs.mkdirSync('conferencia', {recursive: true});
-const serve = await bundle({entryPoint: path.resolve('src/index.ts')});
-const props = {previas, nomesPrevias: (process.env.NOMES || 'superpodcast01,modelodinamico03').split(',')};
-const comp = await selectComposition({serveUrl: serve, id: 'VitrineProfissional01', inputProps: props});
-for (const t of tempos) {
-	const out = `conferencia/q_${t.toFixed(2)}${previas ? '_previas' : ''}.png`;
-	await renderStill({composition: comp, serveUrl: serve, output: out, frame: Math.min(comp.durationInFrames - 1, Math.round(t * 30)), inputProps: props, imageFormat: 'png', scale: escala});
-	console.log(out);
+try {
+	const serve = await bundle({entryPoint: path.resolve('src/index.ts')});
+	const props = {previas, nomesPrevias: (process.env.NOMES || 'superpodcast01,modelodinamico03').split(',')};
+	const comp = await selectComposition({serveUrl: serve, id: 'VitrineProfissional01', inputProps: props});
+	for (const t of tempos) {
+		const out = `conferencia/q_${t.toFixed(2)}${previas ? '_previas' : ''}.png`;
+		await renderStill({composition: comp, serveUrl: serve, output: out, frame: Math.min(comp.durationInFrames - 1, Math.round(t * 30)), inputProps: props, imageFormat: 'png', scale: escala});
+		console.log(out);
+	}
+} catch (e) {
+	// só a mensagem (o plano que não bate, o arquivo que falta), sem a pilha do Remotion
+	console.error(String(e?.message ?? e).split('\n')[0]);
+	process.exit(1);
 }

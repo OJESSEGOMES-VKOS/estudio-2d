@@ -1,4 +1,4 @@
-"""Grade do superpodcast01 (MODELO.md §3 "Rosto" e §11 "Correção de cor"): fundo cinza-azulado escuro de estúdio
+"""Grade do superpodcast01 (modelos/superpodcast01/superpodcast01.md §3 "Rosto" e §11 "Correção de cor"): fundo cinza-azulado escuro de estúdio
 (`estudio` #131A1E), fria e neutra, pretos fundos, nada de âmbar, luz lateral dura.
 Encanamento copiado do storypodcast01 da vitrine: a parede bege é mais clara que a pele, então a pessoa é recortada com
 o Robust Video Matting (../../tools/modelos/rvm_mobilenetv3_fp32.onnx), o fundo vira o

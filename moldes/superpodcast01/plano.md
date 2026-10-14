@@ -1,6 +1,6 @@
 # Plano frase a frase (superpodcast01 sobre src/palavras.json)
 
-Modelo: `../../modelos/superpodcast01/MODELO.md` (§15 "Como aplicar no vídeo-teste comum").
+Modelo: `../../modelos/superpodcast01/superpodcast01.md`.
 Velocidade: entre a **calma** (ref2) e a **documental** (ref1). A fala é um convite com poucos substantivos concretos
 (vídeo, modelos, Instagram, prévias, vídeos, DM), então o vídeo sai do rosto em cada um deles e volta ao palco nas
 frases de impacto. 13 planos, 12 trocas (MODELO §15.1 pede 12 a 28 para ~30 s). A regra da casa "nada atravessa

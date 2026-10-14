@@ -46,7 +46,7 @@ if plano != fala:
     k = next((i for i, (a, b) in enumerate(zip(plano, fala)) if a != b), min(len(plano), len(fala)))
     pare(f"src/tempos.json foi feito para outra fala (campo \"fala\", linha {onde('fala')}): na palavra {k + 1} o plano tem "
          f"\"{plano[k] if k < len(plano) else '(fim)'}\" e src/palavras.json tem \"{fala[k] if k < len(fala) else '(fim)'}\".\n"
-         f"Refaça o plano sobre a fala nova: \"cenas\" (linha {onde('cenas')}), \"blocos\" (linha {onde('blocos')}), \"marcas\", \"texto\", \"acordes\" e \"duracao_q\" em src/tempos.json e as telas em src/cenas.tsx (LEIA, \"Vídeo novo\"),\n"
+         f"Refaça o plano sobre a fala nova: \"cenas\" (linha {onde('cenas')}), \"blocos\" (linha {onde('blocos')}), \"marcas\", \"texto\", \"acordes\" e \"duracao_q\" em src/tempos.json e as telas em src/cenas.tsx (modelos/anunciomotion01/anunciomotion01.md §9),\n"
          f"e cole no campo \"fala\" o texto da fala nova: {' '.join(p['text'] for p in PS)}")
 n = len(PS)
 fora = []

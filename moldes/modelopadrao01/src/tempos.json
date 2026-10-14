@@ -32,7 +32,6 @@
  },
  "modelos": {
   "de": 4.96,
-  "diferenca": 5.24,
   "modelos": 6.12,
   "criei": 6.96,
   "melhorei": 7.6,
@@ -43,14 +42,25 @@
    9.34
   ],
   "claude": 9.84,
-  "sai": 10.633
+  "sai": 10.633,
+  "nomes": [
+   "modelodinamico01",
+   "modelopadrao01",
+   "modelodinamico03",
+   "pregacaodinamica01",
+   "profissional01",
+   "storypodcast01",
+   "superpodcast01",
+   "youtubeedition01"
+  ]
  },
  "celular": {
   "de": 10.633,
   "instagram": 11.94,
   "nome": 13.24,
   "desses": 13.6,
-  "devolve": 14.84
+  "devolve": 14.84,
+  "etiqueta": "modelopadrao01"
  },
  "previas": {
   "de": 15.51,
@@ -59,7 +69,8 @@
  },
  "outros": {
   "de": 21.91,
-  "sai": 23.523
+  "sai": 23.523,
+  "texto": "outros modelos"
  },
  "zooms": [],
  "prompt": {
@@ -118,7 +129,12 @@
     3,
     4
    ]
-  }
+  },
+  "marcas": [
+   "100%",
+   "Claude",
+   "Instagram"
+  ]
  },
  "fala": {
   "palavras": 96,

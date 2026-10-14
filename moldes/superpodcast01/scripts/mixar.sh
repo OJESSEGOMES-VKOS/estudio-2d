@@ -14,7 +14,7 @@ DUR=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$V")
 if [ -n "$S" ]; then
   # o som é feito para a duração deste vídeo; outra duração quer dizer que ele é de outra fala (o plano do som não foi refeito)
   DS=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$S")
-  awk -v a="$DUR" -v b="$DS" 'BEGIN { d = a - b; exit (d < -0.1 || d > 0.1) }' || { echo "$S tem $DS s e o vídeo $DUR s: o som é de outra fala. Refaça o plano do som e rode scripts/trilha.py (LEIA.md, Vídeo novo)."; exit 1; }
+  awk -v a="$DUR" -v b="$DS" 'BEGIN { d = a - b; exit (d < -0.1 || d > 0.1) }' || { echo "$S tem $DS s e o vídeo $DUR s: o som é de outra fala. Refaça o plano do som e rode scripts/trilha.py (modelos/superpodcast01/superpodcast01.md, Como fazer um vídeo novo)."; exit 1; }
 fi
 VOZ="[1:a]aresample=48000,highpass=f=80,acompressor=threshold=-20dB:ratio=3:attack=8:release=120:makeup=2,apad"
 if [ -n "$S" ]; then
@@ -28,8 +28,8 @@ else
   set -- -i "$V" -i public/voz.wav
   MIX="$VOZ,atrim=0:$DUR"
 fi
-J=$(ffmpeg -hide_banner -nostats "$@" -filter_complex "$MIX,loudnorm=I=-14:TP=-1:LRA=11:print_format=json" -f null - 2>&1 | sed -n '/^{/,/^}/p')
+J=$(ffmpeg -nostdin -hide_banner -nostats "$@" -filter_complex "$MIX,loudnorm=I=-14:TP=-1:LRA=11:print_format=json" -f null - 2>&1 | sed -n '/^{/,/^}/p')
 g() { echo "$J" | grep "\"$1\"" | sed 's/.*: "\(.*\)".*/\1/'; }
-ffmpeg -hide_banner -loglevel error -y "$@" -filter_complex "$MIX,loudnorm=I=-14:TP=-1:LRA=11:measured_I=$(g input_i):measured_TP=$(g input_tp):measured_LRA=$(g input_lra):measured_thresh=$(g input_thresh):offset=$(g target_offset):linear=true,aresample=48000[a]" \
+ffmpeg -nostdin -hide_banner -loglevel error -y "$@" -filter_complex "$MIX,loudnorm=I=-14:TP=-1:LRA=11:measured_I=$(g input_i):measured_TP=$(g input_tp):measured_LRA=$(g input_lra):measured_thresh=$(g input_thresh):offset=$(g target_offset):linear=true,aresample=48000[a]" \
   -map 0:v -map "[a]" -c:v copy -c:a aac -b:a 256k -ar 48000 -movflags +faststart "$O"
-ffmpeg -hide_banner -nostats -i "$O" -af ebur128=peak=true -f null - 2>&1 | grep -E "^\s+(I:|Peak:)"
+ffmpeg -nostdin -hide_banner -nostats -i "$O" -af ebur128=peak=true -f null - 2>&1 | grep -E "^\s+(I:|Peak:)"

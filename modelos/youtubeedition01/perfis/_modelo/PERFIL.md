@@ -6,7 +6,7 @@
 ## 1. Quem é na tela
 - Canal, nicho e público:
 - Idioma e trato (você, tu, a gente):
-- Formatos que mais grava (ver os formatos no MODELO.md, §2):
+- Formatos que mais grava (ver os formatos no youtubeedition01.md):
 
 ## 2. A voz
 - Palavras por minuto (medido):

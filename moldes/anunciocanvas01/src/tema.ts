@@ -3,7 +3,7 @@ import {loadFont as loadSora} from '@remotion/google-fonts/Sora';
 import {loadFont as loadCaveat} from '@remotion/google-fonts/Caveat';
 import BRUTO from './palavras.json';
 
-/** anunciomotion01 (../../modelos/anunciomotion01/MODELO.md), tema Marcaí. */
+/** anunciocanvas01 (as regras: modelos/anunciocanvas01/anunciocanvas01.md); o tema é o do anúncio aprovado. */
 export const pare = (msg: string): never => {
 	throw new Error(`\n\n[anunciocanvas01] ${msg}\n`);
 };
@@ -13,7 +13,7 @@ type Pal = {texto: string; de: number; ate: number};
 const P: {duracao: number; palavras: Pal[]} = (() => {
 	const b = BRUTO as unknown;
 	if (b && !Array.isArray(b) && Array.isArray((b as {palavras: unknown}).palavras)) return b as {duracao: number; palavras: Pal[]};
-	if (!Array.isArray(b) || !b.length) return pare('src/palavras.json está vazio ou num formato que o molde não lê (LEIA, "Vídeo novo").');
+	if (!Array.isArray(b) || !b.length) return pare('src/palavras.json está vazio ou num formato que o molde não lê (modelos/anunciocanvas01/anunciocanvas01.md, §9).');
 	const palavras = (b as Record<string, unknown>[]).map((x) => ({texto: String(x.text ?? x.w ?? ''), de: Number(x.start ?? x.s), ate: Number(x.end ?? x.e)}));
 	return {duracao: palavras[palavras.length - 1].ate, palavras};
 })();
@@ -25,7 +25,8 @@ export const FPS = 30;
 export const FIM_VOZ = P.duracao;
 export const DURACAO = Math.round((P.duracao + 2.35) * 30) / 30;
 
-/** marca violeta (coral ficaria colado no vermelho da dor); vermelho só pra dor */
+/** A IDENTIDADE INTEIRA DO VÍDEO MORA AQUI: tudo o que é da marca em src/ (texto, ícone, símbolo, manchas do fundo)
+ *  sai desta paleta. No aprovado, violeta (coral ficaria colado no vermelho da dor); o vermelho é só pra dor. */
 export const C = {
 	preto: '#07060B',
 	v: '#8B5CFF',
@@ -37,6 +38,22 @@ export const C = {
 	claro: '#F6F4FA',
 	tinta: '#16121F',
 	sub: '#8E879F',
+	/* texto fino (linha de ligação): no escuro e no claro. Puxam pra cor da marca: troque junto com ela */
+	fino: '#E4DEF2',
+	fino2: '#CFC8DD',
+	finoC: '#5E5770',
+	finoC2: '#4A4458',
+	finoPilula: '#F3EEFF',
+	finoBalao: '#EDE8F7',
+	finoNotif: '#DCD5EC',
+	horaNotif: '#A69EBB',
+	/* volume do ícone de vidro e do símbolo (tons da marca) */
+	vidroLuz: '#CDBBFF',
+	vidroBase: '#3D17B3',
+	vidroCamada: '#2A0F86',
+	vidroFundo: '#1A0B4A',
+	vidroSombra: 'rgba(30,0,90,0.5)',
+	simbLuz: '#B79EFF',
 	vermelho: '#FF2A2A',
 	ambar: '#FFB23E',
 	ciano: '#45DFFF',
@@ -68,13 +85,13 @@ export const limpa = (s: string) => s.toLowerCase().replace(/[.,!?~]/g, '');
 export const w = (texto: string, n = 1) => {
 	let k = 0;
 	for (const p of P.palavras) if (limpa(p.texto) === limpa(texto) && ++k === n) return p.de;
-	return pare(`src/Canvas.tsx pede a ${n}ª vez que a fala diz "${texto}", e src/palavras.json não tem: o plano é de outra fala. Refaça FRASES e a Coreografia em src/Canvas.tsx (LEIA, "Vídeo novo").`);
+	return pare(`src/Canvas.tsx pede a ${n}ª vez que a fala diz "${texto}", e src/palavras.json não tem: o plano é de outra fala. Refaça FRASES e a Coreografia em src/Canvas.tsx (modelos/anunciocanvas01/anunciocanvas01.md, §9).`);
 };
 /** fim da n-ésima vez que a palavra é dita */
 export const wf = (texto: string, n = 1) => {
 	let k = 0;
 	for (const p of P.palavras) if (limpa(p.texto) === limpa(texto) && ++k === n) return p.ate;
-	return pare(`src/Canvas.tsx pede a ${n}ª vez que a fala diz "${texto}", e src/palavras.json não tem: o plano é de outra fala. Refaça FRASES e a Coreografia em src/Canvas.tsx (LEIA, "Vídeo novo").`);
+	return pare(`src/Canvas.tsx pede a ${n}ª vez que a fala diz "${texto}", e src/palavras.json não tem: o plano é de outra fala. Refaça FRASES e a Coreografia em src/Canvas.tsx (modelos/anunciocanvas01/anunciocanvas01.md, §9).`);
 };
 /**
  * Tempos de uma frase escrita na tela, lida em ordem a partir de `desde`.

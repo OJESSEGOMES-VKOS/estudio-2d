@@ -13,7 +13,7 @@ pixel a pixel.
      Também não vale `PLANOS[9]` nem índice fixo de palavra fora das listas do plano.
 2. **Partes opcionais se desligam sem mexer em código de desenho.**
    - Prévias, contador, virada, fecho, escurecimento final e o que mais depender da fala de origem.
-   - Cada uma se desliga por uma prop ou por uma lista vazia, documentada no LEIA do molde. Lista vazia ou prop desligada
+   - Cada uma se desliga por uma prop ou por uma lista vazia, documentada no `<modelo>.md`. Lista vazia ou prop desligada
      não pode quebrar nada.
 3. **O tempo de leitura é conferido.** O conferidor do molde verifica as regras do `REGRAS.md`: bloco ≥ 1,5 s, cada
    palavra ≥ 0,4 s na tela, no máximo 4 linhas e 2 posições, e a zona segura. Quando falha, diz o que mexer.
@@ -23,8 +23,8 @@ pixel a pixel.
    - Não presume partes que o vídeo não tem.
    - Confere com as opções que o vídeo vai usar (as do padrão do modelo, item 5).
 5. **O padrão de cada chave é o do vídeo aprovado, mais as correções do dono.**
-   - Os `defaultProps` do molde e os exemplos de render do LEIA são as props com que o vídeo aprovado foi feito
-     (tratamento de cor, efeitos, música, efeito de fundo). Só vem desligado o que o `modelos/<m>/CORRECOES.md` manda.
+   - Os `defaultProps` do molde e os exemplos de render do `<m>.md` são as props com que o vídeo aprovado foi feito
+     (tratamento de cor, efeitos, música, efeito de fundo). Só vem desligado o que o `modelos/<m>/<m>.md` diz que é opção.
      Erro que este item corrige: na rodada de 2026-10-13 tudo nasceu desligado, e o vídeo do aluno saiu sem a cara do
      modelo (o modelodinamico03 sem o tratamento quente).
    - `scripts/mixar.sh` funciona com e sem trilha; com trilha, ela fica cerca de 16 dB abaixo da voz.
@@ -35,8 +35,8 @@ pixel a pixel.
    `voz.wav`, `src/palavras.json`, `src/rosto.json`) faz uma de três coisas:
    - é gerado por uma ferramenta do estúdio, como `tools/previa.py` para as prévias ou o `kit/`;
    - é opcional, com um plano B que o molde desenha sozinho;
-   - ou está escrito no LEIA com o comando exato para conseguir.
-8. **O LEIA do molde tem a seção "Vídeo novo".**
+   - ou está escrito no `<m>.md` com o comando exato para conseguir.
+8. **O `<m>.md` tem a seção "Como fazer um vídeo novo".**
    - O passo a passo: o que refazer no plano (arquivo e linha), as chaves, o conferidor, o render com
      `tools/com-trava.sh` e a mixagem.
    - O exemplo de render usa os padrões do modelo, nunca `previas: true` sem as prévias.

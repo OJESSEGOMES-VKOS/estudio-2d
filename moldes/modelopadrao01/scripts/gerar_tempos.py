@@ -40,7 +40,7 @@ def iw(texto, n=1):
     linhas = [str(k + 1) for k, l in enumerate(FONTE) if chamada in l and not l.lstrip().startswith('#')]
     sys.exit(f'O plano não bate com a fala de src/palavras.json: {chamada} pede a {n}ª vez que se diz "{texto}", e a fala '
              f'{"só tem " + str(len(achadas)) if achadas else "não tem nenhuma"}.\nscripts/gerar_tempos.py:{",".join(linhas) or "?"}: '
-             'refaça o bloco "O PLANO" para a fala nova (LEIA.md, "Vídeo novo"; tela que não serve vira None).')
+             'refaça o bloco "O PLANO" para a fala nova (modelos/modelopadrao01/modelopadrao01.md, seção 9; tela que não serve vira None).')
 
 
 def w(texto, n=1):
@@ -74,17 +74,24 @@ T = dict(
     # 2. "a diferença entre vários modelos que eu criei e melhorei para editar qualquer tipo de vídeo usando o Claude":
     #    os cartões dos modelos entram até "modelos", ✓ em "criei", barra enche em "melhorei", formatos do vídeo em
     #    "qualquer / tipo / vídeo", tudo entra no Claude em "Claude". Sai junto com o corte de "Inclusive".
-    modelos=dict(de=w('a'), diferenca=w('diferença'), modelos=w('modelos'), criei=w('criei'), melhorei=w('melhorei'),
+    #    Obrigatórios: de, modelos, criei, melhorei, sai, nomes. Opcionais: editar (sem ele os cartões ficam até o painel
+    #    sair), formatos (3 tempos) e claude (sem eles não há formatos nem chip), entradas (um tempo por cartão, na palavra
+    #    dita; com elas a grade fica no meio da área).
+    modelos=dict(de=w('a'), modelos=w('modelos'), criei=w('criei'), melhorei=w('melhorei'),
                  editar=w('editar'), formatos=[w('qualquer'), w('tipo'), w('vídeo', 2)], claude=w('claude', 2),
-                 sai=corte('inclusive')),
+                 sai=corte('inclusive'),
+                 # os nomes escritos nos cartões (o que a fala diz que existe; de 2 a 8)
+                 nomes=['modelodinamico01', 'modelopadrao01', 'modelodinamico03', 'pregacaodinamica01', 'profissional01',
+                        'storypodcast01', 'superpodcast01', 'youtubeedition01']),
     # 3. "se você estiver no Instagram agora, você está vendo apenas um desses modelos": o vídeo vira um Reel no
     #    celular; os outros modelos aparecem atrás em "desses"; o NOME do modelo em "um". Devolve o rosto em "posso".
-    celular=dict(de=corte('inclusive'), instagram=w('instagram'), nome=w('um'), desses=w('desses'), devolve=w('posso')),
+    celular=dict(de=corte('inclusive'), instagram=w('instagram'), nome=w('um'), desses=w('desses'), devolve=w('posso'),
+                 etiqueta='modelopadrao01'),  # o texto da etiqueta com ✓ embaixo do celular (o que a fala diz)
     # 4. "duas prévias rápidas aqui em cima, aceleradas em três vezes" (só com previas=true): dividido, as duas
     #    prévias em cima; "3x" em "aceleradas". Sai junto com o corte do "Mas".
     previas=dict(de=round(w('duas') - 0.15, 3), x3=w('aceleradas'), sai=corte('mas')),
     # 5. "ver outros modelos de edição como esse": a etiqueta na coluna ao lado do rosto
-    outros=dict(de=w('outros'), sai=round(corte('e', 2) - 0.36, 3)),
+    outros=dict(de=w('outros'), sai=round(corte('e', 2) - 0.36, 3), texto='outros modelos'),
     zooms=[],
     # 6. "e aprender a como usar isso nos seus vídeos": a caixa do Claude com as palavras dele (tempos e textos)
     prompt=dict(de=corte('e', 2), palavras=[w(x, n) for x, n in PROMPT], textos=[sem_pontuacao(iw(x, n)) for x, n in PROMPT],
@@ -97,12 +104,14 @@ T = dict(
     silencio=dict(de=round(corte('mas') - 0.05, 3), ate=round(corte('mas') + 0.5, 3)),
     # títulos no topo enquanto o rosto mora numa moldura (editor e celular): a 1ª palavra e o tamanho de cada página
     titulos=dict(editor=dict(i0=iw('pelo'), grupos=[2, 3, 2, 3]),  # "pelo Claude." "Ele foi criado" "justamente para" "te mostrar a"
-                 celular=dict(i0=iw('inclusive'), grupos=[1, 3, 3, 3, 4])),  # "Inclusive," "se você estiver" "no Instagram agora," "você está vendo" "apenas um desses modelos."
+                 celular=dict(i0=iw('inclusive'), grupos=[1, 3, 3, 3, 4]),
+                 # palavras do título que ganham marca-texto menta (como são escritas na fala, sem a pontuação)
+                 marcas=['100%', 'Claude', 'Instagram']),  # "Inclusive," "se você estiver" "no Instagram agora," "você está vendo" "apenas um desses modelos."
 )
 # ================================================================ fim do plano
 
 for nome, tit in T['titulos'].items():
-    if tit and tit['i0'] + sum(tit['grupos']) > len(W):
+    if isinstance(tit, dict) and tit['i0'] + sum(tit['grupos']) > len(W):
         sys.exit(f'scripts/gerar_tempos.py: os títulos de "{nome}" passam do fim da fala ({len(W)} palavras); ajuste os grupos.')
 # de qual fala é este plano (src/tema.ts confere ao carregar)
 T['fala'] = dict(palavras=len(W), fim=BRUTAS[-1]['end'])

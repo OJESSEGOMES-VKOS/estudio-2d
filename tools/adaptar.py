@@ -8,7 +8,14 @@ assinatura do modelo (modelos/<m>/assinatura.json): mesmo tamanho e lugar do ros
 uso (da raiz do estúdio):  .venv/Scripts/python.exe tools/adaptar.py videos/<AAAA-MM-DD-tema> <modelo>
 faz:  lê base/fala.mp4 e base/rosto.json (a preparação original, que nunca muda) e grava public/fala.mp4 e src/rosto.json
       adaptados, mais adaptacao.json com o que foi feito. O tools/novo-video.py já chama este passo.
-Só aproxima e corta (nunca reduz a imagem, o que mostraria a borda); o rosto pode ficar um pouco maior que o do modelo.
+Aproxima e corta quando o rosto vem menor; quando vem maior (gravação mais perto), reduz até 15% e completa a borda com a
+propria imagem desfocada por trás, para o rosto ficar do tamanho do modelo.
+
+uso, 2º passo (só para molde que desenha um tratamento da fala, como o public/fala_grade.mp4 do scripts/grade.py):
+      .venv/Scripts/python.exe tools/adaptar.py videos/<AAAA-MM-DD-tema> <modelo> --desenho      (DEPOIS do grade)
+faz:  leva o fala_grade.mp4 novo à luz e cor do fala_grade.mp4 do molde (entrada.desenho da assinatura). O grade tem
+      números fixos; roupa, objeto claro e parede diferentes mudam o resultado dele mesmo com a luz de partida certa.
+      Sem este passo o vídeo sai apagado e quem edita tenta compensar no filtro do Reel.tsx (não faça isso).
 """
 import json, os, subprocess, sys
 from pathlib import Path
@@ -27,10 +34,10 @@ def cor_lab(lab, p: dict):
     return np.stack([np.clip(L / 2.55, 0, 100), (lab[..., 1] + p['da']) * p['kC'], (lab[..., 2] + p['db']) * p['kC']], -1)
 
 
-def ajustar_cor(qs, src: dict, ref: dict) -> dict:
+def ajustar_cor(qs, src: dict, ref: dict, kmax: float = 1.3) -> dict:
     """Acha os parâmetros que levam os quadros da gravação à luz de `ref` (brilho, contraste, temperatura e tom), medindo
     com a mesma régua da assinatura (luz_cor) e corrigindo em rodadas. A saturação não entra: ela depende da roupa e do
-    cenário (camiseta azul contra preta), e corrigir por ela desbotaria a pele. O contraste fica entre 0,7 e 1,3."""
+    cenário (camiseta azul contra preta), e corrigir por ela desbotaria a pele. O contraste fica entre 0,7 e kmax."""
     from assinatura import luz_cor
     labs = [cv2.cvtColor(q.astype(np.float32) / 255, cv2.COLOR_BGR2LAB) for q in qs]
     p = {'centro': src['brilho'], 'dL': ref['brilho'] - src['brilho'], 'kL': 1.0, 'kC': 1.0,
@@ -38,7 +45,7 @@ def ajustar_cor(qs, src: dict, ref: dict) -> dict:
     for _ in range(6):
         m = luz_cor([(np.clip(cv2.cvtColor(cor_lab(l, p).astype(np.float32), cv2.COLOR_LAB2BGR), 0, 1) * 255).astype(np.uint8) for l in labs])
         p['dL'] += ref['brilho'] - m['brilho']
-        p['kL'] = float(np.clip(p['kL'] * ref['contraste'] / max(m['contraste'], 1), 0.7, 1.3))
+        p['kL'] = float(np.clip(p['kL'] * ref['contraste'] / max(m['contraste'], 1), 0.7, kmax))
         p['da'] += ref['tom'] - m['tom']
         p['db'] += ref['temperatura'] - m['temperatura']
     p['medido'] = m
@@ -62,7 +69,13 @@ def enquadrar(rosto: list, ref: dict) -> tuple[float, float, float]:
     ok = [r for r in rosto if r and len(r) >= 4 and r[3] > 0]
     h = float(np.median([r[3] for r in ok])); cy = float(np.median([r[2] for r in ok])); cx = float(np.median([r[1] for r in ok]))
     h_ref = (ref['rosto_aberto'] + ref['rosto_fechado']) / 2
-    s = max(1.0, h_ref / h)
+    s = h_ref / h
+    if s < 0.995:  # rosto maior que o do modelo: reduz (até 15%) e o quadro fica dentro da tela, sobre o fundo desfocado
+        s = max(s, 0.85)
+        ox = min(max(cx * 1080 * s - ref['rosto_cx'] * 1080, 1080 * (s - 1)), 0)
+        oy = min(max(cy * 1920 * s - ref['rosto_cy'] * 1920, 1920 * (s - 1)), 0)
+        return s, ox, oy
+    s = max(1.0, s)
     # o corte em y tem de caber: 0 <= oy <= 1920(s-1); se não cabe, aproxima o mínimo que faz caber
     if cy > ref['rosto_cy']:
         s = max(s, (1 - ref['rosto_cy']) / (1 - cy))
@@ -73,14 +86,48 @@ def enquadrar(rosto: list, ref: dict) -> tuple[float, float, float]:
     return s, ox, oy
 
 
+def desenho(pasta: Path, sig: dict) -> None:
+    """2º passo: o arquivo que o molde desenha (fala_grade.mp4), já tratado, levado à luz do mesmo arquivo no molde.
+    O contraste vai até 1,5x: o quadro tratado é quase todo fundo escuro sintético, a correção cai na pessoa."""
+    from assinatura import quadros, luz_cor
+    ref = (sig.get('entrada') or {}).get('desenho')
+    if not ref:
+        print('adaptar --desenho: este modelo desenha a fala crua (sem entrada.desenho na assinatura): nada a fazer'); return
+    arq = pasta / 'public' / ref['arquivo']
+    if not arq.exists():
+        sys.exit(f'adaptar --desenho: falta public/{ref["arquivo"]}; rode antes o scripts/grade.py do molde')
+    qs, _ = quadros(arq, fps=2)
+    src = luz_cor(qs)
+    p = ajustar_cor(qs, src, ref, kmax=1.5)
+    tmp = RAIZ / '.tmp'; tmp.mkdir(exist_ok=True)
+    lut = tmp / f'adaptar-desenho-{pasta.name}.cube'
+    lut_cor(p, lut)
+    novo = arq.with_name(arq.stem + '.adaptando.mp4')
+    lt = f"lut3d=file='{lut.as_posix().replace(':', chr(92) + ':')}'"
+    subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', str(arq), '-vf', lt, '-c:v', 'libx264', '-crf', '13', '-preset', 'slow',
+                    '-pix_fmt', 'yuv420p', '-movflags', '+faststart', '-an', str(novo)], check=True)
+    lut.unlink(missing_ok=True)
+    os.replace(novo, arq)
+    rel = pasta / 'adaptacao.json'
+    feito = json.loads(rel.read_text(encoding='utf-8')) if rel.exists() else {}
+    feito['desenho'] = {'arquivo': ref['arquivo'], 'contraste_x': round(p['kL'], 3), 'brilho_de': src['brilho'], 'brilho_para': ref['brilho'],
+                        'contraste_de': src['contraste'], 'contraste_para': ref['contraste'], 'medido_nos_quadros': p['medido']}
+    rel.write_text(json.dumps(feito, ensure_ascii=False, indent=1), encoding='utf-8')
+    print(f'adaptar --desenho: {ref["arquivo"]} brilho {src["brilho"]} -> {p["medido"]["brilho"]} (molde {ref["brilho"]}), '
+          f'contraste {src["contraste"]} -> {p["medido"]["contraste"]} (molde {ref["contraste"]})')
+
+
 def main() -> None:
-    if len(sys.argv) != 3:
+    args = [a for a in sys.argv[1:] if a != '--desenho']
+    if len(args) != 2:
         sys.exit(__doc__)
-    pasta, m = Path(sys.argv[1]), sys.argv[2]
+    pasta, m = Path(args[0]), args[1]
     arq = RAIZ / 'modelos' / m / 'assinatura.json'
     if not arq.exists():
         sys.exit(f'adaptar: o modelo {m} ainda não tem assinatura; rode tools/assinatura.py {m} (no estúdio local)')
     sig = json.loads(arq.read_text(encoding='utf-8'))
+    if '--desenho' in sys.argv:
+        desenho(pasta, sig); return
     ref = sig.get('entrada')
     base = pasta / 'base'
     rosto = json.loads((base / 'rosto.json').read_text(encoding='utf-8')) if (base / 'rosto.json').exists() else []
@@ -97,9 +144,15 @@ def main() -> None:
     cor = {'contraste_x': round(p['kL'], 3), 'saturacao_x': round(p['kC'], 3), 'brilho_de': src['brilho'], 'brilho_para': ref['brilho'],
            'temperatura_de': src['temperatura'], 'temperatura_para': ref['temperatura'], 'medido_nos_quadros': p['medido']}
     W, H = round(1080 * s / 2) * 2, round(1920 * s / 2) * 2
-    vf = f"lut3d=file='{lut.as_posix().replace(':', chr(92) + ':')}',scale={W}:{H}:flags=lanczos,crop=1080:1920:{ox:.0f}:{oy:.0f},setsar=1"
+    lt = f"lut3d=file='{lut.as_posix().replace(':', chr(92) + ':')}'"
+    if s < 1:  # reduzido: a imagem sobre ela mesma, ampliada e desfocada, para a borda não aparecer
+        fc = (f"[0:v]{lt},split[a][b];[a]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,boxblur=30:3[f];"
+              f"[b]scale={W}:{H}:flags=lanczos[p];[f][p]overlay={-ox:.0f}:{-oy:.0f},setsar=1[v]")
+        args = ['-filter_complex', fc, '-map', '[v]', '-map', '0:a?']
+    else:
+        args = ['-vf', f"{lt},scale={W}:{H}:flags=lanczos,crop=1080:1920:{ox:.0f}:{oy:.0f},setsar=1"]
     saida = pasta / 'public' / 'fala.mp4'
-    subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', str(base / 'fala.mp4'), '-vf', vf, '-c:v', 'libx264', '-crf', '16',
+    subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', str(base / 'fala.mp4'), *args, '-c:v', 'libx264', '-crf', '16',
                     '-preset', 'medium', '-pix_fmt', 'yuv420p', '-c:a', 'copy', str(saida)], check=True)
     lut.unlink(missing_ok=True)
     novo = [[r[0], round((r[1] * 1080 * s - ox) / 1080, 4), round((r[2] * 1920 * s - oy) / 1920, 4), round(r[3] * s, 4)] if r and len(r) >= 4 else r
@@ -107,7 +160,7 @@ def main() -> None:
     (pasta / 'src' / 'rosto.json').write_text(json.dumps(novo), encoding='utf-8')
     feito = {'modelo': m, 'escala': round(s, 4), 'corte_x': round(ox), 'corte_y': round(oy), **cor}
     (pasta / 'adaptacao.json').write_text(json.dumps(feito, ensure_ascii=False, indent=1), encoding='utf-8')
-    print(f'adaptar: rosto {"aproximado %.1f%%" % ((s - 1) * 100) if s > 1.0005 else "no tamanho"} e posto na altura do modelo; '
+    print(f'adaptar: rosto {"aproximado %.1f%%" % ((s - 1) * 100) if s > 1.0005 else "reduzido %.1f%%" % ((1 - s) * 100) if s < 0.9995 else "no tamanho"} e posto na altura do modelo; '
           f'luz {src["brilho"]} -> {ref["brilho"]}, temperatura {src["temperatura"]} -> {ref["temperatura"]}, '
           f'contraste x{cor["contraste_x"]}, saturação x{cor["saturacao_x"]}')
 

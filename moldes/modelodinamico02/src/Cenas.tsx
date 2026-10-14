@@ -1,6 +1,6 @@
 import React from 'react';
 import {Img, staticFile} from 'remotion';
-import {C, DURACAO, E, MONO, P, SANS, SCRIPT, SERIF, mola, tempoDe, tw, useT, w} from './tema';
+import {C, DURACAO, E, MONO, P, SANS, SCRIPT, SERIF, limpa, mola, tempoDe, tw, useT, w} from './tema';
 
 const PALAVRAS = P.palavras;
 
@@ -8,7 +8,7 @@ const PALAVRAS = P.palavras;
 type Fonte = 'sans' | 'script' | 'serif';
 type Efeito = 'corta' | 'sublinha' | 'moldura' | 'anel';
 type Linha = {txt: string; tam: number; fonte?: Fonte; peso?: number; acento?: boolean; efeito?: Record<string, Efeito>};
-type Spec = {id: string; fundo: 'E' | 'L'; topo: number; linhas: Linha[]; heroi?: React.FC; alinha?: 'left' | 'center'; iris?: boolean; de?: () => number};
+type Spec = {id: string; fundo: 'E' | 'L'; topo: number; linhas: Linha[]; heroi?: React.FC<{c: Cena}>; alinha?: 'left' | 'center'; iris?: boolean; de?: () => number};
 type Palavra = {txt: string; de: number; efeito?: Efeito};
 type LinhaPronta = Linha & {palavras: Palavra[]};
 export type Cena = Omit<Spec, 'linhas' | 'de'> & {linhas: LinhaPronta[]; de: number; ate: number};
@@ -28,9 +28,9 @@ const montar = (specs: Spec[]): Cena[] => {
 
 const ab = (x: number, y: number, extra: React.CSSProperties = {}): React.CSSProperties => ({position: 'absolute', left: x, top: y, ...extra});
 /** o perfil (props da composição) na assinatura do fecho; vazio esconde */
-export const Perfil = React.createContext({arroba: '', foto: ''});
+export const Perfil = React.createContext({arroba: '', foto: '', arquivo: ''});
 /** os quadros reais que enchem a palavra "frame" (arquivos em public/; null = a palavra em cor sólida). Num vídeo novo:
- * ffmpeg -ss <segundo> -i public/fala.mp4 -frames:v 1 -q:v 3 public/quadros/f600.jpg (um quadro da sua gravação) */
+ * ffmpeg -ss <segundo> -i base/fala.mp4 -frames:v 1 -q:v 3 public/quadros/f600.jpg (um quadro da sua gravação) */
 const FRAME_FOTOS: [string | null, string | null] = ['quadros/f600.jpg', 'quadros/f602.jpg'];
 const cores = (f: 'E' | 'L') => (f === 'E' ? {fg: C.creme, acento: C.laranja, sub: 'rgba(251,239,230,0.82)'} : {fg: C.tinta, acento: C.creme, sub: 'rgba(26,13,8,0.8)'});
 
@@ -111,16 +111,24 @@ const Bloco: React.FC<{c: Cena}> = ({c}) => {
 	);
 };
 
-/* ------------------------------------------------------------------ heróis (o objeto que faz o que a frase diz) */
-const Cem: React.FC = () => {
+/* ------------------------------------------------------------------ heróis (o objeto que faz o que a frase diz)
+ * Cada herói recebe a própria tela (c) e pinta com cores(c.fundo): a mesma cena funciona no fundo escuro e no laranja. */
+/** início da palavra se ela é dita dentro desta tela; senão o começo da tela (o herói nunca nasce pronto) */
+const naTela = (c: Cena, texto: string) => PALAVRAS.find((p) => limpa(p.texto) === limpa(texto) && p.de >= c.de - 0.01 && p.de < c.ate)?.de ?? c.de;
+
+const Cem: React.FC<{c: Cena}> = ({c}) => {
 	const {t} = useT();
+	const {acento} = cores(c.fundo);
 	const a = w('claude');
 	const k = mola(t, a);
-	return <div style={ab(390, 1180, {opacity: Math.min(1, k * 1.5), transform: `scale(${0.4 + 0.6 * k})`})}><Faisca size={300} cor={C.creme} giro={(t - a) * 25} /></div>;
+	return <div style={ab(390, 1180, {opacity: Math.min(1, k * 1.5), transform: `scale(${0.4 + 0.6 * k})`})}><Faisca size={300} cor={acento} giro={(t - a) * 25} /></div>;
 };
 
-const Arquivo: React.FC = () => {
+const Arquivo: React.FC<{c: Cena}> = ({c}) => {
 	const {t} = useT();
+	const {fg, acento} = cores(c.fundo);
+	const contra = c.fundo === 'E' ? C.tinta : C.creme;
+	const {arquivo} = React.useContext(Perfil);
 	const gravei = w('gravei');
 	const mandei = w('mandei');
 	const kf = mola(t, gravei);
@@ -135,34 +143,34 @@ const Arquivo: React.FC = () => {
 			<svg style={ab(0, 0)} width={1080} height={1920}>
 				<defs>
 					<linearGradient id="feixe" x1="0" x2="1">
-						<stop offset="0" stopColor={C.laranja} stopOpacity={0.55} />
-						<stop offset="1" stopColor={C.laranja} stopOpacity={0.05} />
+						<stop offset="0" stopColor={acento} stopOpacity={0.55} />
+						<stop offset="1" stopColor={acento} stopOpacity={0.05} />
 					</linearGradient>
 				</defs>
 				<polygon points="300,1120 300,1290 870,1215 870,1195" fill="url(#feixe)" opacity={feixe} />
 			</svg>
 			{t >= mandei - 0.2 && (
-				<div style={ab(760, 1090, {width: 220, height: 220, borderRadius: 54, background: C.laranja, display: 'flex', alignItems: 'center', justifyContent: 'center', transform: `scale(${(0.5 + 0.5 * ks) * (1 + 0.12 * Math.sin(chega * Math.PI))})`, opacity: Math.min(1, ks * 1.5), boxShadow: `0 0 80px rgba(224,89,42,0.55)`})}>
-					<Faisca size={160} cor={C.creme} />
+				<div style={ab(760, 1090, {width: 220, height: 220, borderRadius: 54, background: acento, display: 'flex', alignItems: 'center', justifyContent: 'center', transform: `scale(${(0.5 + 0.5 * ks) * (1 + 0.12 * Math.sin(chega * Math.PI))})`, opacity: Math.min(1, ks * 1.5), boxShadow: `0 0 80px rgba(224,89,42,0.55)`})}>
+					<Faisca size={160} cor={fg} />
 				</div>
 			)}
 			{t >= gravei && viaja < 1 && (
-				<div style={ab(fx, fy, {width: 260, height: 330, borderRadius: '24px 70px 24px 24px', background: C.creme, transform: `scale(${(0.5 + 0.5 * kf) * (1 - 0.7 * viaja)})`, opacity: Math.min(1, kf * 1.5) * (1 - viaja * 0.6), display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: 26, boxSizing: 'border-box'})}>
-					<div style={{fontFamily: SANS, fontWeight: 900, fontSize: 74, color: C.tinta, letterSpacing: '-0.05em'}}>.mp4</div>
-					<div style={{fontFamily: MONO, fontSize: 19, color: C.cinza}}>20261005_103843</div>
+				<div style={ab(fx, fy, {width: 260, height: 330, borderRadius: '24px 70px 24px 24px', background: fg, transform: `scale(${(0.5 + 0.5 * kf) * (1 - 0.7 * viaja)})`, opacity: Math.min(1, kf * 1.5) * (1 - viaja * 0.6), display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: 26, boxSizing: 'border-box'})}>
+					<div style={{fontFamily: SANS, fontWeight: 900, fontSize: 74, color: contra, letterSpacing: '-0.05em'}}>.mp4</div>
+					{arquivo && <div style={{fontFamily: MONO, fontSize: 19, color: C.cinza}}>{arquivo}</div>}
 				</div>
 			)}
 		</>
 	);
 };
 
-const Mira: React.FC = () => {
+const Mira: React.FC<{c: Cena}> = ({c}) => {
 	const {t} = useT();
-	const c = CENAS.find((x) => x.id === 'vendo')!;
+	const {fg, acento} = cores(c.fundo);
 	const k = tw(t, c.de, c.de + 0.3, 0, 1);
 	const s = 60 * k;
 	const canto = (x: number, y: number, r: number) => (
-		<div style={ab(x, y, {width: s, height: s, borderTop: `8px solid ${C.laranja}`, borderLeft: `8px solid ${C.laranja}`, transform: `rotate(${r}deg)`, transformOrigin: '0 0'})} />
+		<div style={ab(x, y, {width: s, height: s, borderTop: `8px solid ${acento}`, borderLeft: `8px solid ${acento}`, transform: `rotate(${r}deg)`, transformOrigin: '0 0'})} />
 	);
 	return (
 		<>
@@ -170,7 +178,7 @@ const Mira: React.FC = () => {
 			{canto(980, 640, 90)}
 			{canto(980, 1240, 180)}
 			{canto(100, 1240, 270)}
-			<div style={ab(140, 680, {display: 'flex', alignItems: 'center', gap: 14, fontFamily: MONO, fontSize: 34, color: C.creme, opacity: k})}>
+			<div style={ab(140, 680, {display: 'flex', alignItems: 'center', gap: 14, fontFamily: MONO, fontSize: 34, color: fg, opacity: k})}>
 				<div style={{width: 24, height: 24, borderRadius: 12, background: '#FF3B30', opacity: Math.floor(t * 3) % 2 ? 1 : 0.25}} />
 				REC
 			</div>
@@ -178,10 +186,11 @@ const Mira: React.FC = () => {
 	);
 };
 
-const Converge: React.FC = () => {
+const Converge: React.FC<{c: Cena}> = ({c}) => {
 	const {t} = useT();
-	const d = w('decidiu');
-	const ed = w('editou');
+	const {fg, acento} = cores(c.fundo);
+	const d = naTela(c, 'decidiu');
+	const ed = naTela(c, 'editou');
 	const k = tw(t, d - 0.1, d + 0.35, 0, 1);
 	const pulso = 1 + 0.15 * Math.max(0, 1 - Math.abs(t - ed - 0.1) / 0.2);
 	return (
@@ -193,13 +202,13 @@ const Converge: React.FC = () => {
 				const y = 1330 + Math.sin(a) * r;
 				return (
 					<div key={i} style={ab(x - 50, y - 6, {width: 100, height: 12, opacity: k, transform: `rotate(${(a * 180) / Math.PI + 180}deg)`})}>
-						<div style={{width: 80, height: 10, background: C.tinta, borderRadius: 5}} />
-						<div style={{position: 'absolute', right: 0, top: -12, width: 0, height: 0, borderTop: '17px solid transparent', borderBottom: '17px solid transparent', borderLeft: `28px solid ${C.tinta}`}} />
+						<div style={{width: 80, height: 10, background: fg, borderRadius: 5}} />
+						<div style={{position: 'absolute', right: 0, top: -12, width: 0, height: 0, borderTop: '17px solid transparent', borderBottom: '17px solid transparent', borderLeft: `28px solid ${fg}`}} />
 					</div>
 				);
 			})}
 			<div style={ab(420, 1210, {transform: `scale(${pulso})`})}>
-				<Faisca size={240} cor={C.creme} giro={t * 20} />
+				<Faisca size={240} cor={acento} giro={t * 20} />
 			</div>
 		</>
 	);
@@ -532,7 +541,7 @@ export const CENAS: Cena[] = montar([
 
 export const cenaEm = (t: number) => CENAS.find((c) => t >= c.de && t < c.ate) ?? CENAS[CENAS.length - 1];
 
-/** uma tela: fundo + câmera que nunca para (aproxima ~2,5% por segundo) + bloco de texto + herói */
+/** uma tela: fundo + câmera que nunca para (aproxima 1,5% por segundo) + bloco de texto + herói */
 export const Tela: React.FC<{c: Cena}> = ({c}) => {
 	const {t} = useT();
 	const z = 1 + Math.max(0, t - c.de) * 0.015;
@@ -544,7 +553,7 @@ export const Tela: React.FC<{c: Cena}> = ({c}) => {
 	return (
 		<div style={{position: 'absolute', inset: 0, overflow: 'hidden', ...fundo}}>
 			<div style={{position: 'absolute', inset: 0, transform: `scale(${z})`, transformOrigin: '540px 960px'}}>
-				{H && <H />}
+				{H && <H c={c} />}
 				<Bloco c={c} />
 			</div>
 		</div>

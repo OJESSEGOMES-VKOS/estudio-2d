@@ -7,7 +7,7 @@ import PB from './palavras.json';
 import ROSTO_T from './rosto.json';
 
 /**
- * Molde do modelodinamico03 (../../modelos/modelodinamico03/MODELO.md), feito na vitrine dos modelos.
+ * Molde do modelodinamico03 (../../modelos/modelodinamico03/modelodinamico03.md), feito na vitrine dos modelos.
  * Partiu do código do vídeo aprovado do modelo (2026-10-08): o mesmo grade âmbar
  * com grão, a mesma tipografia de 3 vozes (Inter Tight apertada, Playfair itálica, Anton em caixa alta, vermelho
  * #E01E1E só na palavra-chave) nascendo do desfoque palavra a palavra, legenda serifada pequena no peito, transições de
@@ -48,7 +48,7 @@ const foraDaFala = (onde: string, oque: string): never => {
 	throw new Error(
 		`O plano não bate com a fala de src/palavras.json (${PS.length} palavras).\n` +
 			`src/Reel.tsx, ${onde}: ${oque}.\n` +
-			'Refaça a seção "O PLANO" de src/Reel.tsx para a fala nova (LEIA.md, "Vídeo novo") e rode node scripts/cobertura.mjs.',
+			'Refaça a seção "O PLANO" de src/Reel.tsx para a fala nova (modelos/modelodinamico03/modelodinamico03.md, seção do vídeo novo) e rode node scripts/cobertura.mjs.',
 	);
 };
 const pw = (i: number, esperada: string, onde: string): Pal => {
@@ -216,8 +216,7 @@ const ajustes = (): Ajuste[] => {
 		...BLOCOS.map((b) => [b.camera[0], b.camera[1], alturaBloco(b, PADRAO)] as [number, number, number]),
 		...(FECHO ? [[FECHO.de, DURACAO + 1, ALTURA_FECHO * PADRAO] as [number, number, number]] : []),
 	];
-	AJ = segs.map(([de, ate, h]) => {
-		const alvo = LEG_Y2 - FOLGA_LEG - h - FOLGA_QUEIXO - 6;
+	const procura = (de: number, ate: number, h: number, alvo: number): Ajuste | null => {
 		for (let m = 1; m < 1.6; m += 0.005) {
 			let chin = 0, lim = Infinity;
 			for (const [tr, , cy, hh] of ROSTO_T as number[][]) {
@@ -231,6 +230,21 @@ const ajustes = (): Ajuste[] => {
 			const sobe = Math.max(0, chin - alvo);
 			if (sobe <= lim) return {de, ate, m, sobe: Math.ceil(sobe)};
 		}
+		return null;
+	};
+	/* topo da cabeça mediano no plano com o ajuste (px; < 0 = a cabeça sai do quadro): ~0,35 da altura do rosto acima da caixa */
+	const topoCabeca = (a: Ajuste) => {
+		const tops = (ROSTO_T as number[][]).filter(([tr]) => tr >= a.de - 0.25 && tr <= a.ate + 0.25)
+			.map(([tr, , cy, hh]) => ORIGEM.y + ((cy - hh / 2 - 0.35 * hh) * 1920 - ORIGEM.y) * zoomEm(Math.max(a.de, Math.min(a.ate - 0.01, tr))) * a.m - a.sobe)
+			.sort((x, y) => x - y);
+		return tops.length ? tops[Math.floor(tops.length / 2)] : 0;
+	};
+	AJ = segs.map(([de, ate, h], i) => {
+		let a = procura(de, ate, h, LEG_Y2 - FOLGA_LEG - h - FOLGA_QUEIXO - 6);
+		// a abertura não divide a tela com a legenda: se, para caber acima da 2ª posição dela, a câmera tirar a cabeça do
+		// quadro (gravação com a pessoa mais baixa no começo), a abertura pode descer até a base da zona segura
+		if (ABERTURA && i === 0 && (!a || topoCabeca(a) < 0)) a = procura(de, ate, h, ZONA.base - h - FOLGA_QUEIXO - 6) ?? a;
+		if (a) return a;
 		throw new Error(
 			`O destaque do plano de ${de.toFixed(2)} a ${ate.toFixed(2)} s (${Math.round(h)} px de altura) não cabe entre o queixo e a legenda nem com a câmera subindo e aproximando até 1,6x. ` +
 				'Use menos linhas nesse bloco de BLOCOS (ou na ABERTURA/FECHO_DEF) em src/Reel.tsx, ou divida-o em dois.',
@@ -366,7 +380,7 @@ type BlocoDef = {
 	camera: [number, number];
 	/** palavra-chave vermelha atrás do bloco branco, como carimbo de fundo (ref1 2,1 "PESSOAS" atrás de "Relação"); `palavra` é a esperada no índice */
 	carimbo?: {idx: number; palavra: string; tam: number; dy: number};
-	/** negação (MODELO §3): índice da linha (0 = a 1ª) riscada pelo traço vermelho em diagonal; sem risca, nada muda */
+	/** negação (modelodinamico03.md): índice da linha (0 = a 1ª) riscada pelo traço vermelho em diagonal; sem risca, nada muda */
 	risca?: number;
 	/** linha extra que não é fala (o nome do modelo), com o tempo em que nasce */
 	extra?: {txt: string; voz: Voz; tam: number; de: number; brilho?: boolean};
@@ -402,7 +416,7 @@ const Bloco: React.FC<BlocoDef & {t: number; top: number; escala?: number}> = ({
 							{pecas}
 						</div>
 					);
-				/* negação (MODELO §3): o traço de caneta vermelho risca a linha em diagonal, desenhado da esquerda para a
+				/* negação (modelodinamico03.md): o traço de caneta vermelho risca a linha em diagonal, desenhado da esquerda para a
 				 * direita logo depois da última palavra dela (o mesmo do vídeo de 2026-10-08, "edita esse vídeo") */
 				const r = tw(t, PS[k - 1].ate + 0.05, PS[k - 1].ate + 0.35, 0, 1, E.io);
 				return (

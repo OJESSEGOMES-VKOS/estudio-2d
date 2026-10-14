@@ -3,21 +3,19 @@ import {AbsoluteFill, Easing, Img, OffthreadVideo, Sequence, getStaticFiles, int
 import {loadFont as loadInterTight} from '@remotion/google-fonts/InterTight';
 import {Camera, POSE} from './Camera';
 import {FPS, H, W, fr} from './tempos';
-import {ATRAS, CTA, ESTE, FRASES, Frase, GRADE, GRADES, MONTAGEM, PREVIAS, REEL, TITULOS, chaves, pare} from './plano';
+import {ATRAS, CTA, ESTE, FALA_DO_APROVADO, FRASES, Frase, GRADE, GRADES, LISTA, MONTAGEM, NOMES_DO_APROVADO, PREVIAS, REEL, TITULOS, chaves, pare} from './plano';
 
 /**
- * Vitrine no youtubeedition01 (../../modelos/youtubeedition01/MODELO.md), 9:16.
- * Encanamento da apresentação do modelo (a câmera em janela) e dos scripts da vitrine; o visual NÃO é o da
- * apresentação recusada: sai das quatro referências. Formato A (método com a tela, S), espinha título-capítulo.
- * O plano (tudo o que está preso à fala) mora em ./plano.ts; aqui só o desenho. Plano frase a frase em ../plano.md.
+ * youtubeedition01 em 9:16 (as regras: modelos/youtubeedition01/youtubeedition01.md). Aqui só o desenho; o plano (tudo
+ * o que está preso à fala) mora em ./plano.ts.
  *
- * Identidade "Gelo, tinta e amarelo" (MODELO §9, medida em quadro cheio das refs):
- *   gelo #F8F8F8 = fundo das explicações (S 02:59 e J 09:13 medem #F8F8F8)
- *   tinta #0A0A0A = texto sobre o gelo e texto ATRÁS da pessoa (S mede #000808 no branco)
- *   branco #FCFCFC = texto na frente da pessoa (J 04:59 e D 10:37 medem #FCFCFC)
- *   amarelo #FCDC00 = o único acento, palavra-chave (M 00:01 e M 21:32 medem #FCDC00; J 12:25 pílulas amarelas)
- *   ruim #FC0000 (S 00:43, anel que risca); não usado neste vídeo
- *   Inter Tight 900/800/700: grotesca pesada de entreletra apertada, caixa alta no R3 (S), frase em caixa baixa no CTA (J)
+ * Identidade "Gelo, tinta e amarelo" (seção 6 do .md):
+ *   gelo #F8F8F8 = fundo das explicações
+ *   tinta #0A0A0A = texto sobre o gelo e texto ATRÁS da pessoa
+ *   branco #FCFCFC = texto na frente da pessoa
+ *   amarelo #FCDC00 = o único acento (palavra-chave, fio, contorno, ponto da conta)
+ *   ruim #FC0000 = o que risca (não usado no aprovado)
+ *   Inter Tight 900/800/700: grotesca pesada de entreletra apertada, caixa alta nos títulos, caixa baixa na chamada
  */
 const it = loadInterTight('normal', {weights: ['600', '700', '800', '900'], subsets: ['latin', 'latin-ext']});
 const SANS = it.fontFamily;
@@ -42,7 +40,7 @@ if (ATRAS.length) falta('pessoa.webm', 'O texto atrás da pessoa precisa dela re
 if (GRADES.length) for (const n of GRADE) falta(`ex/${n}.mp4`, `A grade usa um vídeo seu pronto em cada modelo: ffmpeg -i <video>.mp4 -an -vf scale=540:960 public/ex/${n}.mp4 (ou tire "${n}" de GRADE, ou GRADES = [] em src/plano.ts).`);
 for (const [, , n] of MONTAGEM?.planos ?? []) falta(`ex/cheio_${n}.mp4`, `A montagem usa 2 s de um vídeo seu pronto: ffmpeg -ss ${MONTAGEM!.recorte} -t 2.0 -i <video>.mp4 -an public/ex/cheio_${n}.mp4 (ou MONTAGEM = null em src/plano.ts).`);
 
-/* ---------------------------------------------------------------- texto que acende (S: palavra a palavra, com borrão) */
+/* ---------------------------------------------------------------- texto que acende: palavra a palavra, do borrão para nítida */
 const Acende: React.FC<{t: number; t0: number; children: React.ReactNode; style?: React.CSSProperties; dy?: number}> = ({t, t0, children, style, dy = 24}) => {
 	if (t < t0) return null;
 	const u = tw(t, t0, t0 + 0.2, 0, 1);
@@ -53,7 +51,7 @@ const Acende: React.FC<{t: number; t0: number; children: React.ReactNode; style?
 	);
 };
 
-/* R3 atrás: palavra-título gigante em tinta, entre o fundo e a pessoa recortada (S 01:03 "WHY NOW?", 02:48 "UNLIMITED") */
+/* atrás: palavra-título gigante em tinta, entre o fundo e a pessoa recortada */
 const Atras: React.FC<{t: number; t0: number; linhas: string[]; size: number; top: number}> = ({t, t0, linhas, size, top}) => (
 	<div style={{position: 'absolute', left: 0, width: W, top, textAlign: 'center', fontFamily: SANS, fontWeight: 900, fontSize: size, lineHeight: 0.86, letterSpacing: '-0.045em', color: COR.tinta}}>
 		{linhas.map((l, i) => (
@@ -132,7 +130,7 @@ const EsteModelo: React.FC<{t: number; e: {de: number; ate: number; rotulo: stri
 	);
 };
 
-/* ---------------------------------------------------------------- montagem: um modelo por palavra (D 00:43) */
+/* ---------------------------------------------------------------- montagem: um vídeo cheio por palavra, corte seco */
 const Montagem: React.FC<{t: number; m: {recorte: number; planos: [number, number, string][]}}> = ({t, m}) => (
 	<>
 		{m.planos.map(([a, b, nome]) =>
@@ -147,7 +145,7 @@ const Montagem: React.FC<{t: number; m: {recorte: number; planos: [number, numbe
 	</>
 );
 
-/* ---------------------------------------------------------------- tela de reels recriada (E5, ilustração assumida, sem logo) */
+/* ---------------------------------------------------------------- tela de reels recriada (ilustração assumida, sem logo) */
 const Icone: React.FC<{d: string; y: number; u: number}> = ({d, y, u}) => (
 	<svg width={62} height={62} viewBox="0 0 24 24" style={{position: 'absolute', left: 0, top: y, opacity: u, filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.45))'}}>
 		<path d={d} fill="none" stroke="#fff" strokeWidth={1.9} strokeLinejoin="round" strokeLinecap="round" />
@@ -204,7 +202,7 @@ export const PreviasEmCima: React.FC<{t: number; p: {de: number; entra: number; 
 	);
 };
 
-/* ---------------------------------------------------------------- R3 na frente do hook (S 00:05 "USING CLAUDE", 00:48 "100% PROFIT") */
+/* ---------------------------------------------------------------- frase na frente, sobre a camiseta: linha branca e linha gigante amarela */
 const palavras = (t: number, ps: [string, number][]) =>
 	ps.map(([p, t0], k) => (
 		<React.Fragment key={k}>
@@ -224,8 +222,8 @@ const FraseFrente: React.FC<{t: number; f: Frase}> = ({t, f}) => {
 	);
 };
 
-/* ---------------------------------------------------------------- momento 1: o nome do modelo (S 03:18 "NICHE": a palavra-título no
-   centro do A-roll, branca e pesada, com o fio fino; no 9:16 a parede acima da cabeça não comporta duas linhas atrás) */
+/* ---------------------------------------------------------------- título de capítulo: a palavra-título no centro do A-roll, branca e
+   pesada, com o fio amarelo (no 9:16 a parede acima da cabeça não comporta duas linhas atrás) */
 const Titulo: React.FC<{t: number; d: {de: number; ate: number; top: number; linhas: string[]}}> = ({t, d}) => {
 	if (t < d.de || t >= d.ate) return null;
 	const fio = tw(t, d.de + 0.15, d.de + 0.5, 0, 1);
@@ -243,7 +241,7 @@ const Titulo: React.FC<{t: number; d: {de: number; ate: number; top: number; lin
 	);
 };
 
-/* ---------------------------------------------------------------- momento 3: o pedido (J 04:59 degradê + frase; M 00:31 palavra-chave amarela) */
+/* ---------------------------------------------------------------- o pedido: degradê escuro, a frase de ação e a palavra-chave amarela */
 const Cta: React.FC<{t: number; c: {de: number; top: number; antes: string; chave: [string, number]; depois: [string, number]}}> = ({t, c}) => {
 	if (t < c.de) return null;
 	const aqui = c.depois[1];
@@ -272,21 +270,63 @@ const Cta: React.FC<{t: number; c: {de: number; top: number; antes: string; chav
 	);
 };
 
+/* ---------------------------------------------------------------- conta no gelo (plano B sem vídeos do criador): um cartão por item,
+   empilhados na mesma área da grade (x 55 a 1025, y 90 a 1248), cada um entra quando é dito; antes disso a vaga dele já
+   aparece, para a tela nascer composta. O rosto fica no cartão do canto, logo abaixo. */
+const LX = 55, LW = 970, LY0 = 90, LY1 = 1248, LGAP = 20, LPAD = 56, PONTO = 40;
+export const medidasLista = (itens: [string, number][]) => {
+	const n = itens.length;
+	const h = (LY1 - LY0 - (n - 1) * LGAP) / n;
+	const maior = Math.max(...itens.map(([p]) => p.length));
+	// a palavra mais longa cabe na largura útil do cartão (sobra para o ponto e o número); teto de 172 px e metade da altura
+	const fonte = Math.round(Math.min(172, h * 0.5, (LW - 2 * LPAD - PONTO - 34 - 90) / (maior * 0.66)));
+	return {h, fonte};
+};
+const Lista: React.FC<{t: number; l: {de: number; ate: number; itens: [string, number][]}}> = ({t, l}) => {
+	if (t < l.de || t >= l.ate) return null;
+	const {h, fonte} = medidasLista(l.itens);
+	const z = tw(t, l.de + 0.6, l.ate, 1, 1.04, Easing.inOut(Easing.sin));
+	const vaga = tw(t, l.de, l.de + 0.3, 0, 1);
+	return (
+		<AbsoluteFill style={{background: COR.gelo}}>
+			<AbsoluteFill style={{transform: `scale(${z})`, transformOrigin: '50% 30%'}}>
+				{l.itens.map(([p, t0], k) => {
+					const u = tw(t, t0, t0 + 0.32, 0, 1);
+					return (
+						<div key={k} style={{position: 'absolute', left: LX, top: LY0 + k * (h + LGAP), width: LW, height: h, borderRadius: 30, background: '#EDEDED', opacity: vaga}}>
+							{t >= t0 && (
+								<div style={{position: 'absolute', inset: 0, borderRadius: 30, background: '#FFFFFF', display: 'flex', alignItems: 'center', padding: `0 ${LPAD}px`, boxShadow: '0 18px 44px rgba(0,0,0,0.16), 0 3px 10px rgba(0,0,0,0.08)', opacity: Math.min(1, u * 1.6), transform: `translateY(${(1 - u) * 90}px)`, filter: `blur(${(1 - u) * 16}px)`}}>
+									<div style={{width: PONTO, height: PONTO, borderRadius: PONTO / 2, background: COR.amarelo, marginRight: 34, flexShrink: 0}} />
+									<div style={{fontFamily: SANS, fontWeight: 900, fontSize: fonte, lineHeight: 1, letterSpacing: '-0.045em', textTransform: 'uppercase', color: COR.tinta, whiteSpace: 'nowrap'}}>{p}</div>
+									<div style={{marginLeft: 'auto', fontFamily: SANS, fontWeight: 800, fontSize: 44, color: COR.cinza, letterSpacing: '-0.02em'}}>{String(k + 1).padStart(2, '0')}</div>
+								</div>
+							)}
+						</div>
+					);
+				})}
+			</AbsoluteFill>
+		</AbsoluteFill>
+	);
+};
+
 /* ---------------------------------------------------------------- o vídeo */
 const dentro = (t: number, j: {de: number; ate: number} | null) => !!j && t >= j.de && t < j.ate;
 export const VitrineYoutubeEdition01: React.FC<Props> = ({previas, nomesPrevias, arroba = ''}) => {
 	if (previas && PREVIAS && !(existe('previa1.mp4') && existe('previa2.mp4')))
 		pare('previas: true pede public/previa1.mp4 e public/previa2.mp4. Faça cada uma de um vídeo seu já pronto, da raiz do estúdio: .venv/Scripts/python.exe tools/previa.py <video.mp4> videos/<pasta> 1 (e depois 2). Ou renderize com previas: false.');
+	if (previas && PREVIAS && !FALA_DO_APROVADO && nomesPrevias.some((n) => NOMES_DO_APROVADO.includes(n.toLowerCase())))
+		pare(`a prop nomesPrevias (${nomesPrevias.join(', ')}) é a do vídeo aprovado: passe os nomes reais das prévias deste criador, ou previas: false.`);
 	const t = useCurrentFrame() / FPS;
 	const ch = chaves(previas);
 	let atras: React.ReactNode = null;
 	for (const a of ATRAS) if (dentro(t, a)) atras = <Atras t={t} t0={a.de} linhas={a.linhas} size={a.size} top={a.top} />;
-	const telaGelo = GRADES.some((g) => dentro(t, g)) || dentro(t, REEL) || (previas && dentro(t, PREVIAS));
+	const telaGelo = GRADES.some((g) => dentro(t, g)) || dentro(t, REEL) || dentro(t, LISTA) || (previas && dentro(t, PREVIAS));
 	return (
 		<AbsoluteFill style={{background: telaGelo ? COR.gelo : '#000'}}>
 			{GRADES.map((g, k) => (
 				<Grade key={k} t={t} de={g.de} ate={g.ate} par={g.par} />
 			))}
+			{LISTA && <Lista t={t} l={LISTA} />}
 			{previas && PREVIAS && <PreviasEmCima t={t} p={PREVIAS} nomes={nomesPrevias} />}
 			<Camera chaves={ch} t={t} atras={atras} />
 			{REEL && <Reel t={t} r0={REEL} arroba={arroba} />}

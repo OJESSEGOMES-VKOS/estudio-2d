@@ -4,10 +4,10 @@ import {H, W, rostoEm} from './tempos';
 
 /**
  * A câmera do A-roll (encanamento da apresentação do youtubeedition01, adaptado ao 9:16). O vídeo vive numa janela que
- * pode ser a tela inteira, o cartão do canto (R5), a tela de reels recriada ou a metade de baixo da tela dividida.
+ * pode ser a tela inteira, o cartão do canto, a tela de reels recriada ou a metade de baixo da tela dividida.
  * Dentro dela, o zoom `s` e o lugar onde o rosto deve ficar (`fx`, `fy`, fração da janela), sem nunca mostrar borda.
- * Chave com `giro`: a entrada do cartão do S (00:09, 03:39), o plano encolhe girando com borrão de movimento.
- * `atras`: o que vai entre o fundo da gravação e a pessoa recortada (o texto ATRÁS da pessoa, S "WHY NOW?").
+ * Chave com `giro`: a entrada do cartão, o plano encolhe girando com borrão de movimento.
+ * `atras`: o que vai entre o fundo da gravação e a pessoa recortada (o texto ATRÁS da pessoa).
  */
 export type Pose = {x: number; y: number; w: number; h: number; r: number; s: number; fx: number; fy: number; sombra: number};
 const base: Pose = {x: 0, y: 0, w: W, h: H, r: 0, s: 1, fx: 0.5, fy: 0.35, sombra: 0};

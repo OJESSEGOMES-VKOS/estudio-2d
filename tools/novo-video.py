@@ -9,9 +9,9 @@ faz:
      (public/fala.mp4, public/voz.wav, src/palavras.json, src/rosto.json)
   4. adapta a gravação ao ponto de partida do modelo (tools/adaptar.py): rosto no tamanho e na altura, luz e cor de
      partida iguais às da gravação em que o modelo foi calibrado. --sem-adaptar pula (só para comparar).
-Depois: refazer o plano sobre a fala nova seguindo modelos/<modelo>/MODELO.md e REGRAS.md, rodar o checador e renderizar.
+Depois: refazer o plano sobre a fala nova seguindo modelos/<modelo>/<modelo>.md (o arquivo único do modelo), rodar o checador e renderizar.
 """
-import argparse, shutil, subprocess, sys
+import argparse, json, shutil, subprocess, sys
 sys.stdout.reconfigure(encoding='utf-8'); sys.stderr.reconfigure(encoding='utf-8')  # acentos no terminal do Windows
 from pathlib import Path
 
@@ -40,7 +40,10 @@ if destino.exists():
 def ignorar(pasta, nomes):
     p = Path(pasta)
     fora = {'node_modules', 'out', 'conferencia', '.tmp', 'trabalho'}
-    return [n for n in nomes if n in fora or (p.name == 'public' and n in MIDIA_ORIGEM)]
+    # da raiz do molde não vêm o plano, as props e o manual do vídeo aprovado (o plano do vídeo novo nasce do zero, e as
+    # props da vitrine trazem o nome e o @ de quem gravou o aprovado)
+    do_aprovado = {'plano.md', 'props-vitrine.json', 'LEIA.md'} if p == molde else set()
+    return [n for n in nomes if n in fora or n in do_aprovado or (p.name == 'public' and n in MIDIA_ORIGEM)]
 
 
 print('1/4 copiando o molde', a.modelo)
@@ -63,8 +66,13 @@ subprocess.run(cmd, check=True)
 base = destino / 'base'
 (destino / 'public').mkdir(exist_ok=True)
 (destino / 'src').mkdir(exist_ok=True)
+# modelo sem pessoa na tela (a assinatura do aprovado não tem rosto): a gravação de vídeo não vai para public/, só a voz
+sig = RAIZ / 'modelos' / a.modelo / 'assinatura.json'
+com_rosto = not sig.exists() or 'rosto_aberto' in json.loads(sig.read_text(encoding='utf-8')).get('saida', {})
 for nome, para in [('fala.mp4', 'public/fala.mp4'), ('voz.wav', 'public/voz.wav'),
                    ('palavras.json', 'src/palavras.json'), ('rosto.json', 'src/rosto.json')]:
+    if nome in ('fala.mp4', 'rosto.json') and not com_rosto:
+        continue
     if (base / nome).exists():
         shutil.copy2(base / nome, destino / para)
 if a.sem_adaptar:
@@ -73,5 +81,5 @@ else:
     print('4/4 adaptando a gravação ao modelo')
     subprocess.run([sys.executable, str(AQUI / 'adaptar.py'), str(destino), a.modelo], check=True)
 print('pronto:', destino)
-print('próximo passo: ler modelos/%s/MODELO.md e a seção "Vídeo novo" de %s, refazer o plano no código do vídeo '
-      '(src/), conferir e renderizar.' % (a.modelo, destino / 'LEIA.md'))
+print('próximo passo: ler modelos/%s/%s.md (o arquivo único do modelo) e seguir a seção "Como fazer um vídeo novo": '
+      'refazer o plano no código do vídeo (src/), conferir e renderizar.' % (a.modelo, a.modelo))

@@ -1,6 +1,6 @@
 """Som do sofistmotion01 (vitrine): trilha sintetizada + efeitos nas trocas, tudo calculado dos tempos do vídeo.
 Gera public/trilha.wav (pulso grave + pad quente + brilho, com ducking pela voz, ~16 dB abaixo dela) e
-public/efeitos.wav (whoosh, estalo, impacto, tiques, brilho metálico). Cauda de ~2 s no fim (MODELO §9).
+public/efeitos.wav (whoosh, estalo, impacto, tiques, brilho metálico). Cauda de ~2 s no fim (sofistmotion01.md).
 Tudo vem do plano (src/tempos.json): a duração, as cenas (o efeito de cada tela vai com o id dela: C2 notebook, C3
 atravessar, C5 celular, C6 corte vermelho, C7 portas), os flashes, as prévias, "virada", "acordes" (segundos ou id de
 cena; sem a lista, um acorde por cena) e as marcas. O que o plano não tem não toca.

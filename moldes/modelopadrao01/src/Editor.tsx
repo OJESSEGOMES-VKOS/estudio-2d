@@ -1,6 +1,6 @@
 import React from 'react';
 import {AbsoluteFill} from 'remotion';
-import {C, DISPLAY, E, MONO, P, SOMBRA, T, fundoClaro, mola, tw, useT} from './tema';
+import {C, DISPLAY, E, MONO, NOVO, P, SOMBRA, T, fundoClaro, mola, tw, useT} from './tema';
 import {PREVIA} from './Rosto';
 import {Faisca} from './ui';
 
@@ -60,9 +60,11 @@ const Palavra: React.FC<{texto: string; de: number; t: number}> = ({texto, de, t
 	const limpo = texto.replace(/[.,]$/, '');
 	const y = tw(t, de, de + 0.32, 105, 0, E.out);
 	const vis = t >= de - 0.02;
-	const chave = limpo.toLowerCase();
+	// as animações seguem o plano, não o texto: a palavra dita em editor.legenda ganha a caixa verde, a dita em
+	// editor.tela ganha o contorno, as de titulos.marcas ganham o marca-texto
+	const em = (x?: number) => x !== undefined && Math.abs(de - x) < 0.01;
 	let corpo: React.ReactNode = limpo;
-	if (chave === 'criado') {
+	if (em(S?.legenda)) {
 		const p = mola(t, de, {damping: 11, stiffness: 260, mass: 0.6});
 		corpo = (
 			<span style={{display: 'inline-block', background: C.verdeFundo, color: C.branco, borderRadius: 16, padding: '0 18px 6px', transform: `scale(${0.7 + 0.3 * p})`}}>
@@ -70,7 +72,7 @@ const Palavra: React.FC<{texto: string; de: number; t: number}> = ({texto, de, t
 			</span>
 		);
 	}
-	if (chave === 'mostrar') {
+	if (em(S?.tela)) {
 		const d = tw(t, de, de + 0.45, 0, 1, E.inOut);
 		corpo = (
 			<span style={{position: 'relative', display: 'inline-block', padding: '0 14px'}}>
@@ -81,7 +83,7 @@ const Palavra: React.FC<{texto: string; de: number; t: number}> = ({texto, de, t
 			</span>
 		);
 	}
-	const marca = ['100%', 'Claude', 'Instagram'].includes(limpo);
+	const marca = (T.titulos.marcas ?? []).includes(limpo);
 	const m = tw(t, de + 0.3, de + 0.7, 0, 1, E.inOut);
 	return (
 		<span style={{display: 'inline-block', overflow: 'hidden', paddingBottom: '0.14em', marginBottom: '-0.14em', verticalAlign: 'top', opacity: vis ? 1 : 0}}>
@@ -100,7 +102,7 @@ export const Titulo: React.FC<{t: number; paginas: Pagina[]}> = ({t, paginas}) =
 	if (idx < 0) return null;
 	const pg = paginas[idx];
 	return (
-		<div style={{position: 'absolute', left: 80, right: 110, top: 250, height: 170, display: 'flex', alignItems: 'center', alignContent: 'center', justifyContent: 'center', textAlign: 'center', flexWrap: 'wrap', columnGap: '0.24em', fontFamily: DISPLAY, fontWeight: 800, fontSize: 74, lineHeight: 1.06, letterSpacing: '-0.04em', color: C.tinta}}>
+		<div style={{position: 'absolute', left: 80, right: NOVO ? 140 : 110, top: 250, height: 170, display: 'flex', alignItems: 'center', alignContent: 'center', justifyContent: 'center', textAlign: 'center', flexWrap: 'wrap', columnGap: '0.24em', fontFamily: DISPLAY, fontWeight: 800, fontSize: 74, lineHeight: 1.06, letterSpacing: '-0.04em', color: C.tinta}}>
 			{pg.pal.map((p, i) => (
 				<Palavra key={`${idx}-${i}`} texto={p.texto} de={p.de} t={t} />
 			))}

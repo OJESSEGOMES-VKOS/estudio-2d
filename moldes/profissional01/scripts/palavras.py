@@ -28,9 +28,10 @@ movidas = 0
 for p in saida:
     k0 = int(p['de'] * SR / J)
     k = k0
-    while k < min(n, k0 + 35) and not voz[k]:
+    lim = min(n, k0 + 35, int((p['ate'] - 0.04) * SR / J))  # só dentro da própria palavra (nunca passa do fim dela)
+    while k < lim and not voz[k]:
         k += 1
-    if k < min(n, k0 + 35) and k != k0:
+    if k < lim and k != k0:
         p['de'] = round(min(k * J / SR, p['ate'] - 0.04), 2)
         movidas += 1
 

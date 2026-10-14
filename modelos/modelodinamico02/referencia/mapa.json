@@ -1,0 +1,1110 @@
+{
+ "modelo": "modelodinamico02",
+ "origem": "vídeo aprovado do modelo, feito com a nossa gravação",
+ "audio": "só a voz",
+ "formato": "540x960",
+ "passo_s": 0.25,
+ "cortes_s": [
+  1.25,
+  3.25,
+  5.5,
+  7.25,
+  8.25,
+  10.5,
+  11.5,
+  14.75,
+  16.0,
+  18.0,
+  20.0,
+  21.75,
+  24.25,
+  27.5,
+  31.25,
+  32.25,
+  34.25,
+  35.0,
+  38.5,
+  41.5
+ ],
+ "resumo": {
+  "video": "referencia.mp4",
+  "segundos": 44.5,
+  "formato": "540x960",
+  "brilho": 50.88,
+  "contraste": 58.0,
+  "saturacao": 168.63,
+  "temperatura": 9.8,
+  "tom": 12.01,
+  "cortes_min": 27.0
+ },
+ "quadros": [
+  {
+   "t": 0.0,
+   "brilho": 14.03,
+   "rosto": null,
+   "troca": 0.0
+  },
+  {
+   "t": 0.25,
+   "brilho": 15.04,
+   "rosto": null,
+   "troca": 1.0
+  },
+  {
+   "t": 0.5,
+   "brilho": 15.31,
+   "rosto": null,
+   "troca": 0.4
+  },
+  {
+   "t": 0.75,
+   "brilho": 20.96,
+   "rosto": null,
+   "troca": 4.8
+  },
+  {
+   "t": 1.0,
+   "brilho": 21.11,
+   "rosto": null,
+   "troca": 0.5
+  },
+  {
+   "t": 1.25,
+   "brilho": 133.3,
+   "rosto": null,
+   "troca": 91.2
+  },
+  {
+   "t": 1.5,
+   "brilho": 133.25,
+   "rosto": null,
+   "troca": 0.4
+  },
+  {
+   "t": 1.75,
+   "brilho": 133.02,
+   "rosto": null,
+   "troca": 0.6
+  },
+  {
+   "t": 2.0,
+   "brilho": 132.85,
+   "rosto": null,
+   "troca": 0.6
+  },
+  {
+   "t": 2.25,
+   "brilho": 133.17,
+   "rosto": null,
+   "troca": 3.3
+  },
+  {
+   "t": 2.5,
+   "brilho": 132.32,
+   "rosto": null,
+   "troca": 2.3
+  },
+  {
+   "t": 2.75,
+   "brilho": 132.27,
+   "rosto": null,
+   "troca": 1.9
+  },
+  {
+   "t": 3.0,
+   "brilho": 132.22,
+   "rosto": null,
+   "troca": 1.7
+  },
+  {
+   "t": 3.25,
+   "brilho": 14.61,
+   "rosto": null,
+   "troca": 96.1
+  },
+  {
+   "t": 3.5,
+   "brilho": 22.78,
+   "rosto": null,
+   "troca": 8.1
+  },
+  {
+   "t": 3.75,
+   "brilho": 24.42,
+   "rosto": null,
+   "troca": 2.6
+  },
+  {
+   "t": 4.0,
+   "brilho": 24.41,
+   "rosto": null,
+   "troca": 0.6
+  },
+  {
+   "t": 4.25,
+   "brilho": 27.49,
+   "rosto": null,
+   "troca": 3.3
+  },
+  {
+   "t": 4.5,
+   "brilho": 30.13,
+   "rosto": null,
+   "troca": 3.4
+  },
+  {
+   "t": 4.75,
+   "brilho": 26.95,
+   "rosto": null,
+   "troca": 13.6
+  },
+  {
+   "t": 5.0,
+   "brilho": 25.23,
+   "rosto": null,
+   "troca": 2.4
+  },
+  {
+   "t": 5.25,
+   "brilho": 24.46,
+   "rosto": null,
+   "troca": 1.7
+  },
+  {
+   "t": 5.5,
+   "brilho": 138.26,
+   "rosto": null,
+   "troca": 95.5
+  },
+  {
+   "t": 5.75,
+   "brilho": 138.45,
+   "rosto": null,
+   "troca": 1.1
+  },
+  {
+   "t": 6.0,
+   "brilho": 138.49,
+   "rosto": null,
+   "troca": 0.7
+  },
+  {
+   "t": 6.25,
+   "brilho": 134.14,
+   "rosto": null,
+   "troca": 4.1
+  },
+  {
+   "t": 6.5,
+   "brilho": 134.56,
+   "rosto": null,
+   "troca": 1.1
+  },
+  {
+   "t": 6.75,
+   "brilho": 134.54,
+   "rosto": null,
+   "troca": 1.2
+  },
+  {
+   "t": 7.0,
+   "brilho": 132.72,
+   "rosto": null,
+   "troca": 2.5
+  },
+  {
+   "t": 7.25,
+   "brilho": 14.26,
+   "rosto": null,
+   "troca": 96.0
+  },
+  {
+   "t": 7.5,
+   "brilho": 14.78,
+   "rosto": null,
+   "troca": 0.6
+  },
+  {
+   "t": 7.75,
+   "brilho": 15.86,
+   "rosto": null,
+   "troca": 1.2
+  },
+  {
+   "t": 8.0,
+   "brilho": 18.68,
+   "rosto": null,
+   "troca": 2.5
+  },
+  {
+   "t": 8.25,
+   "brilho": 141.97,
+   "rosto": null,
+   "troca": 99.9
+  },
+  {
+   "t": 8.5,
+   "brilho": 141.74,
+   "rosto": null,
+   "troca": 0.9
+  },
+  {
+   "t": 8.75,
+   "brilho": 141.7,
+   "rosto": null,
+   "troca": 0.8
+  },
+  {
+   "t": 9.0,
+   "brilho": 141.44,
+   "rosto": null,
+   "troca": 0.9
+  },
+  {
+   "t": 9.25,
+   "brilho": 135.6,
+   "rosto": null,
+   "troca": 5.8
+  },
+  {
+   "t": 9.5,
+   "brilho": 135.56,
+   "rosto": null,
+   "troca": 1.3
+  },
+  {
+   "t": 9.75,
+   "brilho": 135.66,
+   "rosto": null,
+   "troca": 1.4
+  },
+  {
+   "t": 10.0,
+   "brilho": 136.27,
+   "rosto": null,
+   "troca": 2.0
+  },
+  {
+   "t": 10.25,
+   "brilho": 136.05,
+   "rosto": null,
+   "troca": 1.6
+  },
+  {
+   "t": 10.5,
+   "brilho": 14.48,
+   "rosto": null,
+   "troca": 98.6
+  },
+  {
+   "t": 10.75,
+   "brilho": 15.34,
+   "rosto": null,
+   "troca": 1.2
+  },
+  {
+   "t": 11.0,
+   "brilho": 16.81,
+   "rosto": null,
+   "troca": 1.2
+  },
+  {
+   "t": 11.25,
+   "brilho": 16.83,
+   "rosto": null,
+   "troca": 0.3
+  },
+  {
+   "t": 11.5,
+   "brilho": 116.39,
+   "rosto": null,
+   "troca": 86.3
+  },
+  {
+   "t": 11.75,
+   "brilho": 115.96,
+   "rosto": null,
+   "troca": 0.8
+  },
+  {
+   "t": 12.0,
+   "brilho": 115.46,
+   "rosto": null,
+   "troca": 0.6
+  },
+  {
+   "t": 12.25,
+   "brilho": 114.57,
+   "rosto": null,
+   "troca": 1.1
+  },
+  {
+   "t": 12.5,
+   "brilho": 114.2,
+   "rosto": null,
+   "troca": 0.7
+  },
+  {
+   "t": 12.75,
+   "brilho": 114.01,
+   "rosto": null,
+   "troca": 1.0
+  },
+  {
+   "t": 13.0,
+   "brilho": 113.94,
+   "rosto": null,
+   "troca": 1.1
+  },
+  {
+   "t": 13.25,
+   "brilho": 113.56,
+   "rosto": null,
+   "troca": 1.0
+  },
+  {
+   "t": 13.5,
+   "brilho": 113.18,
+   "rosto": null,
+   "troca": 1.0
+  },
+  {
+   "t": 13.75,
+   "brilho": 113.29,
+   "rosto": null,
+   "troca": 1.5
+  },
+  {
+   "t": 14.0,
+   "brilho": 113.49,
+   "rosto": null,
+   "troca": 1.6
+  },
+  {
+   "t": 14.25,
+   "brilho": 113.56,
+   "rosto": null,
+   "troca": 1.7
+  },
+  {
+   "t": 14.5,
+   "brilho": 113.66,
+   "rosto": null,
+   "troca": 1.7
+  },
+  {
+   "t": 14.75,
+   "brilho": 14.33,
+   "rosto": null,
+   "troca": 82.9
+  },
+  {
+   "t": 15.0,
+   "brilho": 14.39,
+   "rosto": null,
+   "troca": 0.3
+  },
+  {
+   "t": 15.25,
+   "brilho": 18.19,
+   "rosto": null,
+   "troca": 3.1
+  },
+  {
+   "t": 15.5,
+   "brilho": 18.23,
+   "rosto": null,
+   "troca": 0.2
+  },
+  {
+   "t": 15.75,
+   "brilho": 20.56,
+   "rosto": null,
+   "troca": 2.4
+  },
+  {
+   "t": 16.0,
+   "brilho": 140.76,
+   "rosto": null,
+   "troca": 97.9
+  },
+  {
+   "t": 16.25,
+   "brilho": 140.33,
+   "rosto": null,
+   "troca": 0.5
+  },
+  {
+   "t": 16.5,
+   "brilho": 140.27,
+   "rosto": null,
+   "troca": 0.3
+  },
+  {
+   "t": 16.75,
+   "brilho": 129.86,
+   "rosto": null,
+   "troca": 8.8
+  },
+  {
+   "t": 17.0,
+   "brilho": 124.6,
+   "rosto": null,
+   "troca": 5.2
+  },
+  {
+   "t": 17.25,
+   "brilho": 118.4,
+   "rosto": null,
+   "troca": 6.7
+  },
+  {
+   "t": 17.5,
+   "brilho": 113.34,
+   "rosto": null,
+   "troca": 5.5
+  },
+  {
+   "t": 17.75,
+   "brilho": 110.63,
+   "rosto": null,
+   "troca": 3.6
+  },
+  {
+   "t": 18.0,
+   "brilho": 24.75,
+   "rosto": null,
+   "troca": 77.2
+  },
+  {
+   "t": 18.25,
+   "brilho": 35.76,
+   "rosto": null,
+   "troca": 12.5
+  },
+  {
+   "t": 18.5,
+   "brilho": 46.16,
+   "rosto": null,
+   "troca": 13.8
+  },
+  {
+   "t": 18.75,
+   "brilho": 55.6,
+   "rosto": null,
+   "troca": 14.7
+  },
+  {
+   "t": 19.0,
+   "brilho": 61.48,
+   "rosto": null,
+   "troca": 11.0
+  },
+  {
+   "t": 19.25,
+   "brilho": 62.08,
+   "rosto": null,
+   "troca": 5.5
+  },
+  {
+   "t": 19.5,
+   "brilho": 63.92,
+   "rosto": null,
+   "troca": 5.8
+  },
+  {
+   "t": 19.75,
+   "brilho": 64.4,
+   "rosto": null,
+   "troca": 5.1
+  },
+  {
+   "t": 20.0,
+   "brilho": 139.09,
+   "rosto": null,
+   "troca": 90.5
+  },
+  {
+   "t": 20.25,
+   "brilho": 139.03,
+   "rosto": null,
+   "troca": 1.1
+  },
+  {
+   "t": 20.5,
+   "brilho": 139.03,
+   "rosto": null,
+   "troca": 1.1
+  },
+  {
+   "t": 20.75,
+   "brilho": 137.98,
+   "rosto": null,
+   "troca": 2.0
+  },
+  {
+   "t": 21.0,
+   "brilho": 136.35,
+   "rosto": null,
+   "troca": 4.2
+  },
+  {
+   "t": 21.25,
+   "brilho": 136.28,
+   "rosto": null,
+   "troca": 2.4
+  },
+  {
+   "t": 21.5,
+   "brilho": 136.25,
+   "rosto": null,
+   "troca": 2.2
+  },
+  {
+   "t": 21.75,
+   "brilho": 14.88,
+   "rosto": null,
+   "troca": 98.6
+  },
+  {
+   "t": 22.0,
+   "brilho": 15.94,
+   "rosto": null,
+   "troca": 1.5
+  },
+  {
+   "t": 22.25,
+   "brilho": 15.98,
+   "rosto": null,
+   "troca": 0.7
+  },
+  {
+   "t": 22.5,
+   "brilho": 16.1,
+   "rosto": null,
+   "troca": 0.8
+  },
+  {
+   "t": 22.75,
+   "brilho": 17.89,
+   "rosto": null,
+   "troca": 2.6
+  },
+  {
+   "t": 23.0,
+   "brilho": 18.15,
+   "rosto": null,
+   "troca": 1.4
+  },
+  {
+   "t": 23.25,
+   "brilho": 18.39,
+   "rosto": null,
+   "troca": 1.7
+  },
+  {
+   "t": 23.5,
+   "brilho": 20.59,
+   "rosto": null,
+   "troca": 3.3
+  },
+  {
+   "t": 23.75,
+   "brilho": 20.84,
+   "rosto": null,
+   "troca": 2.5
+  },
+  {
+   "t": 24.0,
+   "brilho": 21.05,
+   "rosto": null,
+   "troca": 2.0
+  },
+  {
+   "t": 24.25,
+   "brilho": 141.07,
+   "rosto": null,
+   "troca": 98.0
+  },
+  {
+   "t": 24.5,
+   "brilho": 140.74,
+   "rosto": null,
+   "troca": 0.4
+  },
+  {
+   "t": 24.75,
+   "brilho": 135.05,
+   "rosto": null,
+   "troca": 5.0
+  },
+  {
+   "t": 25.0,
+   "brilho": 136.41,
+   "rosto": null,
+   "troca": 3.0
+  },
+  {
+   "t": 25.25,
+   "brilho": 138.17,
+   "rosto": null,
+   "troca": 4.7
+  },
+  {
+   "t": 25.5,
+   "brilho": 137.74,
+   "rosto": null,
+   "troca": 5.3
+  },
+  {
+   "t": 25.75,
+   "brilho": 139.14,
+   "rosto": null,
+   "troca": 4.4
+  },
+  {
+   "t": 26.0,
+   "brilho": 140.66,
+   "rosto": null,
+   "troca": 4.6
+  },
+  {
+   "t": 26.25,
+   "brilho": 140.51,
+   "rosto": null,
+   "troca": 2.8
+  },
+  {
+   "t": 26.5,
+   "brilho": 140.53,
+   "rosto": null,
+   "troca": 2.5
+  },
+  {
+   "t": 26.75,
+   "brilho": 140.53,
+   "rosto": null,
+   "troca": 2.7
+  },
+  {
+   "t": 27.0,
+   "brilho": 140.51,
+   "rosto": null,
+   "troca": 2.4
+  },
+  {
+   "t": 27.25,
+   "brilho": 140.55,
+   "rosto": null,
+   "troca": 2.6
+  },
+  {
+   "t": 27.5,
+   "brilho": 14.03,
+   "rosto": null,
+   "troca": 105.9
+  },
+  {
+   "t": 27.75,
+   "brilho": 15.64,
+   "rosto": null,
+   "troca": 1.7
+  },
+  {
+   "t": 28.0,
+   "brilho": 16.03,
+   "rosto": null,
+   "troca": 1.0
+  },
+  {
+   "t": 28.25,
+   "brilho": 16.31,
+   "rosto": null,
+   "troca": 1.1
+  },
+  {
+   "t": 28.5,
+   "brilho": 16.65,
+   "rosto": null,
+   "troca": 1.2
+  },
+  {
+   "t": 28.75,
+   "brilho": 17.65,
+   "rosto": null,
+   "troca": 2.2
+  },
+  {
+   "t": 29.0,
+   "brilho": 17.74,
+   "rosto": null,
+   "troca": 1.4
+  },
+  {
+   "t": 29.25,
+   "brilho": 18.48,
+   "rosto": null,
+   "troca": 2.1
+  },
+  {
+   "t": 29.5,
+   "brilho": 18.73,
+   "rosto": null,
+   "troca": 1.9
+  },
+  {
+   "t": 29.75,
+   "brilho": 19.7,
+   "rosto": null,
+   "troca": 2.6
+  },
+  {
+   "t": 30.0,
+   "brilho": 19.84,
+   "rosto": null,
+   "troca": 2.4
+  },
+  {
+   "t": 30.25,
+   "brilho": 20.81,
+   "rosto": null,
+   "troca": 2.9
+  },
+  {
+   "t": 30.5,
+   "brilho": 24.45,
+   "rosto": null,
+   "troca": 5.3
+  },
+  {
+   "t": 30.75,
+   "brilho": 24.7,
+   "rosto": null,
+   "troca": 3.6
+  },
+  {
+   "t": 31.0,
+   "brilho": 24.84,
+   "rosto": null,
+   "troca": 2.8
+  },
+  {
+   "t": 31.25,
+   "brilho": 141.12,
+   "rosto": null,
+   "troca": 95.5
+  },
+  {
+   "t": 31.5,
+   "brilho": 140.67,
+   "rosto": null,
+   "troca": 0.5
+  },
+  {
+   "t": 31.75,
+   "brilho": 136.86,
+   "rosto": null,
+   "troca": 3.3
+  },
+  {
+   "t": 32.0,
+   "brilho": 134.48,
+   "rosto": null,
+   "troca": 3.0
+  },
+  {
+   "t": 32.25,
+   "brilho": 14.09,
+   "rosto": null,
+   "troca": 96.9
+  },
+  {
+   "t": 32.5,
+   "brilho": 14.81,
+   "rosto": null,
+   "troca": 0.7
+  },
+  {
+   "t": 32.75,
+   "brilho": 15.18,
+   "rosto": null,
+   "troca": 0.7
+  },
+  {
+   "t": 33.0,
+   "brilho": 15.69,
+   "rosto": null,
+   "troca": 0.7
+  },
+  {
+   "t": 33.25,
+   "brilho": 17.05,
+   "rosto": null,
+   "troca": 1.7
+  },
+  {
+   "t": 33.5,
+   "brilho": 19.37,
+   "rosto": null,
+   "troca": 2.5
+  },
+  {
+   "t": 33.75,
+   "brilho": 22.87,
+   "rosto": null,
+   "troca": 3.9
+  },
+  {
+   "t": 34.0,
+   "brilho": 25.23,
+   "rosto": null,
+   "troca": 6.6
+  },
+  {
+   "t": 34.25,
+   "brilho": 141.01,
+   "rosto": null,
+   "troca": 94.2
+  },
+  {
+   "t": 34.5,
+   "brilho": 137.83,
+   "rosto": null,
+   "troca": 4.3
+  },
+  {
+   "t": 34.75,
+   "brilho": 136.56,
+   "rosto": null,
+   "troca": 2.7
+  },
+  {
+   "t": 35.0,
+   "brilho": 15.12,
+   "rosto": null,
+   "troca": 97.9
+  },
+  {
+   "t": 35.25,
+   "brilho": 16.93,
+   "rosto": null,
+   "troca": 2.0
+  },
+  {
+   "t": 35.5,
+   "brilho": 18.91,
+   "rosto": null,
+   "troca": 2.5
+  },
+  {
+   "t": 35.75,
+   "brilho": 20.58,
+   "rosto": null,
+   "troca": 2.5
+  },
+  {
+   "t": 36.0,
+   "brilho": 22.48,
+   "rosto": null,
+   "troca": 2.7
+  },
+  {
+   "t": 36.25,
+   "brilho": 24.52,
+   "rosto": null,
+   "troca": 3.1
+  },
+  {
+   "t": 36.5,
+   "brilho": 26.17,
+   "rosto": null,
+   "troca": 2.6
+  },
+  {
+   "t": 36.75,
+   "brilho": 29.85,
+   "rosto": null,
+   "troca": 4.6
+  },
+  {
+   "t": 37.0,
+   "brilho": 31.58,
+   "rosto": null,
+   "troca": 3.3
+  },
+  {
+   "t": 37.25,
+   "brilho": 33.43,
+   "rosto": null,
+   "troca": 3.5
+  },
+  {
+   "t": 37.5,
+   "brilho": 35.16,
+   "rosto": null,
+   "troca": 3.1
+  },
+  {
+   "t": 37.75,
+   "brilho": 37.58,
+   "rosto": null,
+   "troca": 4.1
+  },
+  {
+   "t": 38.0,
+   "brilho": 38.53,
+   "rosto": null,
+   "troca": 2.6
+  },
+  {
+   "t": 38.25,
+   "brilho": 38.7,
+   "rosto": null,
+   "troca": 1.9
+  },
+  {
+   "t": 38.5,
+   "brilho": 139.82,
+   "rosto": null,
+   "troca": 85.6
+  },
+  {
+   "t": 38.75,
+   "brilho": 139.57,
+   "rosto": null,
+   "troca": 1.8
+  },
+  {
+   "t": 39.0,
+   "brilho": 139.57,
+   "rosto": null,
+   "troca": 0.4
+  },
+  {
+   "t": 39.25,
+   "brilho": 139.18,
+   "rosto": null,
+   "troca": 0.9
+  },
+  {
+   "t": 39.5,
+   "brilho": 138.96,
+   "rosto": null,
+   "troca": 0.8
+  },
+  {
+   "t": 39.75,
+   "brilho": 136.83,
+   "rosto": null,
+   "troca": 2.6
+  },
+  {
+   "t": 40.0,
+   "brilho": 136.76,
+   "rosto": null,
+   "troca": 1.5
+  },
+  {
+   "t": 40.25,
+   "brilho": 136.74,
+   "rosto": null,
+   "troca": 1.4
+  },
+  {
+   "t": 40.5,
+   "brilho": 136.47,
+   "rosto": null,
+   "troca": 1.4
+  },
+  {
+   "t": 40.75,
+   "brilho": 136.0,
+   "rosto": null,
+   "troca": 2.0
+  },
+  {
+   "t": 41.0,
+   "brilho": 135.99,
+   "rosto": null,
+   "troca": 1.4
+  },
+  {
+   "t": 41.25,
+   "brilho": 135.99,
+   "rosto": null,
+   "troca": 1.1
+  },
+  {
+   "t": 41.5,
+   "brilho": 14.46,
+   "rosto": null,
+   "troca": 97.7
+  },
+  {
+   "t": 41.75,
+   "brilho": 20.52,
+   "rosto": null,
+   "troca": 5.6
+  },
+  {
+   "t": 42.0,
+   "brilho": 20.54,
+   "rosto": null,
+   "troca": 1.4
+  },
+  {
+   "t": 42.25,
+   "brilho": 20.95,
+   "rosto": null,
+   "troca": 1.2
+  },
+  {
+   "t": 42.5,
+   "brilho": 21.38,
+   "rosto": null,
+   "troca": 1.2
+  },
+  {
+   "t": 42.75,
+   "brilho": 21.69,
+   "rosto": null,
+   "troca": 1.4
+  },
+  {
+   "t": 43.0,
+   "brilho": 21.84,
+   "rosto": null,
+   "troca": 1.1
+  },
+  {
+   "t": 43.25,
+   "brilho": 23.13,
+   "rosto": null,
+   "troca": 2.1
+  },
+  {
+   "t": 43.5,
+   "brilho": 26.24,
+   "rosto": null,
+   "troca": 3.9
+  },
+  {
+   "t": 43.75,
+   "brilho": 27.04,
+   "rosto": null,
+   "troca": 2.8
+  },
+  {
+   "t": 44.0,
+   "brilho": 27.47,
+   "rosto": null,
+   "troca": 2.7
+  },
+  {
+   "t": 44.25,
+   "brilho": 27.63,
+   "rosto": null,
+   "troca": 2.5
+  }
+ ]
+}

@@ -19,3 +19,6 @@ kit/.env
 *.mov
 *.wav
 *.mp3
+
+# a referencia propria de cada modelo vai junto
+!modelos/*/referencia/referencia.mp4

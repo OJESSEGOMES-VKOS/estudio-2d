@@ -3,7 +3,7 @@ modelopadrao01. Sem amostra, sem IA. Cama calma (acordes suaves) bem abaixo da v
 silêncio na virada ("Mas se você quiser"). Saída: public/trilha.wav (48 kHz estéreo); com --previas,
 public/trilha_previas.wav (soma os sons das prévias). Tela que o plano desligou (None) não tem som.
 uso (de dentro do molde): ../../.venv/Scripts/python.exe audio/compor.py [--cama] [--previas] [--saida arquivo.wav]
---cama: liga a música (desligada por padrão, REGRAS §6; a vitrine saiu com ela). Os efeitos saem no mesmo nível com ou sem.
+--cama: liga a música (desligada por padrão, modelopadrao01.md seção 6; o aprovado saiu com ela). Os efeitos saem no mesmo nível com ou sem.
 """
 import json, sys
 from pathlib import Path
@@ -104,16 +104,21 @@ if ED:  # editor: o vídeo entra, a lâmina, a legenda, a tela, o vídeo cresce
     add(fx, ED['tela'], pop(1100), 0.35)
     add(fx, ED['devolve'] - 0.1, whoosh(0.5), 0.5)
 if MO:  # os modelos: um pop por cartão, ✓, barras, formatos, o Claude
-    passo = (MO['modelos'] - MO['de'] - 0.12) / 7
-    for k in range(8):
-        add(fx, MO['de'] + 0.12 + k * passo, pop(700 + 40 * k), 0.14)
-    for k in range(8):
+    n = len(MO['nomes'])  # um pop por cartão, na entrada dele (entradas, ou espaçados até "modelos" como no aprovado)
+    passo = (MO['modelos'] - MO['de'] - 0.12) / max(1, n - 1)
+    entradas = MO.get('entradas') or [MO['de'] + 0.12 + k * passo for k in range(n)]
+    for k in range(n):
+        add(fx, entradas[k], pop(700 + 40 * k), 0.14)
+    for k in range(n):
         add(fx, MO['criei'] + 0.05 * k, tique(), 0.3)
     add(fx, MO['melhorei'], whoosh(0.45), 0.25)
-    add(fx, MO['editar'], whoosh(0.3), 0.3)
-    for k, t0 in enumerate(MO['formatos']):
-        add(fx, t0, pop(950 + 120 * k), 0.3)
-    add(fx, MO['claude'], pop(1300), 0.35)
+    if MO.get('editar') is not None:
+        add(fx, MO['editar'], whoosh(0.3), 0.3)
+    if MO.get('formatos') and len(MO['formatos']) >= 3:
+        for k, t0 in enumerate(MO['formatos'][:3]):
+            add(fx, t0, pop(950 + 120 * k), 0.3)
+    if MO.get('claude') is not None:
+        add(fx, MO['claude'], pop(1300), 0.35)
     add(fx, MO['sai'] - 0.1, whoosh(), 0.45)
 if CE:  # o celular: interface do Reel, os outros modelos saem de trás, o nome, devolve
     add(fx, CE['instagram'], pop(1000), 0.3)
@@ -148,8 +153,9 @@ ref = cama + fx
 mix = ref if '--cama' in sys.argv else fx
 mix = mix / (np.max(np.abs(ref)) + 1e-9)
 mix *= 10 ** (-9 / 20)
+mix = mix[:int(T['duracao'] * SR)]  # a trilha tem o tamanho do vídeo (a folga de 0,3 s só serve para as caudas dos sons)
 est = np.stack([mix, mix], axis=1)
 nome = 'trilha_previas.wav' if PREVIAS else 'trilha.wav'
 saida = Path(sys.argv[sys.argv.index('--saida') + 1]) if '--saida' in sys.argv else AQUI / 'public' / nome
 wavfile.write(saida, SR, (est * 32767).astype(np.int16))
-print(saida, round(D, 2), 's')
+print(saida, round(len(mix) / SR, 2), 's')

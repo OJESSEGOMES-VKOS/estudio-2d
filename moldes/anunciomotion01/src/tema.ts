@@ -4,9 +4,9 @@ import PS from './palavras.json';
 import TJ from './tempos.json';
 
 /**
- * anunciomotion01 (../../modelos/anunciomotion01/MODELO.md), vitrine dos modelos.
- * Partiu do tema.ts do anúncio aprovado do Marcaí. Cor: a das referências do modelo (verde-menta neon
- * #3CF2A4, MODELO §2), vermelho só para o ruim; o violeta era do Marcaí, que não entra aqui.
+ * anunciomotion01 (modelos/anunciomotion01/anunciomotion01.md), vitrine dos modelos.
+ * Cor do aprovado: verde-menta neon #3CF2A4 (anunciomotion01.md §1 e §7); vermelho só para o ruim. Num anúncio novo, a
+ * cor da marca de quem anuncia, trocada numa linha (`C`).
  */
 export const P = PS as {text: string; start: number; end: number}[];
 export type Linha = {ids: number[]; fs: number; peso: number; y: number; marca?: number[]; tipo?: 'contador' | 'pilula'};
@@ -38,7 +38,7 @@ const limpa = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCa
 		const j = k >= 0 ? k : Math.min(plano.length, fala.length);
 		pare(
 			`O plano não bate com a fala. src/tempos.json foi feito para outra fala: na palavra ${j + 1} o plano tem "${plano[j] ?? '(fim)'}" e src/palavras.json tem "${fala[j] ?? '(fim)'}". ` +
-				'Refaça "cenas", "blocos", "marcas", "texto", "acordes" e "duracao_q" em src/tempos.json e as telas em src/cenas.tsx sobre a fala nova (LEIA, "Vídeo novo"), e cole o texto da fala nova no campo "fala" (linha 2).',
+				'Refaça "cenas", "blocos", "marcas", "texto", "acordes" e "duracao_q" em src/tempos.json e as telas em src/cenas.tsx sobre a fala nova (modelos/anunciomotion01/anunciomotion01.md §9), e cole o texto da fala nova no campo "fala" (linha 2).',
 		);
 	}
 	const n = P.length;
@@ -53,7 +53,14 @@ const limpa = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCa
 /** centro horizontal do texto: meio da zona segura 9:16 (x 60-940) */
 export const CX = 500;
 
-export const C = {
+/**
+ * A paleta mora toda aqui: nenhuma cor da marca fica escrita fora de C (as telas, os fundos e as luzes leem daqui).
+ * PADRAO são os valores do vídeo aprovado. Para trocar a cor do vídeo inteiro, troque UMA linha, a do C:
+ *   export const C = gira(PADRAO, '#FF3CC8');
+ * gira() leva cada tom do PADRAO para o matiz da cor dada (mantém claro/escuro e intensidade), e põe a cor dada em C.v.
+ * vermelho (o ruim) e branco não giram. Regras de escolha da cor: modelos/anunciomotion01/anunciomotion01.md §7.
+ */
+export const PADRAO = {
 	preto: '#050807',
 	v: '#3CF2A4',
 	vClaro: '#A8FFD8',
@@ -66,7 +73,59 @@ export const C = {
 	subClaro: '#4C5E55',
 	vermelho: '#FF2A2A',
 	branco: '#FFFFFF',
+	/* tons derivados (vidro do ícone, telas, sombras, celular, interruptor) */
+	vidroLuz: '#C8FFE6',
+	vidroBase: '#06603C',
+	vidroCamada: '#075C3A',
+	vidroFundo: '#03301E',
+	sombra: '#00321E',
+	sombraPlaca: '#0A5032',
+	sombraBotao: '#0A3C28',
+	telaClaroA: '#E3F4EC',
+	telaClaroB: '#CFE9DD',
+	telaEscuraA: '#12201A',
+	telaEscuraB: '#070D0A',
+	telaPrevia: '#11201A',
+	trilho: '#EEF5F1',
+	clipeMeio: '#7FE3B8',
+	clipeClaro: '#BFE9D6',
+	corpoA: '#2E3B35',
+	corpoB: '#090D0B',
+	corpoC: '#1A2420',
+	desligado: '#DCE6E1',
+	textoPilula: '#F0FFF8',
 };
+export type Paleta = typeof PADRAO;
+
+const hsl = (hex: string) => {
+	const n = parseInt(hex.slice(1), 16);
+	const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((x) => x / 255);
+	const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, d = mx - mn;
+	if (!d) return [0, 0, l];
+	const s = d / (1 - Math.abs(2 * l - 1));
+	const h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
+	return [(h * 60 + 360) % 360, s, l];
+};
+const hex = (h: number, s: number, l: number) => {
+	const c = (1 - Math.abs(2 * l - 1)) * s, x = c * (1 - Math.abs(((h / 60) % 2) - 1)), m = l - c / 2;
+	const [r, g, b] = h < 60 ? [c, x, 0] : h < 120 ? [x, c, 0] : h < 180 ? [0, c, x] : h < 240 ? [0, x, c] : h < 300 ? [x, 0, c] : [c, 0, x];
+	return '#' + [r, g, b].map((v) => Math.round((v + m) * 255).toString(16).padStart(2, '0')).join('').toUpperCase();
+};
+/** a paleta base inteira no matiz de `cor` (cor da marca de quem anuncia) */
+export const gira = (base: Paleta, cor: string): Paleta => {
+	const [h0] = hsl(base.v);
+	const [h1] = hsl(cor);
+	const out = {...base};
+	for (const k of Object.keys(base) as (keyof Paleta)[]) {
+		if (k === 'vermelho' || k === 'branco') continue;
+		const [h, s, l] = hsl(base[k]);
+		out[k] = hex((h - h0 + h1 + 360) % 360, s, l);
+	}
+	out.v = cor.toUpperCase();
+	return out;
+};
+
+export const C: Paleta = PADRAO;
 
 const sora = loadSora('normal', {weights: ['400', '600', '700', '800'], subsets: ['latin', 'latin-ext']});
 export const SANS = sora.fontFamily;

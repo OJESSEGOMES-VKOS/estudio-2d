@@ -1,5 +1,5 @@
 // Conferidor do modelodinamico02: confere o plano (CENAS de src/Cenas.tsx) contra a fala e o texto de cada tela contra as
-// regras de ofício (REGRAS.md §3 e §5). Sai com código 1 quando reprova e diz o que mexer (arquivo:linha).
+// regras de ofício (modelos/modelodinamico02/modelodinamico02.md). Sai com código 1 quando reprova e diz o que mexer (arquivo:linha).
 // uso (de dentro da pasta do vídeo ou do molde): node scripts/cobertura.mjs
 // Confere: 1) toda palavra do plano (w('palavra', n) em src/) existe na fala e as linhas de cada tela seguem a fala;
 // 2) tela >= 1,5 s; 3) palavra >= 0,4 s na tela depois de nascer; 4) até 4 linhas por tela; 5) o bloco de texto dentro da
@@ -83,7 +83,7 @@ try {
 	fs.rmSync(tmp, {force: true});
 }
 if (!R || faltam.length) {
-	console.log('REPROVADO: o plano é de outra fala. Refaça CENAS e os heróis de src/Cenas.tsx (LEIA.md, "Vídeo novo").');
+	console.log('REPROVADO: o plano é de outra fala. Refaça CENAS e os heróis de src/Cenas.tsx (modelos/modelodinamico02/modelodinamico02.md, §9 "Como fazer um vídeo novo").');
 	process.exit(1);
 }
 const {CENAS, QUADROS, FPS} = R;

@@ -1,6 +1,6 @@
 # Plano frase a frase: vitrine no sofistmotion01
 
-Registro **Ouro na Noite**, 9:16 (MODELO §11: objeto em cima y 20-55%, texto embaixo; ou texto sozinho no centro).
+Registro **Ouro na Noite**, 9:16 (sofistmotion01.md §3: objeto em cima y 20-55%, texto embaixo; ou texto sozinho no centro).
 Estrutura **A (anúncio)** adaptada: a fala apresenta uma coisa (os modelos de edição), então segue o arco gancho →
 o que é → onde você está → a prova (prévias) → o convite. Diferença da estrutura A da ref1: há chamada falada
 ("comenta edição"), que o BRIEF pede, e ela vira a assinatura T20 no lugar do logo.
@@ -16,7 +16,7 @@ Duas posições de texto no vídeo inteiro: **centro** (pilha centrada em y ~960
 Entrada de toda palavra: **desfoque para foco com leve escala** (0,22 s), no `start` dela. Saída: o flash ou a
 câmera leva; dentro da mesma cena, desfoque + desbotamento.
 
-| Cena | Tempo (s) | Fala | Tela (repertório) | Palavras na tela (linhas) | Gatilho (MODELO §10) |
+| Cena | Tempo (s) | Fala | Tela (repertório) | Palavras na tela (linhas) | Gatilho (sofistmotion01.md §4) |
 |---|---|---|---|---|---|
 | C1 | 0,00-3,07 | "Esse vídeo está sendo 100% editado pelo Claude." | **T1** palavra gigante deslizando com rastro (300 px, vaza a largura) que encolhe para a frase no centro + **T3** contador 0→100 dentro de um anel de progresso dourado | centro: "Esse vídeo está sendo" / **100%** (número contando, "%" em contorno neon) / "editado pelo **Claude.**" (Claude em ouro) | 1ª frase → T1; número dito → T3, com o número dele |
 | C2 | 3,07-4,57 | "Ele foi criado justamente para" | **T2** notebook entrando girando (de costas para frente) com fachos de luz laranja; na tela, uma linha do tempo de edição em que os clipes vão caindo | embaixo: "Ele foi criado" / "justamente para" | o assunto é uma coisa feita (o vídeo) → objeto ao lado; "criado" = os clipes se montando |

@@ -26,7 +26,7 @@ const limpa = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').
 		const j = k >= 0 ? k : Math.min(plano.length, fala.length);
 		pare(
 			`O plano não bate com a fala. src/tempos.json foi feito para outra fala: na palavra ${j + 1} o plano tem "${plano[j] ?? '(fim)'}" e src/palavras.json tem "${fala[j] ?? '(fim)'}". ` +
-				'Refaça "cenas", "flashes", "blocos", "marcas", "texto", "acordes" e "duracao_q" em src/tempos.json e as telas em src/cenas.tsx sobre a fala nova (LEIA, "Vídeo novo"), e cole o texto da fala nova no campo "fala" (linha 2).',
+				'Refaça "cenas", "flashes", "blocos", "marcas", "texto", "acordes" e "duracao_q" em src/tempos.json e as telas em src/cenas.tsx sobre a fala nova (modelos/sofistmotion01/sofistmotion01.md, seção 9), e cole o texto da fala nova no campo "fala" (linha 2).',
 		);
 	}
 	const n = PS.length;
@@ -45,10 +45,12 @@ export const marca = (nome: string) => {
 	const m = T.marcas?.[nome];
 	return m ? ini(m[0]) : pare(`src/cenas.tsx pede a marca "${nome}", que não está em src/tempos.json → "marcas". Ponha "${nome}": [índice da palavra, "palavra"] ou tire o uso dela da tela.`);
 };
+/** marca opcional: o quadro dela, ou Infinity quando o plano não tem (o recurso simplesmente não aparece) */
+export const talvez = (nome: string) => (T.marcas?.[nome] ? marca(nome) : Infinity);
 export const txt = (i: number) => (T.texto as Record<string, string>)[String(i)] ?? PS[i].text;
 export const cena = (id: string) => T.cenas.find((c) => c.id === id)!;
 
-// MODELO §4, Registro 1: Ouro na Noite
+// sofistmotion01.md §4, Registro 1: Ouro na Noite
 export const COR = {
 	fundo: '#000000',
 	fundo2: '#040100',
@@ -103,7 +105,7 @@ export const tw = (f: number, a: number, b: number, v0: number, v1: number, ease
 	interpolate(f, [a, b], [v0, v1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: ease});
 export const clamp = (x: number, a = 0, b = 1) => Math.min(b, Math.max(a, x));
 
-// brilho neon: núcleo quase branco, a cor mora no halo (MODELO §5)
+// brilho neon: núcleo quase branco, a cor mora no halo (sofistmotion01.md §5)
 export const HALO_TEXTO = `0 0 10px rgba(255,214,140,0.35), 0 0 34px rgba(244,137,7,0.22)`;
 export const HALO_OURO = `0 0 6px rgba(248,216,52,0.9), 0 0 22px rgba(242,190,58,0.75), 0 0 54px rgba(244,137,7,0.5)`;
 export const HALO_TENSAO = `0 0 6px rgba(225,59,80,0.95), 0 0 22px rgba(225,59,80,0.8), 0 0 50px rgba(224,3,10,0.55)`;
@@ -178,7 +180,7 @@ export const BlocoView: React.FC<{id: string; f: number; estiloLinha?: (l: Linha
 	);
 };
 
-// flash de tela cheia: sobe em 2 quadros, desce em ~0,3 s; a tela nova já está embaixo (MODELO §8)
+// flash de tela cheia: sobe em 2 quadros, desce em ~0,3 s; a tela nova já está embaixo (sofistmotion01.md §8)
 export const Flashes: React.FC<{f: number}> = ({f}) => (
 	<>
 		{T.flashes.map((fl, k) => {

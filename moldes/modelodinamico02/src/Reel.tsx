@@ -8,15 +8,15 @@ import {CENAS, Perfil, Tela, cenaEm} from './Cenas';
  * Nas telas marcadas com íris, a nova abre num círculo que nasce do centro, com anel na borda (~15 quadros).
  */
 const IRIS = 0.5;
-/** voz: toca public/voz.wav; arroba (sem o "@") e foto (arquivo em public/) na assinatura do fecho, vazios escondem */
-export const Dinamico02: React.FC<{voz: boolean; arroba?: string; foto?: string}> = ({voz, arroba = '', foto = ''}) => {
+/** voz: toca public/voz.wav; arroba (sem o "@") e foto (arquivo em public/) na assinatura do fecho; arquivo = nome da gravação no cartão do herói Arquivo; vazios escondem */
+export const Dinamico02: React.FC<{voz: boolean; arroba?: string; foto?: string; arquivo?: string}> = ({voz, arroba = '', foto = '', arquivo = ''}) => {
 	const {t} = useT();
 	const c = cenaEm(t);
 	const i = CENAS.indexOf(c);
 	const abrindo = c.iris && i > 0 && t < c.de + IRIS;
 	const r = tw(t, c.de, c.de + IRIS, 0, 1250, E.inOut);
 	return (
-		<Perfil.Provider value={{arroba, foto}}>
+		<Perfil.Provider value={{arroba, foto, arquivo}}>
 		<AbsoluteFill style={{background: C.escuro}}>
 			{abrindo && <Tela c={CENAS[i - 1]} />}
 			<div style={{position: 'absolute', inset: 0, clipPath: abrindo ? `circle(${r}px at 540px 960px)` : undefined}}>

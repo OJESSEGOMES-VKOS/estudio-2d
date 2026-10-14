@@ -37,4 +37,4 @@ Então dá uma olhada nos outros e vê qual tem mais a sua cara. ★
 | "vê qual tem a sua cara" | moral parada, 3 s | assinatura | fim seco na palavra | fecho no palco | CTA |
 
 Os modelos com rosto que já existiam (modelodinamico01 a 03, modelopadrao01, profissional01) usam a mesma gravação,
-cada um pelas regras do próprio MODELO.md.
+cada um pelas regras do próprio `<modelo>.md`.

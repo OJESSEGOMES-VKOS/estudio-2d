@@ -1,13 +1,13 @@
-"""Trilha do youtubeedition01 (MODELO §10): cama contínua por baixo da voz o vídeo inteiro (o chão constante de S, D e
-J), voz sempre na frente; efeito curto e discreto na entrada de gráfico (a proposta de partida do §10).
+"""Trilha do youtubeedition01 (modelos/youtubeedition01/youtubeedition01.md, seção 7): cama contínua por baixo da voz o
+vídeo inteiro, voz sempre na frente; efeito curto e discreto na entrada de cada tela.
 Clima de vídeo de método no YouTube: piano elétrico macio em Fá maior (Fmaj7, Am7, Dm7, C), baixo redondo, bumbo
 leve a 96 bpm e chocalho; um sopro em cada giro do cartão e na tela de reels, um toque curto em cada título e na
 palavra-chave do pedido. Sintetizada aqui (sem música de terceiro). A duração sai da fala (src/palavras.json, 0,7 s
 depois da última palavra, a mesma do vídeo); os sopros e toques vêm por argumento, e o `node scripts/checar.mjs` imprime
 o comando com os deste plano. Música é opção: o vídeo sai sem ela se você não rodar isto.
-Saída: public/trilha.wav. Encanamento do trilha.py do superpodcast01 da vitrine.
+Saída: public/trilha.wav.
 uso: ../../.venv/Scripts/python.exe scripts/trilha.py [--sopros 5.24 11.75 21.91] [--toques 1.2 13.24 27.35]
-     (SAIDA=<pasta> grava fora de public/; os números acima são os da vitrine)
+     (SAIDA=<pasta> grava fora de public/; os números acima são os do aprovado)
 """
 import argparse, json, os
 from pathlib import Path

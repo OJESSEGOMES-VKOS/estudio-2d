@@ -6,7 +6,7 @@ import PALAVRAS from './palavras.json'; // entrada padrão: [{text,start,end}]
 import ROSTO from './rosto.json'; // entrada padrão: [[t,cx,cy,h]] a cada 0,25 s, em fração do quadro
 
 /**
- * Molde do pregacaodinamica01 (../../modelos/pregacaodinamica01/MODELO.md), feito na vitrine dos modelos.
+ * Molde do pregacaodinamica01 (../../modelos/pregacaodinamica01/pregacaodinamica01.md), feito na vitrine dos modelos.
  * Parte do código do corte 9:16 aprovado do modelo (2026-10-06).
  * Revisão 2026-10-12 (pedido do Jessé): legenda corrida numa posição só, todas as falas uma vez, nada abaixo do tempo
  * de leitura, no máximo 4 linhas por bloco, tela de destaque só na fala protagonista e com contraste, sem P&B, sem nome
@@ -62,7 +62,7 @@ const PS: Pal[] = P.palavras;
 export const norm = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9%]/g, '');
 /** plano que não bate com a fala: para ao carregar e diz em português qual lista refazer (nada de TypeError) */
 const errPlano = (lista: string, oque: string) =>
-	new Error(`O plano de src/Corte.tsx não bate com a fala de src/palavras.json (${PS.length} palavras). Na lista ${lista}: ${oque}. Refaça o plano para a fala nova (LEIA.md, seção "Vídeo novo").`);
+	new Error(`O plano de src/Corte.tsx não bate com a fala de src/palavras.json (${PS.length} palavras). Na lista ${lista}: ${oque}. Refaça o plano para a fala nova (modelos/pregacaodinamica01/pregacaodinamica01.md, seção do vídeo novo).`);
 const idx = (texto: string, n = 1, lista = 'T') => {
 	let k = 0;
 	for (let i = 0; i < PS.length; i++) if (norm(PS[i].texto) === norm(texto) && ++k === n) return i;
@@ -90,7 +90,7 @@ const T: {bloco1: number; base1: number; base2: Tempo; base3: Tempo; destaque: T
 	cta: c(w('comenta')), // Comenta “EDIÇÃO”
 	fecho: c(w('que', 2)), // dissolve para o preto
 };
-/* letreiro gigante atrás da pessoa (MODELO §3.3): a palavra dita sai da legenda e vira o letreiro; null desliga */
+/* letreiro gigante atrás da pessoa (pregacaodinamica01.md): a palavra dita sai da legenda e vira o letreiro; null desliga */
 const LETREIRO = {palavra: 'modelos', texto: 'MODELOS'} as {palavra: string; n?: number; texto: string} | null;
 
 /* os trechos ligados seguem a ordem da lista no tempo (FIM_DESTAQUE, FIM_PREVIAS, FIM_VIRADA e ENQ contam com isso) */
@@ -158,7 +158,7 @@ const enquadramento = (t: number, previas: boolean) => {
  * próxima começar (ou até o destaque seguinte). Páginas escolhidas para nenhuma ficar < 1,5 s e nenhuma palavra
  * < 0,4 s visível (scripts/cobertura.mjs). Sem palavra colorida na legenda: destaque só no termo protagonista.
  * "modelos" (6,12) não entra na legenda: ele é o letreiro atrás da pessoa. */
-// Posição de leitura medida do modelo (MODELO §2: no peito, logo abaixo do queixo). O queixo fica em ~y 940-990 nos
+// Posição de leitura medida do modelo (pregacaodinamica01.md: no peito, logo abaixo do queixo). O queixo fica em ~y 940-990 nos
 // planos (rosto.json + zoom); a legenda começa no peito, numa posição só no vídeo inteiro, nunca no pé do quadro.
 // null = automática: LEG_FOLGA px abaixo do queixo medido (R.queixo) no maior zoom dos planos em que há legenda (LEG_Y,
 // logo depois de PAGINAS). Um número fixa a posição; a vitrine fixa a dela, 1060.
@@ -188,7 +188,7 @@ const PEDACOS: [number, string, Tempo?, string?][] = [
 ];
 /* aceito: a página fica por cima da entrada da tela creme (branco sobre o creme nos 6 quadros do dissolve), como saiu na
  * vitrine aprovada. Sem ele (o padrão; num vídeo novo, não use), a página que ainda está na tela quando o creme entra
- * fica por baixo dele e some com ele: branco nunca fica sobre o creme (MODELO §3.7). */
+ * fica por baixo dele e some com ele: branco nunca fica sobre o creme (pregacaodinamica01.md). */
 type Pagina = {linhas: {txt: string; i: number}[][]; de: number; ate: number; is: number[]; aceito?: string};
 const inicio = (i: number, txt: string) => {
 	if (!PS[i]) throw errPlano('PEDACOS', `a página "${txt}" começa na palavra ${i}, mas a fala só vai até a ${PS.length - 1}`);
@@ -248,7 +248,7 @@ const Legenda: React.FC<{t: number; previas: boolean}> = ({t, previas}) => {
 	);
 };
 
-/* ---------------------------------------------------------------- frase-bloco que se monta (MODELO §3.1) */
+/* ---------------------------------------------------------------- frase-bloco que se monta (pregacaodinamica01.md) */
 type Item = {txt: string; tam: number; serif?: boolean; vermelho?: boolean; quebra?: boolean; sobe?: boolean; em?: number; pincel?: boolean};
 const Bloco: React.FC<{t: number; itens: Item[]; de: number; ate: number; i0: number; top: number; left?: number; cor?: string; sombra?: string; chicote?: boolean; vermelhoCor?: string}> = ({
 	t,
@@ -277,7 +277,7 @@ const Bloco: React.FC<{t: number; itens: Item[]; de: number; ate: number; i0: nu
 		if (it.quebra && k) linhas.push([]);
 		const marginLeft = linhas[linhas.length - 1].length ? (it.tam < 80 ? 10 : 16) : 0;
 		if (it.pincel) {
-			// palavra-destaque caprichada (MODELO §3, pedido avulso do corte 2): entra maior e desfocada, assenta,
+			// palavra-destaque caprichada (pregacaodinamica01.md, pedido avulso do corte 2): entra maior e desfocada, assenta,
 			// ganha brilho vermelho e um traço de pincel que se desenha por baixo
 			const e = tw(t, ini - 0.02, ini + 0.22, 0, 1);
 			const traco = tw(t, ini + 0.12, ini + 0.5, 0, 1);
@@ -343,7 +343,7 @@ const Bloco: React.FC<{t: number; itens: Item[]; de: number; ate: number; i0: nu
 	);
 };
 
-/* ---------------------------------------------------------------- letreiro gigante atrás da pessoa (MODELO §3.3) */
+/* ---------------------------------------------------------------- letreiro gigante atrás da pessoa (pregacaodinamica01.md) */
 const Letreiro: React.FC<{t: number; fundoCor: boolean}> = ({t, fundoCor}) => {
 	if (!LET || !LETREIRO || t < LET.de || t >= LET.ate) return null;
 	const PALAVRA = LETREIRO.texto;
@@ -374,7 +374,7 @@ const exige = (arq: string, como: string) => {
 
 /* ---------------------------------------------------------------- o vídeo: cor da gravação; pessoa recortada por cima no letreiro
  * fundoCor (opção, desligada por padrão): tinge o fundo de vinho na abertura e de azul petróleo no plano do letreiro. */
-const CHICOTES = [T.bloco2, T.cta].filter((x): x is number => x !== null); // chicote borrado para entrar no momento de ênfase (MODELO §4)
+const CHICOTES = [T.bloco2, T.cta].filter((x): x is number => x !== null); // chicote borrado para entrar no momento de ênfase (pregacaodinamica01.md)
 const Video: React.FC<{t: number; s: number; previas: boolean; fundoCor: boolean}> = ({t, s, previas, fundoCor}) => {
 	if (T.fecho !== null && t >= T.fecho + DISSOLVE) return null; // daqui em diante é o preto
 	const ch = CHICOTES.map((a) => (t >= a && t < a + 3 / FPS ? 1 - (t - a) / (3 / FPS) : 0)).reduce((x, y) => Math.max(x, y), 0);
@@ -382,7 +382,7 @@ const Video: React.FC<{t: number; s: number; previas: boolean; fundoCor: boolean
 	const vinho = fundoCor && t < T.base1;
 	const frio = fundoCor && t >= T.base1 && t < proximoCorte(T.base1);
 	const pessoa = vinho || frio || (LET !== null && t >= LET.de && t < LET.ate);
-	if (pessoa) exige('pessoa.webm', 'rode scripts/recorte.py (LEIA.md, "Como gerar", passo 1), ou desligue o letreiro (LETREIRO = null) e o fundoCor.');
+	if (pessoa) exige('pessoa.webm', 'rode scripts/recorte.py (modelos/pregacaodinamica01/pregacaodinamica01.md, seção do vídeo novo), ou desligue o letreiro (LETREIRO = null) e o fundoCor.');
 	const desce = emPrevias(t, previas) ? DESCE : 0; // 3ª rodada: ele nítido embaixo, topo sobre o próprio vídeo desfocado
 	const camada: React.CSSProperties = {transform: `translate(${ch * 90}px, ${desce}px) scale(${s})`, transformOrigin: '540px 700px'};
 	const mascara = desce ? `linear-gradient(to bottom, transparent 0px, transparent ${DESCE}px, black ${DESCE + 160}px)` : undefined;
@@ -410,7 +410,7 @@ const Video: React.FC<{t: number; s: number; previas: boolean; fundoCor: boolean
 	);
 };
 
-/* ---------------------------------------------------------------- tela de destaque (MODELO §3.7): creme com tinta escura
+/* ---------------------------------------------------------------- tela de destaque (pregacaodinamica01.md): creme com tinta escura
  * Só na fala protagonista ("você está vendo apenas um desses modelos."), sempre com contraste legível. Entra e sai em
  * dissolve rápido; se é o último trecho antes do fecho, não sai: o preto do fecho dissolve por cima dela. */
 const TelaCreme: React.FC<{t: number}> = ({t}) => {
@@ -418,7 +418,7 @@ const TelaCreme: React.FC<{t: number}> = ({t}) => {
 	return <AbsoluteFill style={{background: CREME_COR, opacity: cremeEm(t)}} />;
 };
 
-/* ---------------------------------------------------------------- fecho: dissolve para o preto (MODELO §6) */
+/* ---------------------------------------------------------------- fecho: dissolve para o preto (pregacaodinamica01.md) */
 const Preto: React.FC<{t: number}> = ({t}) => {
 	if (T.fecho === null || t < T.fecho) return null;
 	return <AbsoluteFill style={{background: '#000', opacity: tw(t, T.fecho, T.fecho + DISSOLVE, 0, 1, Easing.linear)}} />;
@@ -520,7 +520,7 @@ export const palavrasNaTela = (t: number): number[] => {
 /* ---------------------------------------------------------------- prévias de dois outros modelos em cima (BRIEF, momento 2) */
 export const PreviasEmCima: React.FC<{t: number; nomes: [string, string]; soTexto?: boolean}> = ({t, nomes, soTexto}) => {
 	if (T.previas === null || t < T.previas || t >= FIM_PREVIAS) return null;
-	if (!soTexto) for (const arq of ['previa1.mp4', 'previa2.mp4']) exige(arq, 'faça as prévias com tools/previa.py (LEIA.md, "Vídeo novo") ou renderize com "previas": false.');
+	if (!soTexto) for (const arq of ['previa1.mp4', 'previa2.mp4']) exige(arq, 'faça as prévias com tools/previa.py (modelos/pregacaodinamica01/pregacaodinamica01.md, seção do vídeo novo) ou renderize com "previas": false.');
 	// 3ª rodada: 300x533 no alto da zona (x 185 a 815, y 260 a 793), o rosto dele nítido embaixo
 	const W = 300;
 	const H = Math.round((W * 16) / 9);

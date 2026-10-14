@@ -3,7 +3,7 @@ import {Bloco, C, CX, E, FPS, Linha, SANS, T, mola, tw, txt, useT, w} from './te
 import {Pal, brilho, hexA} from './ui';
 
 /**
- * Texto do anunciomotion01 (MODELO §2-3): Sora, frase em linhas de tamanhos e pesos misturados (ExtraBold na palavra
+ * Texto do anunciomotion01 (anunciomotion01.md §2-3): Sora, frase em linhas de tamanhos e pesos misturados (ExtraBold na palavra
  * de peso, Regular na de ligação), cada palavra nasce de um desfoque com leve deslize no start dela.
  * Destaque (pílula de contorno brilhante, escrita letra por letra, entra inclinada e endireita) só no termo protagonista.
  * Todos os tempos e posições vêm de src/tempos.json (conferidos por scripts/conferir.py).
@@ -32,12 +32,13 @@ const LinhaNormal: React.FC<{l: Linha; claro: boolean}> = ({l, claro}) => {
 	);
 };
 
-/** "100%": o número conta de 0 a 100 no tempo da palavra (MODELO §4.6) */
+/** "100%": o número conta de 0 até o número dito (o da própria palavra, ex. "40%" conta até 40) no tempo da palavra (anunciomotion01.md §4) */
 const Contador: React.FC<{l: Linha}> = ({l}) => {
 	const {t} = useT();
 	const de = w(l.ids[0]);
 	if (t < de) return null;
-	const n = Math.round(tw(t, de, de + 0.45, 0, 100, E.out));
+	const alvo = parseInt(txt(l.ids[0]).replace(/\D/g, ''), 10);
+	const n = Math.round(tw(t, de, de + 0.45, 0, Number.isFinite(alvo) ? alvo : 100, E.out));
 	const k = mola(t, de, {damping: 13, stiffness: 150});
 	return (
 		<div style={{position: 'absolute', left: CX - 600, width: 1200, top: l.y - l.fs * 0.55, textAlign: 'center', fontFamily: SANS, fontWeight: l.peso, fontSize: l.fs, letterSpacing: '-0.06em', lineHeight: 1.1, color: '#fff', textShadow: brilho(C.v, 2.2), opacity: Math.min(1, k * 2), transform: `scale(${0.6 + 0.4 * k})`, filter: k < 0.6 ? `blur(${(0.6 - k) * 20}px)` : undefined}}>
@@ -79,7 +80,7 @@ export const PilulaPal: React.FC<{l: Linha; claro: boolean}> = ({l, claro}) => {
 					fontSize: tam,
 					letterSpacing: '-0.03em',
 					lineHeight: 1,
-					color: claro ? C.tinta : '#F0FFF8',
+					color: claro ? C.tinta : C.textoPilula,
 					textShadow: claro ? 'none' : brilho(cor, tam / 140),
 					whiteSpace: 'nowrap',
 					opacity: Math.min(1, k * 1.6),

@@ -2,9 +2,11 @@
 suave e clara em ré maior, bem baixa, + um whoosh leve só no flash da ênfase ("Mas", palavra 62).
 Saída: public/trilha.wav (cama + whoosh: a música, opção) e public/efeitos.wav (só o whoosh, no mesmo nível em que está
 na trilha: o padrão do modelo, que o mixar.sh usa quando a música está desligada).
-Lê src/palavras_voz.json (scripts/palavras.py). Num vídeo novo, FLASH abaixo = o índice da palavra da ênfase (o mesmo
-de FLASH/T.mas em src/Reel.tsx); None tira o whoosh.
-uso (de dentro do molde): ../../.venv/Scripts/python.exe scripts/som.py [--saida arquivo.wav]
+Lê src/palavras_voz.json (scripts/palavras.py). Num vídeo novo, FLASH abaixo = o tempo do corte da ênfase, o mesmo
+FLASH de src/Reel.tsx: um número inteiro é o índice de uma palavra (corte 2 quadros antes dela, como c(de(i)) no Reel);
+um número com vírgula decimal (float) são os segundos; --flash <segundos> na linha de comando vale por cima. None tira
+o whoosh.
+uso (de dentro do molde): ../../.venv/Scripts/python.exe scripts/som.py [--flash 8.12] [--saida arquivo.wav]
 """
 import json, sys
 from pathlib import Path
@@ -20,11 +22,18 @@ D = P['duracao']
 N = int(D * SR)
 tt = np.arange(N) / SR
 rng = np.random.default_rng(7)
-FLASH = 62  # índice (em src/palavras_voz.json) da palavra do flash; None = sem whoosh
-if FLASH is not None and not 0 <= FLASH < len(P['palavras']):
+W = json.loads((AQUI / 'src' / 'palavras.json').read_text(encoding='utf-8'))
+if [w['text'].strip() for w in W] != [p['texto'] for p in P['palavras']]:
+    sys.exit('scripts/som.py: src/palavras_voz.json não é desta fala. Rode antes: ../../.venv/Scripts/python.exe scripts/palavras.py')
+FLASH = 62  # int = índice da palavra (corte 2 quadros antes); float = segundos (o FLASH do src/Reel.tsx); None = sem whoosh
+if '--flash' in sys.argv:
+    FLASH = float(sys.argv[sys.argv.index('--flash') + 1])
+if isinstance(FLASH, int) and not 0 <= FLASH < len(P['palavras']):
     sys.exit(f'scripts/som.py: FLASH = {FLASH}, mas a fala tem {len(P["palavras"])} palavras (0 a {len(P["palavras"]) - 1}). '
-             'Ponha o índice da palavra da ênfase do plano novo (o mesmo do src/Reel.tsx) ou None.')
-flash = P['palavras'][FLASH]['de'] - 0.06 if FLASH is not None else None
+             'Ponha o índice da palavra da ênfase, os segundos do FLASH do src/Reel.tsx (ex.: 8.12) ou None.')
+if isinstance(FLASH, float) and not 0.2 <= FLASH < D:
+    sys.exit(f'scripts/som.py: FLASH = {FLASH} s fica fora da fala (0,2 a {D} s).')
+flash = None if FLASH is None else P['palavras'][FLASH]['de'] - 0.06 if isinstance(FLASH, int) else FLASH
 
 # progressão lenta em ré maior (I - vi - IV - V), 4 compassos de 4 s, acordes em senoides suaves com ataque lento
 ACORDES = [(146.8, 185.0, 220.0, 293.7), (123.5, 146.8, 185.0, 246.9), (98.0, 146.8, 196.0, 246.9), (110.0, 138.6, 164.8, 220.0)]

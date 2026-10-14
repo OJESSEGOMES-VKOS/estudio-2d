@@ -1,5 +1,5 @@
 """Recorta a pessoa do vídeo (Robust Video Matting, onnx) e grava public/pessoa.webm com transparência,
-pro letreiro gigante passar por trás dela e pro fundo poder ser tingido sem tingir a pessoa (pregacaodinamica01 §3.3, §3.10).
+pro letreiro gigante passar por trás dela e pro fundo poder ser tingido sem tingir a pessoa (modelos/youtubeedition01/youtubeedition01.md, seção 5).
 Lê public/fala.mp4 (tools/preparar.py). Modelo RVM em ../../tools/modelos.
 uso: ../../.venv/Scripts/python.exe scripts/recorte.py [saída, padrão public/pessoa.webm]
 """

@@ -1,11 +1,12 @@
 # Regras de ofício (valem para todo modelo)
 
-O estilo (cor, fonte, layout, ritmo) é de cada modelo e mora no `modelos/<modelo>/MODELO.md`. As regras abaixo são
-de ofício: valem para todos, e um modelo só as quebra se o MODELO.md disser por quê. Todas nasceram de vídeos
+O estilo (cor, fonte, layout, ritmo) é de cada modelo e mora no `modelos/<modelo>/<modelo>.md`, o arquivo único do
+modelo, que já traz escritas as regras abaixo que valem para ele. Estas regras servem para criar modelo novo e para
+conferir: valem para todos, e um modelo só as quebra se o `<modelo>.md` disser por quê. Todas nasceram de vídeos
 reprovados e corrigidos.
 
 ## 0. Correções do dono que valem para todos (acima de tudo)
-Ficam acima das regras abaixo, do MODELO.md e do código. As de um modelo só ficam em `modelos/<m>/CORRECOES.md`.
+Ficam acima das regras abaixo e do código. As de um modelo só estão escritas como regra no `modelos/<m>/<m>.md`.
 Correção mais nova vence a mais velha. G22 e G23 vêm primeiro porque mandam no resto:
 
 | # | Regra | Data |
@@ -46,8 +47,8 @@ Como se confere G23: `tools/parece.py` (luz, cor, enquadramento e ritmo contra `
 folha lado a lado que ele grava. Os conferidores de regra dos moldes não provam G23.
 
 ## 1. O vídeo parece as referências do modelo
-- Antes de editar, ler o MODELO.md inteiro e olhar os quadros das referências (`modelos/<m>/analise/`; no estúdio aberto, que não traz
-  referências de terceiros, a folha `modelos/<m>/referencia.jpg` do vídeo aprovado do modelo).
+- Antes de editar, ler o `<modelo>.md` inteiro e estudar a referência própria do modelo em `modelos/<m>/referencia/`:
+  o vídeo aprovado, a folha de 1 quadro por segundo e o mapa medido.
 - A receita visual é medida (posição e tamanho em % do quadro, fonte, hex, movimento); seguir a medida, não o gosto.
 - Comparar quadro a quadro com as referências antes de entregar (folha lado a lado em `conferencia/`).
 - A cor e a fonte são as do modelo. Nada da identidade pessoal de quem edita.

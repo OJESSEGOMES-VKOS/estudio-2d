@@ -10,8 +10,9 @@ Criado por **Jessé Gomes ([@OJESSEGOMES](https://instagram.com/ojessegomes))**.
 ## O que vem aqui
 | Pasta | O que é |
 |---|---|
-| `REGRAS.md` | as regras de ofício que valem para todo modelo: legenda, tempo de leitura, destaque, zona segura, conferência |
-| `modelos/<modelo>/MODELO.md` | o cérebro de cada modelo: a receita visual medida e os gatilhos (o que a tela faz quando a fala faz X) |
+| `modelos/<modelo>/<modelo>.md` | o arquivo único de cada modelo: a cara, os números, as regras, as opções e o passo a passo do vídeo novo |
+| `modelos/<modelo>/referencia/` | o vídeo aprovado do modelo (com a voz), a folha de 1 quadro por segundo e o mapa medido (rosto, luz, cortes) |
+| `REGRAS.md` | as regras de ofício que valem para todo modelo (já estão dentro de cada `<modelo>.md`; servem para criar modelo novo) |
 | `moldes/<modelo>/` | o código Remotion de um vídeo real feito no modelo, para partir dele (`moldes/CONTRATO.md`) |
 | `tools/` | preparar a gravação (vídeo, voz limpa, palavras com tempo pelo Whisper, rosto), começar um vídeo, fila de render |
 | `kit/` | material para vídeos de motion: foto com licença aberta, recorte de fundo, geração de imagem e narração (opcional, com chave própria) |
@@ -44,13 +45,13 @@ storypodcast01"*. Por baixo, o caminho é:
    O mesmo comando adapta a sua gravação ao ponto de partida do modelo (`tools/adaptar.py`): o rosto no tamanho e na
    altura em que o modelo foi calibrado e a mesma luz de partida. Sem isso, uma gravação mais perto, mais baixa ou mais
    clara sai com a cabeça cortada e a cor errada.
-2. O Claude lê `modelos/storypodcast01/MODELO.md`, `REGRAS.md` e olha `modelos/storypodcast01/referencia.jpg` (quadros
-   do vídeo aprovado do modelo) e `modelos/storypodcast01/CORRECOES.md`, e refaz o plano frase a frase sobre a sua fala.
+2. O Claude lê `modelos/storypodcast01/storypodcast01.md`, estuda `modelos/storypodcast01/referencia/` (o vídeo
+   aprovado do modelo, com a folha de quadros e o mapa medido) e refaz o plano frase a frase sobre a sua fala.
 3. Confere com o checador do molde, olha os quadros e renderiza (`QUEM=eu sh tools/com-trava.sh npx remotion render ...`).
    A trava põe um render por vez e apaga as sobras do Remotion no fim.
 4. Confere se parece o modelo: `.venv/Scripts/python.exe tools/parece.py videos/<pasta>/out/final.mp4 <modelo>`. Ele
-   mede luz, cor, enquadramento do rosto e ritmo contra a assinatura do modelo (`modelos/<modelo>/assinatura.json`) e
-   grava uma folha com o seu vídeo embaixo da referência. Reprovou, o vídeo ainda não está pronto.
+   mede luz, cor, enquadramento do rosto e ritmo contra o vídeo aprovado do modelo (vídeo curto é comparado com os
+   trechos do mesmo tamanho do aprovado) e grava uma folha com o seu vídeo embaixo do aprovado. Reprovou, o vídeo ainda não está pronto.
 
 No macOS e no Linux, troque `.venv/Scripts/python.exe` por `.venv/bin/python` em todos os comandos.
 
@@ -64,17 +65,18 @@ um pouco depois da fala; sem essa sobra, o último quadro fica parado.
 
 Os moldes vêm sem a mídia do vídeo de origem (gravação, imagens geradas, trilhas): para ver um modelo funcionando, rode
 `novo-video.py` com uma gravação sua. Cada molde traz o plano do vídeo de origem, preso àquela fala; o molde trava de
-propósito se a fala nova não bater, e é aí que o Claude refaz o plano para a sua fala. Cada molde tem no `LEIA.md` a
-seção **"Vídeo novo"**: o que refazer, as chaves, o conferidor, o render e a mixagem. **O padrão de cada modelo é o
-vídeo aprovado dele**: o que aparece nele (tratamento de cor, palco, efeitos sonoros) vem ligado, e só vem desligado
-o que o `modelos/<modelo>/CORRECOES.md` manda desligar. As correções do criador ficam nesse arquivo e valem acima
-do MODELO.md e do código.
+propósito se a fala nova não bater, e é aí que o Claude refaz o plano para a sua fala. O `<modelo>.md` de cada modelo
+tem a seção **"Como fazer um vídeo novo"**: o que refazer, as chaves, o conferidor, o render e a mixagem. **O padrão de
+cada modelo é o vídeo aprovado dele**: o que aparece nele (tratamento de cor, palco, efeitos sonoros) vem ligado, e só
+vem desligado o que o `<modelo>.md` diz que é opção. As correções do criador já estão escritas como regra nesse
+arquivo, e ele vale acima do código.
 
 O que o vídeo de origem tinha e você mesmo providencia:
 - **Prévias** (os clipes acelerados em cima, em alguns moldes): faça de vídeos seus já prontos com
   `tools/previa.py <seu-video.mp4> videos/<pasta> 1 --de 10` (e `2` para a segunda). Nunca vídeo de terceiro.
 - **Cartões de colagem** (superpodcast01): `tools/cards.py`, a partir dos seus vídeos e da sua gravação.
-- **Imagens geradas ou buscadas** (palco, B-roll, cenários): o `LEIA.md` do molde diz quais, com o comando do `kit/`.
+- **Imagens geradas ou buscadas** (B-roll, cenários): o `<modelo>.md` diz quais, com o comando do `kit/`. O palco e os
+  B-rolls do superpodcast01 já vêm com o estúdio.
   Imagem por IA é opção sua, nunca obrigação.
 
 ## Licença e créditos
@@ -88,5 +90,5 @@ Ferramentas de terceiros usadas (cada uma com a licença dela, instaladas pelo i
   Robust Video Matting (GPL-3.0, baixado à parte e usado como arquivo de modelo), rembg (MIT).
 - Fontes do Google Fonts (OFL), carregadas pelo `@remotion/google-fonts`.
 
-Os vídeos de referência que deram origem aos modelos não são distribuídos; os MODELO.md descrevem medidas e padrões,
-não copiam material.
+Nenhum vídeo de terceiro vem aqui. A referência de cada modelo é o vídeo aprovado dele, feito pelo criador do estúdio
+com a própria gravação; os `<modelo>.md` descrevem medidas e padrões desse vídeo.

@@ -2,7 +2,7 @@
 Os instantes repetem as âncoras de src/Cenas.tsx (mesmas palavras, w('palavra', n)): num vídeo novo, refazer junto.
 Saída: public/trilha.wav (a duração é a de public/voz.wav + 1,2 s). Se a fala não tem uma palavra, para e diz a linha.
 uso (de dentro do molde): ../../.venv/Scripts/python.exe scripts/som.py [--cama] [--saida arquivo.wav]
---cama: liga a música (desligada por padrão, REGRAS §6; a vitrine saiu com ela). Os efeitos saem no mesmo nível com ou sem.
+--cama: liga a música (desligada por padrão, modelodinamico02.md; a vitrine saiu com ela). Os efeitos saem no mesmo nível com ou sem.
 """
 import json, re, sys, unicodedata, wave
 from pathlib import Path
@@ -41,7 +41,7 @@ def w(txt, n=1):
     linhas = [str(i + 1) for i, l in enumerate(Path(__file__).read_text(encoding='utf-8').splitlines()) if chamada in l]
     sys.exit(f'O som não bate com a fala de src/palavras.json: {chamada} pede a {n}ª vez que se diz "{txt}", e a fala '
              f'{"só tem " + str(k) if k else "não tem nenhuma"}.\nscripts/som.py:{",".join(linhas) or "?"}: refaça os eventos '
-             'junto com as CENAS de src/Cenas.tsx (LEIA.md, "Vídeo novo").')
+             'junto com as CENAS de src/Cenas.tsx (modelos/modelodinamico02/modelodinamico02.md, §9 "Como fazer um vídeo novo").')
 
 
 def env(n, a, r):

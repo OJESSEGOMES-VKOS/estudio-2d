@@ -4,7 +4,7 @@ import {C, DURACAO, E as EZ, P as PAL, SANS, existe, mola, pare, rnd, seq, tw, u
 import {Bolha, Celular, G, Glitch, IconeVidro, ImgOuTela, Linha, MarcaTexto, Notif, Pilula, Risco, Simbolo, Wordmark, brilho, hexA} from './ui';
 
 /**
- * anunciocanvas01 v5 (../../modelos/anunciocanvas01/MODELO.md), tema Marcaí.
+ * anunciocanvas01 v5 (as regras: modelos/anunciocanvas01/anunciocanvas01.md); o tema é o do anúncio aprovado.
  *
  * A v4 ainda era "uma página gigante com uma cena em cada pedaço e a câmera indo de um pro outro". A v5 não
  * tem cena nem estação:
@@ -31,7 +31,7 @@ const FALA = 'Sua agenda ainda vive no meio das mensagens? O cliente pede horár
 		const j = k >= 0 ? k : Math.min(plano.length, fala.length);
 		pare(
 			`O plano não bate com a fala. src/Canvas.tsx foi feito para outra fala: na palavra ${j + 1} o plano tem "${plano[j] ?? '(fim)'}" e src/palavras.json tem "${fala[j] ?? '(fim)'}". ` +
-				'Refaça FRASES e a Coreografia em src/Canvas.tsx sobre a fala nova (LEIA, "Vídeo novo") e cole o texto dela em FALA (linha 24).',
+				'Refaça FRASES, VIRADA e a Coreografia em src/Canvas.tsx sobre a fala nova (modelos/anunciocanvas01/anunciocanvas01.md, §9) e cole o texto dela em const FALA.',
 		);
 	}
 }
@@ -43,6 +43,9 @@ const FRASES: [number, number, Tom][] = [
 	[45, 54, 'claro'], [55, 65, 'marca'], [66, 70, 'claro'], [71, 77, 'marca'], [78, 85, 'claro'], [86, 96, 'marca'],
 	[97, 100, 'marca'], [101, 107, 'claro'], [108, 114, 'marca'], [115, 119, 'marca'], [120, 123, 'marca'],
 ];
+/** a frase em que o produto aparece (a virada: entra sempre por chicote) */
+const VIRADA = 5;
+if (!(VIRADA > 0 && VIRADA < FRASES.length - 1)) pare(`VIRADA em src/Canvas.tsx é ${VIRADA}: tem de ser o índice (em FRASES) da frase em que o produto aparece, entre 1 e ${FRASES.length - 2} (nem a primeira nem o fecho).`);
 FRASES.forEach(([a, b], k) => {
 	const antes = k ? FRASES[k - 1][1] + 1 : 0;
 	if (a !== antes || b < a || b >= PAL.palavras.length)
@@ -62,15 +65,16 @@ const TK = FRASES.map((_, k) => (k === FRASES.length - 1 ? Math.min(DURACAO - 0.
  *    seguinte, que assenta mais (easy ease 12%): parece chegar numa composição;
  *  - CHICOTE (v2): a câmera segura até a fala acabar e salta longe no vão entre as frases, rápido, com borrão
  *    de movimento (calculado pela velocidade, em Canvas).
- * A virada ("Agora tem o Marcaí") é sempre chicote; o fecho, curva. */
+ * A virada (a frase VIRADA, "Agora tem o Marcaí" no aprovado) é sempre chicote; o fecho, sempre curva (a regra
+ * dos 3 seguidos não mexe em nenhum dos dois). */
 type Tipo = 'fluxo' | 'curva' | 'chicote';
 type K = {t: number; x: number; y: number; d: number; roll: number; ease: number};
 export const TIPOS: Tipo[] = (() => {
 	const r: Tipo[] = ['fluxo'];
 	for (let k = 1; k < FRASES.length; k++) {
 		const u = rnd(k * 11.3);
-		let tp: Tipo = k === 5 ? 'chicote' : k === FRASES.length - 1 ? 'curva' : u < 0.4 ? 'fluxo' : u < 0.7 ? 'curva' : 'chicote';
-		if (k !== 5 && r[k - 1] === tp && r[k - 2] === tp) tp = tp === 'fluxo' ? 'curva' : 'fluxo';
+		let tp: Tipo = k === VIRADA ? 'chicote' : k === FRASES.length - 1 ? 'curva' : u < 0.4 ? 'fluxo' : u < 0.7 ? 'curva' : 'chicote';
+		if (k !== VIRADA && k !== FRASES.length - 1 && r[k - 1] === tp && r[k - 2] === tp) tp = tp === 'fluxo' ? 'curva' : 'fluxo';
 		r.push(tp);
 	}
 	return r;
@@ -89,11 +93,14 @@ const montar = () => {
 			const ant = fk[k - 1];
 			if (tp === 'curva') {
 				const lado = rnd(k * 7.7) < 0.5 ? -1 : 1;
-				const tm = (fim(k - 1) + ini(k)) / 2;
+				const tm = Math.max((fim(k - 1) + ini(k)) / 2, fim(k - 1) - 0.1); // fala corrida: o desvio fica no fim da frase velha, nunca no meio dela
 				ks.push({t: Math.max(ant.t + 0.15, Math.min(TK[k] - 0.15, tm)), x: (x + nx) / 2 - Math.sin(rumo) * passo * 0.3 * lado, y: (y + ny) / 2 + Math.cos(rumo) * passo * 0.3 * lado, d: (ant.d + d) / 2 + 120, roll: (ant.roll + roll) / 2 + lado * 2, ease: 1});
 			}
 			if (tp === 'chicote') {
-				const segura = Math.max(ant.t + 0.12, Math.min(fim(k - 1) + 0.02, ini(k) - 0.3));
+				// segura até a fala acabar; com vão curto (fala corrida) sai no máximo 0,3 s antes da frase nova, mas nunca antes
+				// de a última palavra da frase velha ter nascido há 0,25 s (ela é lida inteira antes da viagem)
+				const ult = PAL.palavras[FRASES[k - 1][1]].de;
+				const segura = Math.max(ant.t + 0.12, Math.min(fim(k - 1) + 0.02, Math.max(ini(k) - 0.3, ult + 0.25)));
 				const chega = Math.min(TK[k] - 0.12, Math.max(ini(k) + 0.02, segura + 0.28));
 				ks.push({t: segura, x: x + Math.cos(rumo) * 40, y: y + Math.sin(rumo) * 40, d: ant.d, roll: ant.roll, ease: 0});
 				ks.push({t: chega, x: nx - Math.cos(rumo) * 40, y: ny - Math.sin(rumo) * 40, d, roll, ease: 0});
@@ -144,7 +151,11 @@ const frente = (t: number, de: number, cfg = {}) => {
 const El: React.FC<{k: number; x: number; y: number; z?: number; rot?: number; fica?: boolean; children: React.ReactNode}> = ({k, x, y, z = 0, rot = 0, fica, children}) => {
 	const {t} = useT();
 	const key = FK[k];
-	const sai = fica ? 0 : tw(t, fim(k) + 0.45, fim(k) + 1.05, 0, 1, EZ.suave);
+	// a saída começa 0,45 s depois da frase (com vão de 0,16 s ou mais a câmera já levou o grupo embora); em fala corrida
+	// começa no máximo 0,05 s depois da frase nova nascer e dura menos: a frase velha nunca fica sobre a nova
+	const vao = k + 1 < FRASES.length ? Math.max(0, ini(k + 1) - fim(k)) : 1;
+	const s0 = fim(k) + Math.min(0.45, 0.05 + 2.5 * vao), s1 = s0 + Math.min(0.6, 0.3 + 2 * vao);
+	const sai = fica ? 0 : tw(t, s0, s1, 0, 1, EZ.suave);
 	if (sai >= 1) return null;
 	const esc = (key.d - z) / P; // o deslocamento de tela vira deslocamento no mundo naquela distância
 	return (
@@ -312,7 +323,7 @@ const Marca: React.FC = () => {
 };
 
 /* ---------------------------------------------------------------- a coreografia: cada elemento no seu lugar */
-const B = '#fff', T = C.tinta, SUB = '#CFC8DD', SUBC = '#5E5770';
+const B = '#fff', T = C.tinta, SUB = C.fino2, SUBC = C.finoC, FINO = C.fino, FINOC = C.finoC2;
 const Coreografia: React.FC = () => {
 	const {t} = useT();
 	return (
@@ -325,7 +336,7 @@ const Coreografia: React.FC = () => {
 			<El k={0} x={320} y={460} z={-320} rot={5}><Pop de={w('mensagens?') + 0.15}><Bolha texto="consegue 18h?" lado="in" tam={40} /></Pop></El>
 
 			{/* 1. O cliente pede horário às onze da noite. */}
-			<El k={1} x={-40} y={-300}><L de={2.7} txt="O cliente pede horário" tam={60} cor="#E4DEF2" peso={400} /></El>
+			<El k={1} x={-40} y={-300}><L de={2.7} txt="O cliente pede horário" tam={60} cor={FINO} peso={400} /></El>
 			<El k={1} x={-120} y={-150}><Pop de={w('pede') - 0.1}><Bolha texto="Oi! Tem horário amanhã?" lado="in" tam={46} hora="23:47" /></Pop></El>
 			<El k={1} x={40} y={110}><Hora2347 /></El>
 			<El k={1} x={0} y={320}><L de={3.8} txt="às onze da noite." tam={64} cor={B} /></El>
@@ -338,7 +349,7 @@ const Coreografia: React.FC = () => {
 			<El k={2} x={0} y={350}><L de={7.3} txt="em outro lugar." tam={104} cor={T} peso={800} /></El>
 
 			{/* 3. Outro confirma e, no dia, não aparece. */}
-			<El k={3} x={-150} y={-300}><L de={8.2} txt="Outro confirma" tam={60} cor="#E4DEF2" peso={400} /></El>
+			<El k={3} x={-150} y={-300}><L de={8.2} txt="Outro confirma" tam={60} cor={FINO} peso={400} /></El>
 			<El k={3} x={120} y={-80}><Data15 /></El>
 			<El k={3} x={0} y={260}>{t > w('não') - 0.05 ? <Glitch texto="não aparece" de={w('não')} tam={116} /> : <span />}</El>
 
@@ -348,7 +359,7 @@ const Coreografia: React.FC = () => {
 			<El k={4} x={0} y={300}>{t >= w('ninguém') - 0.04 ? <Glitch texto="ninguém paga." de={w('ninguém')} tam={96} peso={500} cor="#FF7A7A" /> : <span />}</El>
 
 			{/* 5. Agora tem o Marcaí. */}
-			<El k={5} x={0} y={-300}><L de={13.4} txt="Agora tem o" tam={64} cor="#E4DEF2" peso={400} /></El>
+			<El k={5} x={0} y={-300}><L de={13.4} txt="Agora tem o" tam={64} cor={FINO} peso={400} /></El>
 			<El k={5} x={0} y={-20}>{(() => { const m = w('marcaí.'); const kk = mola(t, m - 0.12, {damping: 12, stiffness: 110, mass: 0.9}); return <div style={{opacity: Math.min(1, kk * 1.8), transform: `scale(${0.3 + 0.7 * kk})`}}><IconeVidro tam={300} giroY={(1 - kk) * -140 + Math.sin(t * 1.4) * 10}>{G.cal(170)}</IconeVidro></div>; })()}</El>
 			<El k={5} x={0} y={280}><div style={{filter: `drop-shadow(0 0 30px ${hexA(C.v, 0.6)})`}}><Wordmark tam={150} texto="marcaı" letras={tw(t, w('marcaí.'), w('marcaí.') + 0.4, 0, 6, (x) => x)} /></div></El>
 
@@ -377,29 +388,29 @@ const Coreografia: React.FC = () => {
 			{[0, 1].map((i) => (
 				<El key={i} k={9} x={30 - i * 40} y={-160 + i * 200} z={i * -40} rot={i ? 2 : -1.5}><Pop de={w('lembrete') + i * 0.22}><Notif titulo="Marcaí · Lembrete" texto={i ? 'Amanhã, 10:30 · Corte feminino com Bia.' : 'Amanhã, 14:30 · Corte + barba com Teo.'} larg={760} /></Pop></El>
 			))}
-			<El k={9} x={60} y={300}><L de={23.5} txt="o lembrete vai" tam={58} cor="#E4DEF2" peso={400} /></El>
+			<El k={9} x={60} y={300}><L de={23.5} txt="o lembrete vai" tam={58} cor={FINO} peso={400} /></El>
 			<El k={9} x={60} y={400}><L de={24.1} txt="sozinho." tam={116} cor={B} peso={800} glow={C.v} /></El>
 
 			{/* 10. E quem já pagou o sinal não esquece. */}
 			<El k={10} x={-40} y={-200}><SinalPago /></El>
-			<El k={10} x={30} y={110}><L de={24.9} txt="E quem já pagou o sinal" tam={58} cor="#4A4458" peso={500} /></El>
+			<El k={10} x={30} y={110}><L de={24.9} txt="E quem já pagou o sinal" tam={58} cor={FINOC} peso={500} /></El>
 			<El k={10} x={0} y={220}><L de={26.0} txt="não esquece." tam={124} cor={T} peso={800} extra={(i) => (i === 1 ? <MarcaTexto de={w('esquece.') + 0.08} cor={C.v} /> : null)} /></El>
 
 			{/* 11. De manhã, você abre o painel e vê o dia inteiro. */}
-			<El k={11} x={-60} y={-470}><L de={26.9} txt="De manhã, você abre o" tam={54} cor="#E4DEF2" peso={400} /></El>
+			<El k={11} x={-60} y={-470}><L de={26.9} txt="De manhã, você abre o" tam={54} cor={FINO} peso={400} /></El>
 			<El k={11} x={-60} y={-370}><L de={28.1} txt="painel" tam={120} cor={B} peso={800} glow={C.v} /></El>
 			<El k={11} x={80} y={40} z={-40}><PainelImg /></El>
 			<El k={11} x={40} y={430}><L de={28.6} txt="e vê o dia inteiro." tam={84} cor={B} peso={800} /></El>
 
 			{/* 12. Doze atendimentos, todos confirmados. */}
 			<El k={12} x={0} y={-130}><Doze /></El>
-			<El k={12} x={0} y={260}><L de={30.1} txt="atendimentos," tam={62} cor="#E4DEF2" peso={400} /></El>
+			<El k={12} x={0} y={260}><L de={30.1} txt="atendimentos," tam={62} cor={FINO} peso={400} /></El>
 			<El k={12} x={0} y={360}><L de={30.9} txt="todos confirmados." tam={96} cor={B} peso={800} glow={C.v} /></El>
 
 			{/* 13. Sem parar o corte pra responder mensagem. */}
 			<El k={13} x={130} y={-300}>{(() => { const c = w('corte'); const snip = t > c - 0.05 ? Math.abs(Math.sin((t - c + 0.05) * 14)) * (t < c + 0.7 ? 1 : 0) : 0.15; return <Pop de={w('sem') - 0.05}><div style={{transform: `rotate(${-20 + (t - c) * 6}deg)`, filter: 'drop-shadow(0 18px 30px rgba(80,40,180,0.25))'}}>{G.tesoura(260, C.vFundo, snip)}</div></Pop>; })()}</El>
 			<El k={13} x={-30} y={60}><L de={32.4} txt="Sem parar o corte" tam={96} cor={T} peso={800} /></El>
-			<El k={13} x={40} y={180}><div style={{position: 'relative'}}><L de={33.5} txt="pra responder mensagem." tam={62} cor="#4A4458" peso={500} /><Risco de={wf('mensagem.') - 0.1} espessura={9} dur={0.2} /></div></El>
+			<El k={13} x={40} y={180}><div style={{position: 'relative'}}><L de={33.5} txt="pra responder mensagem." tam={62} cor={FINOC} peso={500} /><Risco de={wf('mensagem.') - 0.1} espessura={9} dur={0.2} /></div></El>
 
 			{/* 14. Pra salão, barbearia e estúdio de estética. (cada nicho num ponto diferente) */}
 			<El k={14} x={-40} y={-520}><L de={34.9} txt="Pra" tam={56} cor={SUB} peso={400} /></El>
@@ -421,16 +432,19 @@ const Coreografia: React.FC = () => {
 
 /* ---------------------------------------------------------------- o fundo, no tempo */
 const AMB: Record<Tom, {base: string; mancha: string}> = {
-	marca: {base: C.preto, mancha: 'rgba(139,92,255,0.34)'},
+	marca: {base: C.preto, mancha: hexA(C.v, 0.34)},
 	dor: {base: '#0B0506', mancha: 'rgba(255,42,42,0.26)'},
 	noite: {base: '#05060D', mancha: 'rgba(70,90,255,0.26)'},
-	claro: {base: C.claro, mancha: 'rgba(160,123,255,0.24)'},
+	claro: {base: C.claro, mancha: hexA(C.vBrilho, 0.24)},
 };
 const Fundo: React.FC<{mx: number; my: number}> = ({mx, my}) => {
 	const {t} = useT();
+	// o fundo novo começa a entrar 0,35 s antes da frase; em fala corrida (vão < 0,15 s) só na 1ª palavra dela, para a
+	// frase velha não perder o fundo enquanto ainda é lida
+	const antes = (i: number) => (i > 0 && ini(i) - fim(i - 1) < 0.15 ? 0 : 0.35);
 	let k = 0;
-	FRASES.forEach((_, i) => { if (t >= ini(i) - 0.35) k = i; });
-	const u = k > 0 ? tw(t, ini(k) - 0.35, ini(k) + 0.15, 0, 1, EZ.suave) : 1;
+	FRASES.forEach((_, i) => { if (t >= ini(i) - antes(i)) k = i; });
+	const u = k > 0 ? tw(t, ini(k) - antes(k), ini(k) + 0.15, 0, 1, EZ.suave) : 1;
 	const camada = (tom: Tom, op: number) => (
 		<AbsoluteFill style={{opacity: op, background: `radial-gradient(ellipse 75% 48% at ${50 + mx}% ${46 + my}%, ${AMB[tom].mancha}, rgba(0,0,0,0) 72%), ${AMB[tom].base}`}} />
 	);
@@ -445,7 +459,7 @@ const Fundo: React.FC<{mx: number; my: number}> = ({mx, my}) => {
 /** o som: o mix pronto (som.m4a) ou, sem ele, só a narração (voz.wav ou voz.mp3) */
 const SOM = ['som.m4a', 'voz.wav', 'voz.mp3'].find(existe);
 export const Canvas: React.FC<{voz: boolean}> = ({voz}) => {
-	if (voz && !SOM) pare('voz: true pede public/som.m4a (voz + trilha mixadas) ou só a narração em public/voz.wav ou public/voz.mp3 (o kit/voz.py grava o .mp3; LEIA, "Vídeo novo"). Ou renderize com voz: false.');
+	if (voz && !SOM) pare('voz: true pede public/som.m4a (voz + trilha mixadas) ou só a narração em public/voz.wav ou public/voz.mp3 (o kit/voz.py grava o .mp3; modelos/anunciocanvas01/anunciocanvas01.md, §9). Ou renderize com voz: false.');
 	const {t} = useT();
 	const c = camera(t);
 	const c2 = camera(t + 1 / 60), c0 = camera(t - 1 / 60);

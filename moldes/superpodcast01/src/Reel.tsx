@@ -8,9 +8,9 @@ import ROSTO_T from './rosto.json';
 import CARDS from './cards.json'; // ../../tools/cards.py: quadros dos vídeos do próprio usuário para a colagem e os celulares
 
 /**
- * Vitrine no superpodcast01 (../../modelos/superpodcast01/MODELO.md).
+ * Vitrine no superpodcast01 (../../modelos/superpodcast01/superpodcast01.md).
  * Primeira aplicação do modelo: não há código aprovado. Do storypodcast01 da vitrine veio só o encanamento
- * (index, Root, carregamento de palavras/rosto, medida de fonte por canvas, scripts). O visual sai do MODELO.md:
+ * (index, Root, carregamento de palavras/rosto, medida de fonte por canvas, scripts). O visual sai do superpodcast01.md:
  * quatro mundos (palco, rosto, papel, arquivo) + tela dividida, Playfair Display Black Italic vermelha letra por
  * letra, Inter SemiBold pequena, JetBrains Mono no terço inferior, vazamento de luz na troca de bloco.
  * Plano frase a frase em ../plano.md.
@@ -26,7 +26,7 @@ const SERIF = pf.fontFamily;
 const SANS = it.fontFamily;
 const MONO = mo.fontFamily;
 
-/* identidade "Palco Escuro" (MODELO §11) */
+/* identidade "Palco Escuro" (superpodcast01.md §11) */
 const COR = {
 	breu: '#0A0C0C',
 	chao: '#19191E',
@@ -39,7 +39,7 @@ const COR = {
 	petroleo: '#09222F',
 	vaz: ['#BD2027', '#FDD48B', '#FEE87B', '#FFFFFF'],
 };
-const FS = 66; // pequena: corpo ~3,4% H (MODELO §4: 3,2–3,8% H)
+const FS = 66; // pequena: corpo ~3,4% H (superpodcast01.md §4: 3,2–3,8% H)
 const KW_MAX = 220; // corpo máximo da palavra-chave (~11,5% H)
 const KW_ALVO = 0.74; // largura-alvo da palavra-chave (60–83% W)
 const HALO_V = `0 0 6px rgba(224,3,10,0.85), 0 0 26px rgba(224,3,10,0.55), 0 0 70px rgba(224,3,10,0.45)`;
@@ -63,7 +63,7 @@ export const DURACAO = Number((PS[PS.length - 1].ate + FOLGA).toFixed(2));
 const rg = (a: number, b: number) => Array.from({length: b - a + 1}, (_, k) => a + k);
 /** plano que não bate com a fala: para ao carregar e diz em português qual lista refazer (nada de TypeError) */
 const errPlano = (lista: string, oque: string) =>
-	new Error(`O plano de src/Reel.tsx não bate com a fala de src/palavras.json (${PS.length} palavras, de 0 a ${PS.length - 1}, até ${DURACAO} s). Na lista ${lista}: ${oque}. Refaça o plano para a fala nova (LEIA.md, seção "Vídeo novo").`);
+	new Error(`O plano de src/Reel.tsx não bate com a fala de src/palavras.json (${PS.length} palavras, de 0 a ${PS.length - 1}, até ${DURACAO} s). Na lista ${lista}: ${oque}. Refaça o plano para a fala nova (modelos/superpodcast01/superpodcast01.md, "Como fazer um vídeo novo").`);
 const de = (i: number, lista: string) => {
 	if (!PS[i]) throw errPlano(lista, `a palavra nº ${i} não existe`);
 	return PS[i].de;
@@ -139,7 +139,7 @@ const caixaDe = (l: Linha): number[] => (l.tipo === 'p' && l.caixa !== undefined
  * só avisa. Num vídeo novo, não use */
 type Bloco = {de: number; ate: number; tema: Tema; linhas: Linha[]; clipTop?: number; aceito?: string};
 
-/* quando cada palavra aparece: no instante dito, nunca antes do plano (MODELO §5.3; regra da casa t >= t0) */
+/* quando cada palavra aparece: no instante dito, nunca antes do plano (superpodcast01.md §5.3; regra da casa t >= t0) */
 const aparece = (id: number, bloco: Bloco) => Math.max(PS[id].de, bloco.de);
 
 const PalavraP: React.FC<{txt: string; t: number; t0: number; cor: string; halo: string; caixa?: boolean; pad?: string; fs: number}> = ({txt, t, t0, cor, halo, caixa, pad, fs}) => {
@@ -410,15 +410,34 @@ const Palco: React.FC<{t: number; de: number; ate: number; topo?: number; altura
 	);
 };
 
-/* plano B do palco (sem public/palco.png): o set escuro desenhado, foco de cima, mesa clara a 58% da altura e a poça de
- * luz no chão, nas mesmas proporções da imagem para a tela dividida cortar igual */
+/* plano B do palco (sem public/palco.png, que vem no estúdio): o set desenhado no mesmo esquema da imagem, cone de luz
+ * aceso no miolo, poça quase branca no chão, mesa clara a 58% da altura, cadeiras e microfones de braço, nas mesmas
+ * proporções da imagem para a tela dividida cortar igual */
 const PalcoDesenhado: React.FC<{style: React.CSSProperties}> = ({style}) => (
-	<div style={{...style, overflow: 'hidden', background: 'linear-gradient(180deg, #040505 0%, #0d1012 50%, #121517 62%, #060707 100%)'}}>
-		<div style={{position: 'absolute', left: '50%', top: 0, width: '74%', height: '60%', transform: 'translateX(-50%)', clipPath: 'polygon(44% 0, 56% 0, 100% 100%, 0 100%)', background: 'linear-gradient(180deg, rgba(225,230,235,0.16) 0%, rgba(225,230,235,0.05) 100%)'}} />
-		<div style={{position: 'absolute', left: '8%', right: '8%', top: '55%', height: '12%', borderRadius: '50%', background: 'radial-gradient(ellipse at 50% 50%, rgba(220,225,230,0.5) 0%, rgba(150,158,165,0.16) 55%, rgba(0,0,0,0) 72%)'}} />
-		<div style={{position: 'absolute', left: '22%', right: '22%', top: '57.4%', height: '1.1%', borderRadius: 4, background: 'linear-gradient(180deg, #d5d8da, #8d9195)', boxShadow: '0 18px 30px rgba(0,0,0,0.7)'}} />
-		<div style={{position: 'absolute', left: '26%', width: '1%', top: '58.4%', height: '7%', background: '#2a2d30'}} />
-		<div style={{position: 'absolute', right: '26%', width: '1%', top: '58.4%', height: '7%', background: '#2a2d30'}} />
+	<div style={{...style, overflow: 'hidden', background: 'linear-gradient(180deg, #050606 0%, #0b0d0e 45%, #141518 60%, #08090a 100%)'}}>
+		{/* cone de luz de cima, aceso no miolo */}
+		<div style={{position: 'absolute', left: '50%', top: 0, width: '80%', height: '64%', transform: 'translateX(-50%)', clipPath: 'polygon(45% 0, 55% 0, 100% 100%, 0 100%)', background: 'radial-gradient(ellipse 30% 100% at 50% 0%, rgba(235,240,245,0.55) 0%, rgba(220,226,232,0.22) 45%, rgba(200,206,212,0.06) 100%)', filter: 'blur(6px)'}} />
+		{/* poça de luz no chão, quase branca no centro */}
+		<div style={{position: 'absolute', left: '2%', right: '2%', top: '60%', height: '11%', borderRadius: '50%', background: 'radial-gradient(ellipse at 50% 50%, rgba(250,252,253,0.98) 0%, rgba(235,238,241,0.85) 35%, rgba(150,156,162,0.25) 65%, rgba(0,0,0,0) 78%)', filter: 'blur(4px)'}} />
+		{/* mesa clara */}
+		<div style={{position: 'absolute', left: '24%', right: '24%', top: '57.4%', height: '1%', borderRadius: 3, background: 'linear-gradient(180deg, #f1f3f4, #a7abaf)', boxShadow: '0 0 24px rgba(255,255,255,0.35)'}} />
+		{[27, 72].map((x) => <div key={x} style={{position: 'absolute', left: `${x}%`, width: '0.6%', top: '58.4%', height: '6.6%', background: '#0c0d0e'}} />)}
+		{/* cadeiras em silhueta */}
+		{[17, 75].map((x) => (
+			<div key={x} style={{position: 'absolute', left: `${x}%`, top: '54%', width: '8%', height: '11%'}}>
+				<div style={{position: 'absolute', left: x < 50 ? 0 : '70%', width: '30%', top: 0, height: '55%', borderTop: '3px solid #4a4e52', borderLeft: x < 50 ? '3px solid #4a4e52' : undefined, borderRight: x > 50 ? '3px solid #4a4e52' : undefined}} />
+				<div style={{position: 'absolute', left: 0, right: 0, top: '50%', height: 4, background: '#4a4e52'}} />
+				<div style={{position: 'absolute', left: '5%', width: 3, top: '50%', bottom: 0, background: '#3a3d40'}} />
+				<div style={{position: 'absolute', right: '5%', width: 3, top: '50%', bottom: 0, background: '#3a3d40'}} />
+			</div>
+		))}
+		{/* microfones de braço */}
+		{[34, 62].map((x, i) => (
+			<div key={x} style={{position: 'absolute', left: `${x}%`, top: '52.8%', width: '4%', height: '4.6%'}}>
+				<div style={{position: 'absolute', left: i ? '80%' : '20%', bottom: 0, width: 3, height: '100%', background: '#3a3d40', transform: `rotate(${i ? 18 : -18}deg)`, transformOrigin: 'bottom'}} />
+				<div style={{position: 'absolute', left: i ? '0%' : '60%', top: '-8%', width: '40%', height: '26%', borderRadius: 4, background: '#55595d'}} />
+			</div>
+		))}
 	</div>
 );
 
@@ -620,7 +639,7 @@ export const PreviasEmCima: React.FC<{t: number; nomes: [string, string]}> = ({t
 	if (!JANELA_PREVIAS) return null;
 	const {de, ate} = JANELA_PREVIAS;
 	if (t < de || t >= ate) return null;
-	if (!(tem('previa1.mp4') && tem('previa2.mp4'))) throw new Error('Falta public/previa1.mp4 ou previa2.mp4: faça com tools/previa.py (LEIA.md, "Vídeo novo") ou renderize com "previas": false.');
+	if (!(tem('previa1.mp4') && tem('previa2.mp4'))) throw new Error('Falta public/previa1.mp4 ou previa2.mp4: faça com tools/previa.py (modelos/superpodcast01/superpodcast01.md, "Como fazer um vídeo novo") ou renderize com "previas": false.');
 	return (
 		<AbsoluteFill>
 			{[0, 1].map((i) => {

@@ -7,7 +7,7 @@ import subprocess, sys
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 AQUI = Path(__file__).resolve().parent.parent
-V = sys.argv[1] if len(sys.argv) > 1 else str(AQUI / 'out' / 'vitrine-youtubedark01.mp4')
+V = sys.argv[1] if len(sys.argv) > 1 else str(AQUI / 'out' / 'final.mp4')
 AN = AQUI.parents[1] / 'modelos' / 'youtubedark01' / 'analise'  # raiz do estúdio/modelos
 C = AQUI / 'conferencia'
 (C / 'final').mkdir(parents=True, exist_ok=True)

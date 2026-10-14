@@ -4,7 +4,12 @@ uso (da raiz do estúdio):  .venv/Scripts/python.exe tools/assinatura.py <modelo
 grava modelos/<modelo>/assinatura.json com:
   entrada: a gravação de origem do molde (moldes/<m>/public/fala.mp4), crua: rosto (tamanho e lugar) e luz/cor.
            É o ponto de partida em que o código do molde foi calibrado; tools/adaptar.py leva a gravação nova até ele.
-  saida:   o vídeo aprovado (modelos/<m>/exemplos/vitrine-<m>.mp4 ou o exemplo mais novo que não é de cliente):
+           entrada.desenho: quando o molde não desenha a fala crua e sim um tratamento dela (public/fala_grade.mp4, feito
+           pelo scripts/grade.py do molde), a luz e a cor desse arquivo. O grade tem números fixos (exposição, pretos,
+           fundo) e a mesma luz de partida não garante a mesma luz depois dele (roupa, objetos claros, parede); por isso
+           tools/adaptar.py --desenho leva o fala_grade.mp4 novo até esta medida, depois do grade.
+  saida:   o vídeo aprovado (modelos/<m>/exemplos/vitrine-<m>.mp4 ou o exemplo mais novo que não é de cliente; no estúdio
+           aberto, modelos/<m>/referencia/referencia.mp4):
            luz e cor, enquadramento do rosto (aberto, fechado, cabeça cortada) e ritmo de corte.
            É contra isso que tools/parece.py confere o vídeo novo.
 Rode de novo sempre que o vídeo aprovado de um modelo mudar, e ao criar um modelo novo.
@@ -103,7 +108,11 @@ def aprovado(m: str) -> Path | None:
     if vit.exists():
         return vit
     cands = sorted((f for f in ex.glob('*.mp4') if not NAO_REF.search(f.name)), key=lambda f: f.stat().st_mtime, reverse=True)
-    return cands[0] if cands else None
+    if cands:
+        return cands[0]
+    # no estúdio aberto, que não traz exemplos/: a referência própria do modelo (tools/referencia.py)
+    ref = RAIZ / 'modelos' / m / 'referencia' / 'referencia.mp4'
+    return ref if ref.exists() else None
 
 
 def assinar(m: str) -> None:
@@ -115,6 +124,9 @@ def assinar(m: str) -> None:
     if fala.exists():
         e = medir_video(fala, fps=2)
         sig['entrada'] = {k: e[k] for k in e if k not in {'video', 'cortes_min'}}
+        grade = fala.with_name('fala_grade.mp4')
+        if grade.exists():
+            sig['entrada']['desenho'] = {'arquivo': grade.name, **luz_cor(quadros(grade, 2)[0])}
     sig['saida'] = medir_video(ap, fps=4, rosto=fala.exists())
     (RAIZ / 'modelos' / m / 'assinatura.json').write_text(json.dumps(sig, ensure_ascii=False, indent=1), encoding='utf-8')
     s = sig['saida']

@@ -1,4 +1,4 @@
-"""Trilha do storypodcast01: cama contínua por baixo da voz (MODELO §10: as refs têm chão de som de -24,6 a -28,3 dB,
+"""Trilha do storypodcast01: cama contínua por baixo da voz (as refs do modelo: as refs têm chão de som de -24,6 a -28,3 dB,
 provável trilha contínua). Pad escuro e frio de podcast de reflexão, 4 acordes lentos (Lá menor, Fá, Dó, Mi menor), com
 um sopro grave discreto na entrada do P&B e um whoosh curto no chicote. Corte seco no fim, como o vídeo.
 Saída: public/trilha.wav (pad + sopro + whoosh: a música, opção) e public/efeitos.wav (só o sopro e o whoosh, no mesmo
@@ -49,12 +49,14 @@ def add(buf, t, s, g):
 
 
 # ================================================================ EVENTOS (o plano do som; None tira o efeito)
+# Os índices abaixo são do vídeo APROVADO (palavras 41 e 83 da fala dele). Num vídeo novo, troque pelos índices do plano
+# novo de src/Reel.tsx (a 1ª palavra do plano pb e a 1ª da chamada) ou ponha None quando não há P&B ou chamada.
 PB_PALAVRA = 41  # 1ª palavra do plano em P&B (o sopro entra no clarão)
 CHICOTE_PALAVRA = 83  # 1ª palavra da chamada (o whoosh antecede o chicote)
 for nome, i in (('PB_PALAVRA', PB_PALAVRA), ('CHICOTE_PALAVRA', CHICOTE_PALAVRA)):
     if i is not None and not 0 <= i < len(PS):
         sys.exit(f'scripts/trilha.py: {nome} = {i}, mas a fala tem {len(PS)} palavras (0 a {len(PS) - 1}). '
-                 'Ponha o índice do plano novo de src/Reel.tsx ou None.')
+                 'Esse número é do vídeo aprovado: ponha o índice do plano novo de src/Reel.tsx ou None (sem P&B / sem chamada).')
 
 fx = np.zeros(N)
 tb = np.arange(int(1.6 * SR)) / SR

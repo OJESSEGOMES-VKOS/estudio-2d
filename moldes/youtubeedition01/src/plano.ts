@@ -4,10 +4,11 @@ import {FPS} from './tempos';
 
 /**
  * O PLANO do vídeo: tudo o que está preso à fala de origem mora neste arquivo. O resto do src/ é o modelo (câmera,
- * grade, montagem, tela de reels, prévias, títulos, pedido) e fica igual. Vídeo novo: refazer este arquivo sobre o
- * src/palavras.json novo (LEIA, "Vídeo novo") e conferir com `node scripts/checar.mjs`.
+ * grade, montagem, tela de reels, prévias, títulos, conta no gelo, pedido) e fica igual. Este arquivo chega com o plano
+ * do vídeo aprovado. Vídeo novo: refazer este arquivo sobre o src/palavras.json novo
+ * (modelos/youtubeedition01/youtubeedition01.md, seção 11) e conferir com `node scripts/checar.mjs`.
  * Cada parte se desliga sem mexer no desenho: lista vazia ([]) ou `null`.
- * Plano frase a frase da vitrine em ../plano.md.
+ * O plano frase a frase do aprovado está na seção 12 do mesmo arquivo.
  */
 type Pal = {text: string; start: number; end: number};
 export const PS = PB as Pal[];
@@ -17,7 +18,15 @@ export const pare = (msg: string): never => {
 };
 const limpa = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
 if (!PS.length) pare('src/palavras.json está vazio: rode tools/novo-video.py (ou tools/preparar.py) com a gravação.');
-const REFAZER = 'O plano é de outra fala: refaça src/plano.ts sobre o src/palavras.json novo (LEIA do molde, "Vídeo novo").';
+const REFAZER = 'O plano é de outra fala: refaça src/plano.ts sobre o src/palavras.json novo (modelos/youtubeedition01/youtubeedition01.md, seção 11).';
+/** a fala é a do vídeo aprovado? (impressão digital do texto do src/palavras.json do molde) */
+export const FALA_DO_APROVADO = (() => {
+	let h = 5381;
+	for (const c of PS.map((p) => limpa(p.text)).join(' ')) h = (h * 33 + c.charCodeAt(0)) >>> 0;
+	return h === 2431698839;
+})();
+/** nomes que só o aprovado pode mostrar (os modelos do criador e o nome deste modelo) */
+export const NOMES_DO_APROVADO = ['youtubeedition01', 'edition01', 'modelodinamico01', 'modelodinamico03', 'modelopadrao01', 'superpodcast01', 'pregacaodinamica01', 'storypodcast01', 'profissional01'];
 /** início (s) da palavra i da fala, conferindo que ela é `palavra` (sem contar maiúscula, acento e pontuação) */
 const w = (i: number, palavra: string) => {
 	const p = PS[i];
@@ -126,3 +135,23 @@ export const CTA: {de: number; top: number; antes: string; chave: [string, numbe
 	chave: ['EDIÇÃO', T.edicao],
 	depois: ['aqui embaixo', T.aqui],
 };
+
+/** conta no gelo: cada item entra quando é dito, num cartão que enche a tela; o rosto fica no cartão do canto (POSE.cartao
+ * nas chaves, no `de`). É o plano B da montagem e da grade quando o criador não tem vídeos prontos. [item, quando é dito] */
+export type Conta = {de: number; ate: number; itens: [string, number][]};
+export const LISTA: Conta | null = null;
+
+/* ---------------------------------------------------------------- trava: o plano do aprovado não vai para outra fala */
+if (!FALA_DO_APROVADO) {
+	const tem = (x: string) => NOMES_DO_APROVADO.includes(limpa(x));
+	// as partes desligadas (null) viram "never" para o TypeScript; aqui elas voltam ao tipo largo
+	const este = ESTE as unknown as {rotulo: string} | null, montagem = MONTAGEM as unknown as {planos: [number, number, string][]} | null;
+	const achou = [
+		...(TITULOS.some((d) => d.linhas.some(tem) || tem(d.linhas.join(''))) ? ['TITULOS = [] (ou um título com palavra dita na fala, nunca o nome do modelo)'] : []),
+		...(este && tem(este.rotulo) ? ['ESTE = null (ou o rótulo real do vídeo que está no cartão)'] : []),
+		...(GRADE.some(tem) ? ['GRADE = [] e GRADES = [] (ou os vídeos prontos do criador, com os nomes dele, em public/ex/)'] : []),
+		...(montagem?.planos.some(([, , n]) => tem(n)) ? ['MONTAGEM = null (ou os vídeos prontos do criador em public/ex/cheio_<nome>.mp4)'] : []),
+		...([...ATRAS.flatMap((a) => a.linhas), ...FRASES.flatMap((f) => [...f.linha1, ...f.linha2].map((p) => p[0])), ...((LISTA as Conta | null)?.itens.map((i) => i[0]) ?? [])].some(tem) ? ['tire de ATRAS, FRASES e LISTA o nome do modelo (o texto é sempre o que foi dito)'] : []),
+	];
+	if (achou.length) pare(`src/plano.ts ainda tem partes do plano do vídeo aprovado, e a fala é outra. Mude em src/plano.ts:\n  - ${achou.join('\n  - ')}\n(PREVIAS = null também, a menos que o criador tenha as prévias dele; e as props nomesPrevias com os nomes reais.)`);
+}

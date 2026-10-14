@@ -1,8 +1,8 @@
 """Som do anunciomotion01 (vitrine; adaptado do sofistmotion01): trilha sintetizada + efeitos nas trocas, tudo calculado dos tempos do vídeo.
 Gera public/trilha.wav (pulso grave + pad quente + brilho, com ducking pela voz, ~16 dB abaixo dela) e
-public/efeitos.wav (whoosh, estalo, impacto, tiques, brilho metálico). Cauda de ~2 s no fim (MODELO §9).
+public/efeitos.wav (whoosh, estalo, impacto, tiques, brilho metálico). Cauda de ~2 s no fim (modelos/anunciomotion01/anunciomotion01.md §9).
 Tudo vem do plano (src/tempos.json): a duração, as entradas das cenas, as prévias, "virada", "acordes" (segundos ou id
-de cena; sem a lista, um acorde por cena) e as marcas. O que o plano não tem não toca.
+de cena; sem a lista, um acorde por cena) e as marcas (nome livre ganha o tique padrão). Efeito de nome fixo que o plano não tem não toca.
 uso: ../../.venv/Scripts/python.exe scripts/som.py   (SAIDA=<pasta> grava fora de public/)
 """
 import json, os, re, subprocess, sys, unicodedata
@@ -57,7 +57,7 @@ def env_ad(n, a, d):
 CEN = {c['id']: q2s(c['de_q']) for c in T['cenas']}
 VIRADA = CEN[T['virada']] if T.get('virada') in CEN else float('inf')  # sem "virada": o pulso não sobe
 FECHO = q2s(T['cenas'][-1]['de_q'])                                   # a última cena
-# eletrônica baixa (MODELO §6): pad em Lá menor, baixo, bumbo em semínimas 120 bpm e hi-hat nas colcheias; o último acorde é o do fecho
+# eletrônica baixa (anunciomotion01.md §6): pad em Lá menor, baixo, bumbo em semínimas 120 bpm e hi-hat nas colcheias; o último acorde é o do fecho
 NOTAS = [[45, 57, 60, 64], [41, 53, 57, 60], [48, 55, 60, 64], [43, 55, 59, 62], [41, 53, 57, 60, 64], [45, 57, 60, 64, 67], [43, 55, 59, 62]]
 NOTAS_FECHO = [45, 57, 60, 64, 71]
 inicios = [CEN[x] if isinstance(x, str) else x for x in T.get('acordes') or [c['de_q'] / FPS for c in T['cenas']]]
@@ -147,7 +147,7 @@ for c in T['cenas'][1:]:
     add(fx, t0 - 0.2, whoosh(0.3, 400, 8000), 0.45)
     if c['entrada'] == 'corte': add(fx, t0, estalo(), 0.3)
     if c['entrada'] == 'iris': add(fx, t0, impacto(50, 1.2), 0.5)
-# cada efeito preso a uma marca do plano (src/tempos.json → "marcas"); o que o plano não tem, não toca (ordem fixa)
+# cada efeito preso a uma marca do plano (src/tempos.json → "marcas"); nome fixo toca o efeito dele, nome livre toca o tique padrão (fim da lista)
 for t0 in tem('inicio'): add(fx, t0 - 0.05, whoosh(0.4, 500, 4000), 0.4)
 for t0 in tem('cem'):
     for k in range(9): add(fx, t0 + (k / 9) ** 1.6 * 0.45, tique(2400 + k * 80), 0.25)  # contador
@@ -168,6 +168,12 @@ for t0 in tem('outros', 'pilula1', 'pilula2', 'pilula3'): add(fx, t0, tique(2600
 for t0 in tem('usar'): add(fx, t0, tique(1500), 0.55); add(fx, t0 + 0.03, sino(1760, 0.6), 0.15)  # interruptor
 for t0 in tem('edicao'): add(fx, t0 - 0.05, metal(1.4), 0.22); add(fx, t0, impacto(55, 1.6), 0.35)   # EDIÇÃO
 for t0 in tem('embaixo'): add(fx, t0, whoosh(0.3, 3000, 600, sobe=False), 0.18)
+# marca de nome livre (qualquer nome fora da lista acima): ganha um tique leve no tempo dela. As de nome fixo seguem com o efeito próprio.
+PROPRIAS = {'inicio', 'cem', 'clipe1', 'clipe2', 'clipe3', 'clipe4', 'clipe5', 'placa1', 'placa2', 'placa3', 'melhorei', 'orbita1', 'orbita2', 'orbita3', 'orbita4',
+            'coracao', 'apenas', 'um', 'setas', 'aceleradas', 'outros', 'pilula1', 'pilula2', 'pilula3', 'usar', 'edicao', 'embaixo',
+            'videos'}  # 'videos' só move a tela (S10), fica sem som
+for nome in MARCAS:
+    if nome not in PROPRIAS: add(fx, marca(nome), tique(2200), 0.22)
 
 trilha = lp(trilha, 12000)
 

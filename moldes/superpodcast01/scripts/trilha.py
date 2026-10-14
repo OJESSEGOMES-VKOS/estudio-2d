@@ -1,11 +1,10 @@
-"""Trilha do superpodcast01 (MODELO §9): cama contínua por baixo da voz (o chão não cai nas pausas), batida alta junto
+"""Trilha do superpodcast01 (modelos/superpodcast01/superpodcast01.md §9): cama contínua por baixo da voz (o chão não cai nas pausas), batida alta junto
 do vazamento de abertura (ref2: pico nos primeiros 0,6 s) e uma batida com sopro no vazamento da virada (20,15 s).
 Clima frio de minidocumentário: drone grave em Ré menor, pulso surdo lento (80 bpm), notas esparsas de piano frio
 e ar agudo. Sintetizada aqui (sem música de terceiro).
 Saída: public/trilha.wav (cama + batidas: a música, opção) e public/efeitos.wav (só as batidas e o sopro, no mesmo nível
 em que estão na trilha: o padrão do modelo, que o mixar.sh usa quando a música está desligada).
-A duração é a de src/Reel.tsx (última palavra + FOLGA, lido de lá: uma fonte só). Num vídeo novo, VAZAMENTOS abaixo = os
-mesmos de src/Reel.tsx.
+A duração e os VAZAMENTOS são os de src/Reel.tsx (última palavra + FOLGA; lidos de lá: uma fonte só).
 uso: ../../.venv/Scripts/python.exe scripts/trilha.py   (SAIDA=<pasta> grava fora de public/)
 """
 import json
@@ -21,11 +20,14 @@ from scipy.signal import butter, sosfilt
 AQUI = Path(__file__).resolve().parent.parent
 SR = 48000
 PS = json.loads((AQUI / 'src' / 'palavras.json').read_text(encoding='utf-8'))
-_folga = re.search(r'^const FOLGA = ([\d.]+);', (AQUI / 'src' / 'Reel.tsx').read_text(encoding='utf-8'), re.M)
-if not PS or not _folga:
-    sys.exit('scripts/trilha.py: preciso de src/palavras.json com a fala e de "const FOLGA = <segundos>;" em src/Reel.tsx.')
+_reel = (AQUI / 'src' / 'Reel.tsx').read_text(encoding='utf-8')
+_folga = re.search(r'^const FOLGA = ([\d.]+);', _reel, re.M)
+_vaz = re.search(r'^const VAZAMENTOS = \[([\d.,\s]*)\];', _reel, re.M)
+if not PS or not _folga or not _vaz:
+    sys.exit('scripts/trilha.py: preciso de src/palavras.json com a fala e de "const FOLGA = <segundos>;" e '
+             '"const VAZAMENTOS = [<segundos>, ...];" em src/Reel.tsx.')
 D = round(PS[-1]['end'] + float(_folga.group(1)), 2)  # = DURACAO do src/Reel.tsx
-VAZAMENTOS = [0.0, 19.99]  # = VAZAMENTOS do src/Reel.tsx: batida alta na abertura, sopro + batida na virada
+VAZAMENTOS = [float(x) for x in _vaz.group(1).split(',') if x.strip()]  # batida alta na abertura, sopro + batida na virada
 N = int(D * SR)
 tt = np.arange(N) / SR
 rng = np.random.default_rng(11)

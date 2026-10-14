@@ -14,7 +14,15 @@
   "rosto_cy": 0.351,
   "rosto_cx": 0.5021,
   "cabeca_cortada": 0.0,
-  "com_rosto": 1.0
+  "com_rosto": 1.0,
+  "desenho": {
+   "arquivo": "fala_grade.mp4",
+   "brilho": 22.66,
+   "contraste": 110.0,
+   "saturacao": 127.19,
+   "temperatura": 0.27,
+   "tom": 1.2
+  }
  },
  "saida": {
   "video": "vitrine-storypodcast01.mp4",

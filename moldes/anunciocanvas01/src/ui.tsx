@@ -80,7 +80,7 @@ export const Pilula: React.FC<{texto: string; de: number; tam?: number; cor?: st
 					fontSize: tam,
 					letterSpacing: '-0.03em',
 					lineHeight: 1,
-					color: solida ? '#fff' : claro ? cor : '#F3EEFF',
+					color: solida ? '#fff' : claro ? cor : C.finoPilula,
 					textShadow: solida ? 'none' : claro ? 'none' : brilho(cor, tam / 140),
 					whiteSpace: 'nowrap',
 					opacity: Math.min(1, k * 1.6),
@@ -226,9 +226,9 @@ export const Notif: React.FC<{titulo: string; texto: string; hora?: string; larg
 		<div style={{flex: 1, minWidth: 0}}>
 			<div style={{display: 'flex', justifyContent: 'space-between', fontSize: 30, fontWeight: 700, color: claro ? C.tinta : '#fff'}}>
 				<span>{titulo}</span>
-				<span style={{fontWeight: 400, color: claro ? C.sub : '#A69EBB', fontSize: 26}}>{hora}</span>
+				<span style={{fontWeight: 400, color: claro ? C.sub : C.horaNotif, fontSize: 26}}>{hora}</span>
 			</div>
-			<div style={{fontSize: 30, fontWeight: 400, color: claro ? '#4A4458' : '#DCD5EC', marginTop: 6, lineHeight: 1.25}}>{texto}</div>
+			<div style={{fontSize: 30, fontWeight: 400, color: claro ? C.finoC2 : C.finoNotif, marginTop: 6, lineHeight: 1.25}}>{texto}</div>
 		</div>
 	</div>
 );
@@ -237,7 +237,7 @@ export const Notif: React.FC<{titulo: string; texto: string; hora?: string; larg
 export const Bolha: React.FC<{texto: string; lado: 'in' | 'out'; claro?: boolean; tam?: number; hora?: string; checks?: boolean; n?: number}> = ({texto, lado, claro, tam = 46, hora, checks, n}) => {
 	const out = lado === 'out';
 	const bg = out ? (claro ? C.tinta : '#2C2638') : claro ? '#fff' : '#1E1A28';
-	const cor = out ? '#fff' : claro ? C.tinta : '#EDE8F7';
+	const cor = out ? '#fff' : claro ? C.tinta : C.finoBalao;
 	const vis = n === undefined ? texto : texto.slice(0, n);
 	return (
 		<div style={{display: 'inline-block', maxWidth: 820, background: bg, color: cor, fontFamily: SANS, fontSize: tam, fontWeight: 400, lineHeight: 1.25, padding: `${tam * 0.5}px ${tam * 0.62}px`, borderRadius: tam * 0.75, borderBottomRightRadius: out ? tam * 0.15 : tam * 0.75, borderBottomLeftRadius: out ? tam * 0.75 : tam * 0.15, boxShadow: claro ? '0 14px 36px rgba(40,20,90,0.12)' : '0 14px 40px rgba(0,0,0,0.45)', border: claro && !out ? '2px solid #ECE8F3' : '2px solid rgba(255,255,255,0.06)', position: 'relative'}}>
@@ -253,15 +253,18 @@ export const Bolha: React.FC<{texto: string; lado: 'in' | 'out'; claro?: boolean
 	);
 };
 
-/* ---------------------------------------------------------------- marca Marcaí */
-/** o símbolo: quadrado arredondado violeta com as argolas do calendário e o check */
+/* ---------------------------------------------------------------- marca Marcaí (a do anúncio aprovado) */
+/* Simbolo, Wordmark com o "ı" e o Simbolo dentro da Notif são a marca do aprovado. Num anúncio novo a marca vem de
+ * quem anuncia: o logo real dele no lugar do Simbolo, o nome dele no Wordmark (sem o "ı" se o nome não tiver).
+ * Nunca imite o logo de terceiro; marca citada na fala que não é de quem anuncia vira só texto, sem logo. */
+/** o símbolo: quadrado arredondado na cor da marca com as argolas do calendário e o check */
 export const Simbolo: React.FC<{tam: number; check?: number}> = ({tam, check = 1}) => (
 	<svg width={tam} height={tam} viewBox="0 0 100 100" style={{flex: 'none', overflow: 'visible'}}>
 		<defs>
 			<linearGradient id="simb" x1="0" y1="0" x2="1" y2="1">
-				<stop offset="0" stopColor="#B79EFF" />
-				<stop offset="0.55" stopColor="#7C4DFF" />
-				<stop offset="1" stopColor="#4B22C9" />
+				<stop offset="0" stopColor={C.simbLuz} />
+				<stop offset="0.55" stopColor={C.vFundo} />
+				<stop offset="1" stopColor={C.vEscuro} />
 			</linearGradient>
 		</defs>
 		<rect x={4} y={10} width={92} height={86} rx={26} fill="url(#simb)" />
@@ -280,7 +283,7 @@ export const Wordmark: React.FC<{tam: number; texto: string; letras?: number; co
 			{L.map((c, i) => {
 				const k = Math.max(0, Math.min(1, letras - i));
 				return (
-					<span key={i} style={{display: 'inline-block', position: 'relative', opacity: k, transform: `translateY(${(1 - k) * tam * 0.35}px)`, filter: k < 1 ? `blur(${(1 - k) * 10}px)` : undefined}}>
+					<span key={i} style={{display: 'inline-block', position: 'relative', whiteSpace: 'pre', opacity: k, transform: `translateY(${(1 - k) * tam * 0.35}px)`, filter: k < 1 ? `blur(${(1 - k) * 10}px)` : undefined}}>
 						{c}
 						{c === 'ı' && <span style={{position: 'absolute', left: '0.02em', top: '0.02em', width: '0.2em', height: '0.24em', background: C.v, borderRadius: '0.06em', transform: 'skewX(-24deg)', boxShadow: `0 0 ${tam * 0.2}px ${C.v}`}} />}
 					</span>
@@ -297,9 +300,9 @@ export const IconeVidro: React.FC<{tam: number; giroY?: number; giroX?: number; 
 		<div style={{width: tam, height: tam, perspective: 1600}}>
 			<div style={{position: 'relative', width: tam, height: tam, transformStyle: 'preserve-3d', transform: `rotateX(${giroX}deg) rotateY(${giroY}deg)`}}>
 				{Array.from({length: cam}, (_, i) => (
-					<div key={i} style={{position: 'absolute', inset: 0, borderRadius: tam * 0.27, transform: `translateZ(${-i * (tam * 0.012)}px)`, background: i === cam - 1 ? '#1A0B4A' : `linear-gradient(160deg, ${hexA(cor, 0.9)}, #2A0F86)`, filter: `brightness(${0.55 - i * 0.02})`}} />
+					<div key={i} style={{position: 'absolute', inset: 0, borderRadius: tam * 0.27, transform: `translateZ(${-i * (tam * 0.012)}px)`, background: i === cam - 1 ? C.vidroFundo : `linear-gradient(160deg, ${hexA(cor, 0.9)}, ${C.vidroCamada})`, filter: `brightness(${0.55 - i * 0.02})`}} />
 				))}
-				<div style={{position: 'absolute', inset: 0, borderRadius: tam * 0.27, background: `linear-gradient(155deg, #CDBBFF 0%, ${C.vFundo} 45%, #3D17B3 100%)`, boxShadow: `0 0 ${tam * 0.45}px ${hexA(cor, 0.7)}, inset 0 ${tam * 0.04}px ${tam * 0.05}px rgba(255,255,255,0.55), inset 0 -${tam * 0.06}px ${tam * 0.1}px rgba(30,0,90,0.5)`, transform: 'translateZ(1px)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden'}}>
+				<div style={{position: 'absolute', inset: 0, borderRadius: tam * 0.27, background: `linear-gradient(155deg, ${C.vidroLuz} 0%, ${C.vFundo} 45%, ${C.vidroBase} 100%)`, boxShadow: `0 0 ${tam * 0.45}px ${hexA(cor, 0.7)}, inset 0 ${tam * 0.04}px ${tam * 0.05}px rgba(255,255,255,0.55), inset 0 -${tam * 0.06}px ${tam * 0.1}px ${C.vidroSombra}`, transform: 'translateZ(1px)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden'}}>
 					<div style={{position: 'absolute', left: '-30%', top: '-60%', width: '160%', height: '90%', background: 'radial-gradient(ellipse, rgba(255,255,255,0.35), rgba(255,255,255,0) 60%)', transform: `translateX(${giroY * 1.2}px)`}} />
 					<div style={{position: 'relative', filter: 'drop-shadow(0 8px 14px rgba(20,0,70,0.45))'}}>{children}</div>
 				</div>

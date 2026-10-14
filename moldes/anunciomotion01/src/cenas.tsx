@@ -4,7 +4,7 @@ import {C, E, FPS, SANS, T, cena, marca, mola, rnd, tw, useT} from './tema';
 import {Aneis, Fundo, G, IconeVidro, Particulas, ab, brilho, hexA} from './ui';
 
 /**
- * As 10 cenas da vitrine no anunciomotion01. Repertório do MODELO §4: número que conta com anéis (S1), produto
+ * As 10 cenas da vitrine no anunciomotion01. Repertório do anunciomotion01.md §4: número que conta com anéis (S1), produto
  * flutuando em placa inclinada (S2, S3, S7), ícone 3D herói (S4, S5), lista que destaca um (S6), pílula de destaque com
  * profundidade de campo (S8), interruptor que destrava (S9), fecho com anéis (S10). Telas claras de respiro em
  * S2, S6 e S9 (corte seco). Tudo desenhado em código: nenhuma marca, nenhuma tela de terceiro.
@@ -78,9 +78,9 @@ const GL = {
 /* ---------------------------------------------------------------- telinhas abstratas de "modelo de edição" */
 /** desenho genérico de um vídeo vertical editado (variante 0-3); nada de tela real, nada de terceiro */
 const Telinha: React.FC<{v: number; larg: number; alt: number; t: number; claro?: boolean}> = ({v, larg, alt, t, claro}) => {
-	const fundo = claro ? 'linear-gradient(170deg, #E3F4EC, #CFE9DD)' : 'linear-gradient(170deg, #12201A, #070D0A)';
-	const tinta = claro ? 'rgba(13,26,20,0.75)' : 'rgba(255,255,255,0.85)';
-	const fraco = claro ? 'rgba(13,26,20,0.18)' : 'rgba(255,255,255,0.16)';
+	const fundo = claro ? `linear-gradient(170deg, ${C.telaClaroA}, ${C.telaClaroB})` : `linear-gradient(170deg, ${C.telaEscuraA}, ${C.telaEscuraB})`;
+	const tinta = claro ? hexA(C.tinta, 0.75) : 'rgba(255,255,255,0.85)';
+	const fraco = claro ? hexA(C.tinta, 0.18) : 'rgba(255,255,255,0.16)';
 	const u = larg / 100;
 	const pulso = 0.5 + 0.5 * Math.sin(t * 3 + v);
 	return (
@@ -96,7 +96,7 @@ const Telinha: React.FC<{v: number; larg: number; alt: number; t: number; claro?
 			{v === 1 && (
 				<>
 					<div style={ab(0, 0, {width: larg, height: alt / 2 - 2 * u, background: fraco})} />
-					<div style={ab(larg / 2 - 15 * u, alt / 4 - 15 * u, {width: 30 * u, height: 30 * u, borderRadius: '50%', background: claro ? 'rgba(13,26,20,0.25)' : 'rgba(255,255,255,0.25)'})} />
+					<div style={ab(larg / 2 - 15 * u, alt / 4 - 15 * u, {width: 30 * u, height: 30 * u, borderRadius: '50%', background: claro ? hexA(C.tinta, 0.25) : 'rgba(255,255,255,0.25)'})} />
 					<div style={ab(12 * u, alt * 0.58, {width: 76 * u, height: 26 * u, borderRadius: 6 * u, border: `${1.5 * u}px solid ${C.v}`})} />
 					<div style={ab(12 * u, alt * 0.82, {width: 50 * u, height: 6 * u, borderRadius: 3 * u, background: tinta})} />
 				</>
@@ -123,10 +123,10 @@ const Telinha: React.FC<{v: number; larg: number; alt: number; t: number; claro?
 	);
 };
 
-/** placa inclinada em perspectiva, com sombra e contorno brilhante (MODELO §4.5) */
+/** placa inclinada em perspectiva, com sombra e contorno brilhante (anunciomotion01.md §4) */
 const Placa: React.FC<{x: number; y: number; larg: number; alt: number; rx?: number; ry?: number; rz?: number; s?: number; acesa?: number; op?: number; blur?: number; claro?: boolean; children: React.ReactNode}> = ({x, y, larg, alt, rx = 0, ry = 0, rz = 0, s = 1, acesa = 0, op = 1, blur = 0, claro, children}) => (
 	<div style={ab(x - larg / 2, y - alt / 2, {width: larg, height: alt, transform: `perspective(1800px) rotateX(${rx}deg) rotateY(${ry}deg) rotateZ(${rz}deg) scale(${s})`, opacity: op, filter: blur > 0.3 ? `blur(${blur}px)` : undefined})}>
-		<div style={{position: 'absolute', inset: 0, borderRadius: larg * 0.08, overflow: 'hidden', border: `${3 + 2 * acesa}px solid ${acesa > 0 ? hexA(C.v, 0.5 + 0.5 * Math.min(1, acesa)) : claro ? 'rgba(13,26,20,0.12)' : 'rgba(255,255,255,0.14)'}`, boxShadow: `${claro ? '0 30px 60px rgba(10,80,50,0.18)' : '0 40px 80px rgba(0,0,0,0.6)'}${acesa > 0 ? `, 0 0 ${70 * acesa}px ${hexA(C.v, Math.min(1, 0.7 * acesa))}` : ''}`}}>
+		<div style={{position: 'absolute', inset: 0, borderRadius: larg * 0.08, overflow: 'hidden', border: `${3 + 2 * acesa}px solid ${acesa > 0 ? hexA(C.v, 0.5 + 0.5 * Math.min(1, acesa)) : claro ? hexA(C.tinta, 0.12) : 'rgba(255,255,255,0.14)'}`, boxShadow: `${claro ? `0 30px 60px ${hexA(C.sombraPlaca, 0.18)}` : '0 40px 80px rgba(0,0,0,0.6)'}${acesa > 0 ? `, 0 0 ${70 * acesa}px ${hexA(C.v, Math.min(1, 0.7 * acesa))}` : ''}`}}>
 			{children}
 			<div style={{position: 'absolute', inset: 0, background: 'linear-gradient(115deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0) 34%)'}} />
 		</div>
@@ -134,6 +134,9 @@ const Placa: React.FC<{x: number; y: number; larg: number; alt: number; rx?: num
 );
 
 /* ================================================================ S1: "Esse vídeo está sendo 100% editado pelo Claude." */
+/** props que toda tela recebe do Reel.tsx (só a S7 usa) */
+export type TelaProps = {previas?: boolean; nomes?: [string, string]};
+
 export const S1: React.FC = () => {
 	const {t} = useT();
 	const cem = marca('cem');
@@ -163,10 +166,10 @@ export const S2: React.FC = () => {
 	const clipes = [
 		{tr: 0, x: 0, l: 34, de: marca('clipe1'), cor: C.vFundo},
 		{tr: 0, x: 36, l: 26, de: marca('clipe2'), cor: C.tinta},
-		{tr: 1, x: 10, l: 30, de: marca('clipe3'), cor: '#7FE3B8'},
+		{tr: 1, x: 10, l: 30, de: marca('clipe3'), cor: C.clipeMeio},
 		{tr: 0, x: 64, l: 34, de: marca('clipe4'), cor: C.vFundo},
 		{tr: 1, x: 44, l: 40, de: marca('clipe5'), cor: C.tinta},
-		{tr: 2, x: 0, l: 96, de: marca('clipe3'), cor: '#BFE9D6'},
+		{tr: 2, x: 0, l: 96, de: marca('clipe3'), cor: C.clipeClaro},
 	];
 	const cab = tw(t, de, de + 1.5, 4, 92, (x) => x);
 	return (
@@ -175,12 +178,12 @@ export const S2: React.FC = () => {
 			<Placa x={540} y={640 + (1 - k) * 500} larg={860} alt={680} rx={14 - 6 * k} ry={-14 + Math.sin(t) * 3} rz={-4 + 2 * k} op={Math.min(1, k * 2)} claro>
 				<div style={{position: 'absolute', inset: 0, background: '#FFFFFF'}} />
 				{/* prévia do vídeo em cima */}
-				<div style={ab(40, 36, {width: 780, height: 330, borderRadius: 22, background: 'linear-gradient(160deg, #11201A, #050807)', overflow: 'hidden'})}>
+				<div style={ab(40, 36, {width: 780, height: 330, borderRadius: 22, background: `linear-gradient(160deg, ${C.telaPrevia}, ${C.preto})`, overflow: 'hidden'})}>
 					<div style={ab(390 - 60, 165 - 60, {width: 120, height: 120, borderRadius: 60, background: hexA(C.v, 0.18), border: `3px solid ${C.v}`, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 0 40px ${hexA(C.v, 0.5)}`})}>{GL.play(70, C.v)}</div>
 				</div>
 				{/* linha do tempo: três trilhas, um clipe cai a cada palavra */}
 				{[0, 1, 2].map((tr) => (
-					<div key={tr} style={ab(40, 400 + tr * 84, {width: 780, height: 64, borderRadius: 14, background: '#EEF5F1'})} />
+					<div key={tr} style={ab(40, 400 + tr * 84, {width: 780, height: 64, borderRadius: 14, background: C.trilho})} />
 				))}
 				{clipes.map((c, i) => {
 					const kc = mola(t, c.de, {damping: 14, stiffness: 200});
@@ -286,7 +289,7 @@ export const S5: React.FC = () => {
 			<Fundo tom="marca" />
 			<Particulas n={16} semente={8} de={de} />
 			<div style={ab(540 - L / 2 - 14, 150 + (1 - k) * 900, {transform: `perspective(2200px) rotateX(${12 - 5 * k + Math.sin(p * 1.2) * 2}deg) rotateY(${-24 + 10 * k + p * 3}deg) rotateZ(${6 - 3 * k}deg)`, opacity: Math.min(1, k * 2)})}>
-				<div style={{width: L + 28, height: H + 28, borderRadius: L * 0.15, background: 'linear-gradient(145deg, #2E3B35, #090D0B 40%, #1A2420)', padding: 14, boxSizing: 'border-box', boxShadow: `0 0 0 2px rgba(255,255,255,0.10), 0 40px 90px rgba(0,0,0,0.6), 0 0 120px ${hexA(C.v, 0.3)}`}}>
+				<div style={{width: L + 28, height: H + 28, borderRadius: L * 0.15, background: `linear-gradient(145deg, ${C.corpoA}, ${C.corpoB} 40%, ${C.corpoC})`, padding: 14, boxSizing: 'border-box', boxShadow: `0 0 0 2px rgba(255,255,255,0.10), 0 40px 90px rgba(0,0,0,0.6), 0 0 120px ${hexA(C.v, 0.3)}`}}>
 					<div style={{position: 'relative', width: L, height: H, borderRadius: L * 0.12, overflow: 'hidden'}}>
 						{/* um vídeo vertical genérico tocando: este próprio, com o 100% da abertura */}
 						<Telinha v={3} larg={L} alt={H} t={t} />
@@ -385,7 +388,7 @@ const Seta: React.FC<{d: string; ponta: string; de: number}> = ({d, ponta, de}) 
 	);
 };
 
-export const S7: React.FC<{previas: boolean; nomes: [string, string]}> = ({previas, nomes}) => {
+export const S7: React.FC<TelaProps> = ({previas = false, nomes = ['', '']}) => {
 	const {t} = useT();
 	const de = cena('S7').de;
 	const pv = T.previas ? T.previas.de_q / FPS : 0;
@@ -412,7 +415,7 @@ export const S7: React.FC<{previas: boolean; nomes: [string, string]}> = ({previ
 					const y = 300 + rnd(i + 40) * 560;
 					const vel = 1600 + rnd(i + 41) * 1400;
 					const x = -400 + (((corre + rnd(i + 42) * 0.6) * vel) % 2000);
-					return <div key={i} style={ab(x, y, {width: 240 + rnd(i + 43) * 200, height: 5, borderRadius: 3, background: `linear-gradient(90deg, rgba(60,242,164,0), ${C.v})`, opacity: 0.55 * (1 - tw(t, acel + 1.2, acel + 1.6, 0, 1)), boxShadow: `0 0 12px ${C.v}`})} />;
+					return <div key={i} style={ab(x, y, {width: 240 + rnd(i + 43) * 200, height: 5, borderRadius: 3, background: `linear-gradient(90deg, ${hexA(C.v, 0)}, ${C.v})`, opacity: 0.55 * (1 - tw(t, acel + 1.2, acel + 1.6, 0, 1)), boxShadow: `0 0 12px ${C.v}`})} />;
 				})}
 			{previas && <Previas nomes={nomes} />}
 			{/* "aqui em cima": duas setas desenhadas apontando para o alto */}
@@ -465,9 +468,9 @@ export const S9: React.FC = () => {
 	return (
 		<>
 			<Fundo claro />
-			{/* interruptor OFF -> ON (MODELO §4.10) */}
-			<div style={ab(500 - 200, 470 - 100, {width: 400, height: 200, borderRadius: 100, opacity: Math.min(1, kb * 2), transform: `scale(${(0.7 + 0.3 * kb) * (1 - 0.05 * aperta)})`, background: liga > 0 ? `linear-gradient(160deg, ${C.vClaro}, ${C.vFundo})` : '#DCE6E1', boxShadow: liga > 0 ? `0 0 ${80 * liga}px ${hexA(C.vFundo, 0.6)}, inset 0 4px 12px rgba(0,0,0,0.08)` : 'inset 0 6px 16px rgba(0,0,0,0.12)'})}>
-				<div style={ab(16 + 200 * liga, 16, {width: 168, height: 168, borderRadius: 84, background: '#fff', boxShadow: '0 10px 26px rgba(10,60,40,0.25)'})} />
+			{/* interruptor OFF -> ON (anunciomotion01.md §4) */}
+			<div style={ab(500 - 200, 470 - 100, {width: 400, height: 200, borderRadius: 100, opacity: Math.min(1, kb * 2), transform: `scale(${(0.7 + 0.3 * kb) * (1 - 0.05 * aperta)})`, background: liga > 0 ? `linear-gradient(160deg, ${C.vClaro}, ${C.vFundo})` : C.desligado, boxShadow: liga > 0 ? `0 0 ${80 * liga}px ${hexA(C.vFundo, 0.6)}, inset 0 4px 12px rgba(0,0,0,0.08)` : 'inset 0 6px 16px rgba(0,0,0,0.12)'})}>
+				<div style={ab(16 + 200 * liga, 16, {width: 168, height: 168, borderRadius: 84, background: '#fff', boxShadow: `0 10px 26px ${hexA(C.sombraBotao, 0.25)}`})} />
 			</div>
 			{t < usar + 0.3 && (
 				<div style={ab(860 - cur * 200, 760 - cur * 230, {opacity: 1 - tw(t, usar + 0.1, usar + 0.3, 0, 1), transform: `scale(${1 - 0.15 * aperta})`})}>{GL.cursor(80)}</div>

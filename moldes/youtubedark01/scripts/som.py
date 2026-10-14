@@ -1,5 +1,5 @@
-"""Som do youtubedark01 (vitrine, família B): MODELO §5B "trilha de piano ou cordas bem baixa por baixo de tudo,
-sem efeito sonoro no corte". Piano esparso (instrumento do som.py do curta aprovado) + cordas suaves em Lá menor,
+"""Som do youtubedark01 (vitrine, família B): youtubedark01.md §6 (trilha de piano e cordas bem baixa por baixo de tudo,
+sem efeito sonoro no corte). Piano esparso (instrumento do som.py do curta aprovado) + cordas suaves em Lá menor,
 ducking pela voz, 16 dB abaixo dela. Efeitos discretos só em acontecimentos DENTRO da cena (nunca no corte):
 a barra chegando a 100%, as prévias entrando nos quadros, o risco vermelho sob "EDIÇÃO".
 Gera public/trilha.wav e public/efeitos.wav.  uso: ../../.venv/Scripts/python.exe scripts/som.py   (SAIDA=<pasta> grava fora de public/)

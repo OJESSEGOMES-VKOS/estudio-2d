@@ -1,9 +1,9 @@
 // Conferidor do modelopadrao01: confere o texto dito na tela (legenda e títulos do editor e do celular) contra as regras
-// de ofício (REGRAS.md §3 e §5). Sai com código 1 quando reprova e diz o que mexer (arquivo:linha).
+// do modelo (modelos/modelopadrao01/modelopadrao01.md, seções 5 e 8). Sai com código 1 quando reprova e diz o que mexer (arquivo:linha).
 // uso (de dentro da pasta do vídeo ou do molde): node scripts/cobertura.mjs
 // Antes, o molde confere que src/tempos.json e src/rosto_med.json são desta fala (rode gerar_tempos.py e rosto.py).
 // Confere, quadro a quadro, sem e com prévias: toda palavra dita escrita na tela enquanto é dita; página >= 1,5 s; palavra
-// >= 0,4 s depois de aparecer; nenhuma palavra em dois lugares; até 2 linhas; as 2 posições da legenda; zona segura.
+// >= 0,4 s depois de aparecer (a última de uma página que já ficou 1,5 s: >= 0,25 s, não é palavra solta); nenhuma palavra em dois lugares; até 2 linhas; as 2 posições da legenda; zona segura.
 import {build} from 'esbuild';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -43,10 +43,10 @@ if (!R) process.exit(1);
 const {PAGINAS, legendaEm, MIN_PAGINA, PAG_ED, vida, paginaEm, PAG_CEL, vidaCel, P, T, FPS} = R;
 const PB = P.palavras;
 const ids = (pal) => pal.map((p) => PB.indexOf(p));
-const L_MIN = linha('src/Legenda.tsx', 'export const MIN_PAGINA');
+const L_MIN = linha('src/tema.ts', 'export const MIN_PAGINA');
 const L_TIT = linha('scripts/gerar_tempos.py', 'titulos=dict(');
 const ZONA = {esq: 60, dir: 940, topo: 250, base: 1500};
-const LARG = {rosto: [110, 940, 68], pilula: [120, 930, 56], titulo: [80, 970, 74]}; // caixa x e fonte de cada lugar (src/Legenda.tsx, src/Editor.tsx)
+const LARG = {rosto: [110, 940, 68], pilula: [120, 930, 56], titulo: [80, 940, 74]}; // caixa x e fonte de cada lugar (src/Legenda.tsx; src/Editor.tsx Titulo, vídeo novo: right 140)
 const larguraTxt = (txt, fonte) => txt.length * fonte * 0.56; // Geist 800, estimada pelas letras
 let reprova = false;
 
@@ -84,14 +84,25 @@ for (const previas of T.previas ? [false, true] : [false]) {
 	for (const [chave, e] of el) {
 		const titulo = !chave.startsWith('leg');
 		const dur = e.quadros.length / FPS, fim = (e.quadros[e.quadros.length - 1] + 1) / FPS;
-		const onde = titulo ? `títulos em ${L_TIT}` : `MIN_PAGINA = ${MIN_PAGINA} em ${L_MIN}`;
+		const onde = titulo
+			? `junte palavras na página de título (grupos em ${L_TIT}); a última página do título fica até as camadas saírem`
+			: !MIN_PAGINA
+				? `vídeo novo: MIN_PAGINA = 1.5 em ${L_MIN}`
+				: 'a fala entre duas quebras (corte, entrada/saída do dividido, título) é curta demais: no plano, mude o corte ou a tela de lugar para esse trecho ter pelo menos 1,5 s de fala, ou passe essas palavras para o título';
 		if (dur < 1.5) curtos.push(`"${e.nome}" fica ${fmt(dur)} s (${onde})`);
-		e.ids.forEach((i) => { vezes[i]++; if (fim - PB[i].de < 0.4) curtos.push(`"${PB[i].texto}" em "${e.nome}" fica ${fmt(fim - PB[i].de)} s (${onde})`); });
+		e.ids.forEach((i, k) => {
+			vezes[i]++;
+			const min = k === e.ids.length - 1 && dur >= 1.5 ? 0.25 : 0.4; // a última de uma página que já ficou 1,5 s não é palavra solta
+			const solta = titulo
+				? `palavra solta de título: a 1ª página começa na 1ª palavra do título (i0 em ${L_TIT}), não no \`de\` da tela, e a última página fica até o \`devolve\`; a saída é adiantar o \`devolve\` (a palavra passa para a legenda do rosto) ou empurrá-lo para depois (a última página ganha 1,5 s)`
+				: onde;
+			if (fim - PB[i].de < min) curtos.push(`"${PB[i].texto}" em "${e.nome}" fica ${fmt(fim - PB[i].de)} s, mínimo ${fmt(min)} (${solta})`);
+		});
 		for (const lugar of e.lugar) {
 			const [x0, x1, fonte] = LARG[lugar];
 			const caixa = x1 - x0, larg = larguraTxt(e.nome, fonte);
 			const n = lugar === 'titulo' || MIN_PAGINA ? Math.ceil(larg / caixa) : 1;
-			if (n > 2) linhas.push(`"${e.nome}" (${lugar}) com ~${n} linhas: ${titulo ? `menos palavras por página (${L_TIT})` : `diminua MIN_PAGINA (${L_MIN})`}`);
+			if (n > 2) linhas.push(`"${e.nome}" (${lugar}) com ~${n} linhas: ${titulo ? `menos palavras por página (${L_TIT})` : `página com menos letras: quebre o trecho no plano (${L_TIT})`}`);
 			const meio = (x0 + x1) / 2, l = Math.min(larg, caixa);
 			if (meio - l / 2 < ZONA.esq || meio + l / 2 > ZONA.dir) fora.push(`"${e.nome}" (${lugar}): x ${Math.round(meio - l / 2)}-${Math.round(meio + l / 2)}: ${titulo ? `página mais curta (${L_TIT})` : 'página mais curta'}`);
 		}
@@ -100,10 +111,10 @@ for (const previas of T.previas ? [false, true] : [false]) {
 	const lugares = new Set([...el].filter(([k]) => k.startsWith('leg')).flatMap(([, e]) => [...e.lugar]));
 	console.log(`\n${modo}: ${el.size} páginas/títulos`);
 	console.log(`${buracos.length} palavras sem texto na tela`); buracos.forEach((x) => console.log('  ' + x));
-	console.log(`${curtos.length} curtos (mín. 1,5 s por página e 0,4 s por palavra)`); curtos.slice(0, 14).forEach((x) => console.log('  ' + x)); if (curtos.length > 14) console.log(`  ... e mais ${curtos.length - 14}`);
+	console.log(`${curtos.length} curtos (mín. 1,5 s por página, 0,4 s por palavra, 0,25 s a última de página de 1,5 s)`); curtos.slice(0, 14).forEach((x) => console.log('  ' + x)); if (curtos.length > 14) console.log(`  ... e mais ${curtos.length - 14}`);
 	console.log(`${dobras.length} palavras em mais de um lugar`); dobras.forEach((x) => console.log('  ' + x));
 	console.log(`${linhas.length} páginas com mais de 2 linhas`); linhas.forEach((x) => console.log('  ' + x));
-	console.log(`posições da legenda: ${[...lugares].join(', ')} (rosto: base em y 1190; pilula: na divisa, y 914)`);
+	console.log(`posições da legenda: ${[...lugares].join(', ')} (rosto: abaixo do queixo; pilula: na divisa, y 914)`);
 	console.log(`${fora.length} textos fora da zona segura (x ${ZONA.esq}-${ZONA.dir}; os lugares em y já ficam entre ${ZONA.topo} e ${ZONA.base})`); fora.forEach((x) => console.log('  ' + x));
 	if (buracos.length || curtos.length || dobras.length || linhas.length || fora.length || lugares.size > 2) reprova = true;
 }

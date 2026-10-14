@@ -3,7 +3,7 @@
 import React from 'react';
 import {OffthreadVideo, Sequence, staticFile} from 'remotion';
 import {AnelNeon, Cartao, Celular, Cursor, Ladrilho, Notebook, Pasta, Roleta, TelaEditor, TelaReels} from './objetos';
-import {COR, DefsSvg, E, Estrela, Fachos, FILTRO_NEON, H, HALO_TEXTO, INTER, Nevoa, Poeira, Seta, T, W, cena, clamp, ini, marca, mede, surge, tw, txt} from './base';
+import {COR, DefsSvg, E, Estrela, Fachos, FILTRO_NEON, H, HALO_TEXTO, INTER, Nevoa, Poeira, Seta, T, W, cena, talvez, clamp, ini, marca, mede, surge, tw, txt} from './base';
 
 /** início e fim (quadros) da cena no plano: cada tela conta o tempo a partir do começo dela */
 const janela = (id: string) => {
@@ -145,17 +145,17 @@ export const C3: React.FC<{f: number}> = ({f}) => {
 	const {c0, dur} = janela('C3');
 	const CARTOES_C3 = [
 		{k: 0, x: 280, y: 520, w: 170, n: c0, blur: 2.5},
-		{k: 1, x: 800, y: 470, w: 200, n: marca('cartao1'), blur: 0, destaque: true},
-		{k: 2, x: 230, y: 1395, w: 170, n: marca('cartao2'), blur: 3},
-		{k: 3, x: 850, y: 1380, w: 175, n: marca('cartao3'), blur: 0},
-		{k: 4, x: 560, y: 1660, w: 150, n: marca('cartao4'), blur: 1.5},
+		{k: 1, x: 800, y: 470, w: 200, n: talvez('cartao1'), blur: 0, destaque: true},
+		{k: 2, x: 230, y: 1395, w: 170, n: talvez('cartao2'), blur: 3},
+		{k: 3, x: 850, y: 1380, w: 175, n: talvez('cartao3'), blur: 0},
+		{k: 4, x: 560, y: 1660, w: 150, n: talvez('cartao4'), blur: 1.5},
 	];
 	const e = tw(f, c0, c0 + 11, 0, 1, E.out);
-	const ev = CARTOES_C3.map((c) => c.n).concat([marca('melhorei')]);
+	const ev = CARTOES_C3.map((c) => c.n).concat([talvez('melhorei')]);
 	const pulso = ev.reduce((a, n) => a + (f >= n ? Math.exp(-(f - n) / 5) : 0), 0);
 	const th = ((f - c0) * 0.05 * Math.PI) / 180;
-	const melhorei = marca('melhorei');
-	const fl = tw(f, melhorei, melhorei + 8, 0, 1, E.back);
+	const melhorei = talvez('melhorei');
+	const fl = Number.isFinite(melhorei) ? tw(f, melhorei, melhorei + 8, 0, 1, E.back) : 0;
 	return (
 		<div style={{position: 'absolute', inset: 0, background: 'radial-gradient(circle at 50% 50%, #1a0f04 0%, #070300 55%, #000 100%)'}}>
 			<Camera s={(2.3 - 1.3 * e) * (1 + 0.06 * ((f - c0) / dur))} blur={(1 - e) * 16} r={(f - c0) * 0.03}>
@@ -195,7 +195,7 @@ export const C3: React.FC<{f: number}> = ({f}) => {
 // ============ C4: T6 roleta que gira um gomo por palavra + fileira de cartões rolando ============
 export const C4: React.FC<{f: number}> = ({f}) => {
 	const {c0, c1, dur} = janela('C4');
-	const ticks = ['roleta1', 'roleta2', 'roleta3', 'roleta4'].map(marca);
+	const ticks = ['roleta1', 'roleta2', 'roleta3', 'roleta4'].filter((n) => T.marcas?.[n]).map(marca); // um gomo por item falado (3 ou 4)
 	const ang = tw(f, c0, c0 + 10, -160, 0, E.out) - ticks.reduce((a, n) => a + 60 * tw(f, n, n + 6, 0, 1, E.back), 0) - (f - c0) * 0.06;
 	const ativo = (((Math.round(-ang / 60) % 6) + 6) % 6);
 	const preto = tw(f, c1 - 5, c1, 1, 0, E.in);
@@ -233,7 +233,7 @@ export const C5: React.FC<{f: number}> = ({f}) => {
 	const {c0, dur} = janela('C5');
 	const p = tw(f, c0, c0 + 16, 0, 1, E.out);
 	const ry = lerp(-172, 14, p) - Math.max(0, f - (c0 + 16)) * 0.2;
-	const cor = marca('coracao');
+	const cor = talvez('coracao');
 	const pulso = f >= cor ? tw(f, cor, cor + 4, 0, 1, E.out) * Math.exp(-Math.max(0, f - cor - 4) / 6) : 0;
 	return (
 		<div style={{position: 'absolute', inset: 0, background: COR.fundo}}>
@@ -499,7 +499,7 @@ export const C9: React.FC<{f: number}> = ({f}) => {
 				<Pasta w={520} abre={abre} brilho={brilho} />
 			</div>
 			{ICONES_C9.map((ic, k) => {
-				const n = marca(ic.marca);
+				const n = talvez(ic.marca);
 				if (f < n) return null;
 				const p = tw(f, n, n + 10, 0, 1, E.out);
 				const x = lerp(540, ic.x, p);
@@ -512,8 +512,8 @@ export const C9: React.FC<{f: number}> = ({f}) => {
 			})}
 			<Svg>
 				{onda > 0 && onda < 1 && <circle cx={610} cy={850} r={20 + 130 * onda} fill="none" stroke={COR.ouroAlto} strokeWidth={6 * (1 - onda)} opacity={1 - onda} style={{filter: `drop-shadow(0 0 10px ${COR.fogo})`}} />}
-				<Estrela x={250} y={390} r={24} f={f} n={marca('icone3')} />
-				<Estrela x={840} y={360} r={18} f={f} n={marca('icone4')} />
+				<Estrela x={250} y={390} r={24} f={f} n={talvez('icone3')} />
+				<Estrela x={840} y={360} r={18} f={f} n={talvez('icone4')} />
 			</Svg>
 			<div style={{position: 'absolute', left: cx, top: cy}}>
 				<Cursor s={70} aperta={aperta} />
@@ -527,7 +527,7 @@ export const C10: React.FC<{f: number}> = ({f}) => {
 	const {c0, dur} = janela('C10');
 	const l = f - c0;
 	const fim = T.escurece_q ? tw(f, T.escurece_q[0], T.escurece_q[1], 1, 0, E.io) : 1;
-	const seta = marca('seta_baixo');
+	const seta = talvez('seta_baixo'); // sem a marca no plano, o fecho fica sem seta
 	return (
 		<div style={{position: 'absolute', inset: 0, background: COR.fundo, opacity: fim}}>
 			<Camera s={1 + 0.04 * (l / dur)}>

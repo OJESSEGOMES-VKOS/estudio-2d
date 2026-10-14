@@ -1,5 +1,6 @@
 import React from 'react';
 import {C, DIVISA, MONO, P, SANS, SERIF, cenaEm, iw, montaCenas, tw, useCenas, useT} from './tema';
+import type {Modo} from './tema';
 
 /**
  * A legenda é a espinha (MODELO §3): pedaços de até 3 palavras, entrando palavra por palavra,
@@ -7,7 +8,7 @@ import {C, DIVISA, MONO, P, SANS, SERIF, cenaEm, iw, montaCenas, tw, useCenas, u
  * Nunca atravessa corte: o pedaço fecha na troca de cena (os cortes são os mesmos com ou sem prévias).
  */
 type Pal = {texto: string; de: number; ate: number; i: number};
-type Pedaco = {pal: Pal[]; de: number; ate: number};
+type Pedaco = {pal: Pal[]; de: number; ate: number; cheio?: boolean};
 /* ---------------------------------------------------------------- o plano da legenda (refazer num vídeo novo)
  * iw('palavra', n) é a n-ésima vez que a palavra é dita (confere contra a fala ao carregar). */
 /** palavras-chave: 100%, Claude, diferença, Claude, prévias, três, edição (a do pedido), DM */
@@ -44,17 +45,23 @@ const pedacos = (): Pedaco[] => {
 		return {...g, ate: Math.min(fica, prox ? prox.de : Infinity, c ? c.ate : Infinity)};
 	});
 };
-/** com MIN_PEDACO: junta o pedaço seguinte (da mesma cena) enquanto o atual ficaria curto ou a última palavra dele sumiria antes de 0,4 s */
+/** com MIN_PEDACO: junta o pedaço seguinte (da mesma cena) enquanto o atual ficaria curto ou a última palavra dele sumiria
+ * antes de 0,4 s, mas nunca passa de 2 linhas no lugar do modo da cena (fala rápida não vira bloco de 3 linhas). O pedaço
+ * que parou por estar cheio fica marcado (cheio) e o conferidor cobra dele só 1 s na tela. */
+export const MAX_LINHAS = 2;
 const juntar = (gs: Pedaco[], cena: (t: number) => number): Pedaco[] => {
 	const out: Pedaco[] = [];
 	for (const g of gs) {
 		const at = out[out.length - 1];
-		if (at && cena(at.de) === cena(g.de) && (g.de < at.de + MIN_PEDACO || g.de < at.pal[at.pal.length - 1].de + 0.4)) out[out.length - 1] = {pal: [...at.pal, ...g.pal], de: at.de, ate: g.ate};
-		else out.push(g);
+		const quer = at && cena(at.de) === cena(g.de) && (g.de < at.de + MIN_PEDACO || g.de < at.pal[at.pal.length - 1].de + 0.4);
+		if (quer && linhasDe([...at.pal, ...g.pal], CORTES[cena(at.de)]?.modo ?? 'palco') <= MAX_LINHAS) out[out.length - 1] = {pal: [...at.pal, ...g.pal], de: at.de, ate: g.ate};
+		else {
+			if (quer) at.cheio = true;
+			out.push(g);
+		}
 	}
 	return out;
 };
-export const PEDACOS = pedacos();
 
 const limpa = (s: string) => s.replace(/[.,!?]$/, '');
 
@@ -162,18 +169,25 @@ export const Legenda: React.FC = () => {
 /* ---------------------------------------------------------------- conferência (scripts/cobertura.mjs)
  * cada pedaço com as palavras que mostra, quando fica na tela, o modo e a caixa estimada (largura pelo número de letras,
  * centrada na caixa do modo; a palavra-chave conta na escala dela). */
+/** largura estimada (px) das palavras no lugar do modo: letras x fonte; a palavra-chave conta na escala dela */
+const largura = (pal: Pal[], modo: Modo) => {
+	const L = LUGAR[modo];
+	return pal.reduce((s, p) => s + (limpa(p.texto).length + 1) * L.fonte * (modo === 'dividido' ? 0.62 : 0.55) * (CHAVE.has(p.i) ? L.chave : 1), 0);
+};
+const linhasDe = (pal: Pal[], modo: Modo) => Math.max(1, Math.ceil(largura(pal, modo) / (1080 - LUGAR[modo].esq - LUGAR[modo].dir)));
+/** os pedaços (calculados depois de LUGAR e das larguras, que juntar() usa) */
+export const PEDACOS = pedacos();
 export const exibicoes = (previas: boolean) => {
 	const cenas = montaCenas(previas);
 	return PEDACOS.map((g) => {
 		const cena = cenaEm(cenas, g.de);
 		const L = LUGAR[cena.modo];
 		const topo = cena.modo === 'motion' && cena.legendaTopo ? LUGAR.motion.topoAlto : L.topo;
-		const fator = cena.modo === 'dividido' ? 0.62 : 0.55;
 		const caixa = 1080 - L.esq - L.dir, meio = L.esq + caixa / 2;
-		const larguraTotal = g.pal.reduce((s, p) => s + (limpa(p.texto).length + 1) * L.fonte * fator * (CHAVE.has(p.i) ? L.chave : 1), 0);
-		const linhas = Math.max(1, Math.ceil(larguraTotal / caixa));
+		const larguraTotal = largura(g.pal, cena.modo);
+		const linhas = linhasDe(g.pal, cena.modo);
 		const larg = Math.min(caixa, larguraTotal);
 		const alto = linhas * L.fonte * Math.max(1.2, g.pal.some((p) => CHAVE.has(p.i)) ? L.chave : 1);
-		return {texto: g.pal.map((p) => p.texto).join(' '), ids: g.pal.map((p) => p.i), de: g.de, ate: g.ate, modo: cena.modo, cena: cena.id, x0: meio - larg / 2, x1: meio + larg / 2, y0: topo, y1: topo + alto, linhas};
+		return {cheio: !!g.cheio, texto: g.pal.map((p) => p.texto).join(' '), ids: g.pal.map((p) => p.i), de: g.de, ate: g.ate, modo: cena.modo, cena: cena.id, x0: meio - larg / 2, x1: meio + larg / 2, y0: topo, y1: topo + alto, linhas};
 	});
 };

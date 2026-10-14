@@ -5,7 +5,7 @@ uso: ../../.venv/Scripts/python.exe scripts/conferir.py   (sai 1 se algo falhar)
 - toda palavra da fala aparece uma vez só (legenda + comando fixo), nasce no start dela (±2 quadros) e fica >= 0,4 s;
 - bloco >= 1,5 s, máx. 4 linhas, vive dentro da cena dele (nada atravessa corte); no máximo 2 posições de texto;
 - cada corte no start de uma palavra (±2 quadros); a duração cobre a fala;
-- zona segura 9:16: y 250-1500, x 60-940 (largura medida com a Comic Neue Bold, contorno incluído);
+- zona segura 9:16: y 250-1500, x 60-940, legenda centrada em legenda.cx (540 sem a chave; 500 no vídeo novo) (largura medida com a Comic Neue Bold, contorno incluído);
 - texto na tela: nenhum travessão, nenhum nome de modelo (as etiquetas das prévias vêm da prop e ficam fora da conta).
 Partes opcionais (fixo, previas, fade_q, marcas) só são conferidas se existirem no plano.
 """
@@ -49,7 +49,7 @@ if plano != fala:
     pare(f"src/tempos.json foi feito para outra fala (campo \"fala\", linha {LF}): na palavra {k + 1} o plano tem "
          f"\"{plano[k] if k < len(plano) else '(fim)'}\" e src/palavras.json tem \"{fala[k] if k < len(fala) else '(fim)'}\".\n"
          f"Refaça o plano sobre a fala nova: \"cenas\" (linha {LC}), \"blocos\" (linha {LB}), "
-         f"\"fixo\", \"marcas\", \"texto\" e \"duracao_q\" em src/tempos.json, as ilustrações em src/Cenas.tsx (LEIA, \"Vídeo novo\"),\n"
+         f"\"fixo\", \"marcas\", \"texto\" e \"duracao_q\" em src/tempos.json, as ilustrações em src/Cenas.tsx (modelos/youtubedark01/youtubedark01.md §9),\n"
          f"e cole no campo \"fala\" o texto da fala nova: {' '.join(p['text'] for p in PS)}")
 n = len(PS)
 fora = []
@@ -67,7 +67,7 @@ if fora:
 
 # ---------------------------------------------------------------- 2. tempo, posição e zona segura
 q = lambda s: math.floor(s * FPS + 0.5)
-txt = lambda i: T['texto'].get(str(i), PS[i]['text'].upper())
+txt = lambda i: T.get('texto', {}).get(str(i), PS[i]['text'].upper())
 cenas = {c['id']: c for c in T['cenas']}
 erros, vezes, fontes = [], [0] * n, {}
 
@@ -79,9 +79,9 @@ def largura(s, fs):
     return w + fs * 0.16  # contorno (metade de cada lado)
 
 
-def confere(nome, ids, fs, y, de, ate):
+def confere(nome, ids, fs, y, de, ate, cx=540):
     s = ' '.join(txt(i) for i in ids)
-    w = largura(s, fs); x0, x1 = 540 - w / 2, 540 + w / 2
+    w = largura(s, fs); x0, x1 = cx - w / 2, cx + w / 2
     y0, y1 = y - fs * 0.62, y + fs * 0.62
     if x0 < 60 or x1 > 940: erros.append(f"{nome}: '{s}' x {x0:.0f}-{x1:.0f} fora da zona (quebre a linha ou diminua o fs)")
     if y0 < 250 or y1 > 1500: erros.append(f"{nome}: '{s}' y {y0:.0f}-{y1:.0f} fora da zona")
@@ -104,7 +104,7 @@ for b in T['blocos']:
     if len(b['linhas']) > 4: erros.append(f"{b['id']}: {len(b['linhas'])} linhas (máx. 4)")
     L = T['legenda']
     for k, ids in enumerate(b['linhas']):
-        confere(b['id'], ids, L['fs'], L['y0'] + k * L['passo'], de, ate)
+        confere(b['id'], ids, L['fs'], L['y0'] + k * L['passo'], de, ate, L.get('cx', 540))
 fx = T.get('fixo')
 if fx:
     c = cenas[fx['cena']]

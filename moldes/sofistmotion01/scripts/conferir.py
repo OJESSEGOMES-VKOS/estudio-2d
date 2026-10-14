@@ -1,4 +1,4 @@
-"""Conferência do texto (BRIEF, lições de 2026-10-12 + MODELO §16), lendo src/tempos.json e src/palavras.json.
+"""Conferência do texto (BRIEF, lições de 2026-10-12 + sofistmotion01.md), lendo src/tempos.json e src/palavras.json.
 uso: ../../.venv/Scripts/python.exe scripts/conferir.py   (sai 1 se algo falhar; não grava nada)
 - antes de tudo: o plano é desta fala ("fala" igual a src/palavras.json, sem contar maiúscula, acento e pontuação), os
   ids existem, cada marca cai na palavra que diz e a duração cobre a fala; se não, para dizendo o que refazer e a linha;
@@ -44,7 +44,7 @@ if plano != fala:
     k = next((i for i, (a, b) in enumerate(zip(plano, fala)) if a != b), min(len(plano), len(fala)))
     pare(f"src/tempos.json foi feito para outra fala (campo \"fala\", linha {onde('fala')}): na palavra {k + 1} o plano tem "
          f"\"{plano[k] if k < len(plano) else '(fim)'}\" e src/palavras.json tem \"{fala[k] if k < len(fala) else '(fim)'}\".\n"
-         f"Refaça o plano sobre a fala nova: \"cenas\" (linha {onde('cenas')}), \"blocos\" (linha {onde('blocos')}), \"flashes\", \"marcas\", \"texto\", \"acordes\", \"escurece_q\" e \"duracao_q\" em src/tempos.json e as telas em src/cenas.tsx (LEIA, \"Vídeo novo\"),\n"
+         f"Refaça o plano sobre a fala nova: \"cenas\" (linha {onde('cenas')}), \"blocos\" (linha {onde('blocos')}), \"flashes\", \"marcas\", \"texto\", \"acordes\", \"escurece_q\" e \"duracao_q\" em src/tempos.json e as telas em src/cenas.tsx (modelos/sofistmotion01/sofistmotion01.md, seção 9),\n"
          f"e cole no campo \"fala\" o texto da fala nova: {' '.join(p['text'] for p in PS)}")
 n = len(PS)
 fora = []

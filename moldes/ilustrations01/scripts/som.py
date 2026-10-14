@@ -1,4 +1,4 @@
-"""Trilha e efeitos do ilustrations01 (MODELO §4 e §12), sintetizados, sem nada de terceiros.
+"""Trilha e efeitos do ilustrations01 (ilustrations01.md), sintetizados, sem nada de terceiros.
 
 - trilha.wav: pulso suave a cada 0,73 s (o compasso medido na ref1) com pad grave em lá menor; a grade de tempos é
   ancorada para cair um tempo exatamente na virada ("outros", 21,91 s), onde entra a parte forte (bumbo, baixo,

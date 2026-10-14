@@ -2,7 +2,7 @@
 vermelhas, glitch no VHS) e, com --cama, a trilha escura de trailer (drone grave + pulso lento). Mesma receita do vídeo
 aprovado do modelo (2026-10-08). Saída: public/trilha.wav, do tamanho do vídeo (fim da última palavra + 0,73 s).
 uso (de dentro do molde): ../../.venv/Scripts/python.exe scripts/som.py [--cama] [--efeitos] [--saida arquivo.wav]
---cama: liga a música (desligada por padrão, REGRAS §6; a vitrine saiu com ela).
+--cama: liga a música (desligada por padrão, regras da casa; a vitrine saiu com ela).
 --efeitos: liga o glitch do VHS (use junto com a prop efeitos: true; desligado por padrão, como a prop).
 Os eventos ficam no PLANO DO SOM abaixo, com o índice da palavra em src/palavras.json e a palavra esperada: são os mesmos
 cortes de src/Reel.tsx e se refazem junto com ele. Se a fala mudou, o script para e diz a linha a refazer.
@@ -45,7 +45,7 @@ def w(ev):
         linha = next((k + 1 for k, l in enumerate(FONTE) if f'({i}, {esperada!r}' in l), '?')
         sys.exit(f'O plano do som não bate com a fala de src/palavras.json.\nscripts/som.py:{linha}: o evento ({i}, {esperada!r}) '
                  f'espera "{esperada}" na palavra {i}, e a fala tem {achada}.\n'
-                 'Refaça o PLANO DO SOM com os mesmos cortes da seção "O PLANO" de src/Reel.tsx (LEIA.md, "Vídeo novo").')
+                 'Refaça o PLANO DO SOM com os mesmos cortes da seção "O PLANO" de src/Reel.tsx (modelos/modelodinamico03/modelodinamico03.md, seção do vídeo novo).')
     return PS[i]['start'] + (ev[2] if len(ev) > 2 else 0)
 
 

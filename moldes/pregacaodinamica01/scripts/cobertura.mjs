@@ -71,7 +71,7 @@ const noRosto = TEM_PREVIAS && LEG_Y2 < QUEIXO_PREVIAS + 20 ? [`legenda y ${LEG_
 if (TEM_PREVIAS) console.log(`legenda das prévias em y ${LEG_Y2}, queixo descido em y ${Math.round(QUEIXO_PREVIAS)}: ${noRosto.length ? 'BATE (suba DESCE ou desça LEG_Y2)' : 'livre'}`);
 const longos = ex.filter((e) => e.linhas > MAX_LINHAS).map((e) => `"${e.nome}" ${e.linhas} linhas`);
 
-/* ---- rosto (REGRAS §5): a legenda e os blocos ficam abaixo do queixo medido (R.queixo de src/rosto.json, com o zoom de ENQ) */
+/* ---- rosto (regras da casa): a legenda e os blocos ficam abaixo do queixo medido (R.queixo de src/rosto.json, com o zoom de ENQ) */
 const FOLGA_ROSTO = 20, fmt = (x) => x.toFixed(2);
 const sobreVideo = (t) => !(CREME && t >= CREME.cheio && t < CREME.ate);
 /** o queixo mais baixo em [de, ate) sobre o vídeo, com o trecho de ENQ em que ele cai */
@@ -96,7 +96,7 @@ for (const b of BLOCOS) {
 			(z >= 1 ? `abra o plano: ${dizTrecho(q.t)} no máximo ${fmt(z)}` : `nem com o plano aberto (zoom 1,0) o queixo sobe até ele; desça o top para ${Math.ceil(q.y + FOLGA_ROSTO)} e, se o fundo passar de ${ZONA.base}, tire uma linha do bloco`));
 	}
 }
-const sobreCreme = CREME ? ex.filter((e) => e.tipo === 'legenda' && !e.aceito && e.de < CREME.visivel && e.ate > CREME.cheio).map((e) => `"${e.nome}" (${fmt(e.de)}-${fmt(e.ate)} s) fica sobre a tela creme (${fmt(CREME.cheio)}-${fmt(Math.min(CREME.visivel, FIM_VIDEO))} s): texto comum não entra nela (REGRAS §4); termine a página no trecho destaque (3º campo da página = T.destaque) ou comece-a depois`) : [];
+const sobreCreme = CREME ? ex.filter((e) => e.tipo === 'legenda' && !e.aceito && e.de < CREME.visivel && e.ate > CREME.cheio).map((e) => `"${e.nome}" (${fmt(e.de)}-${fmt(e.ate)} s) fica sobre a tela creme (${fmt(CREME.cheio)}-${fmt(Math.min(CREME.visivel, FIM_VIDEO))} s): texto comum não entra nela (regras da casa); termine a página no trecho destaque (3º campo da página = T.destaque) ou comece-a depois`) : [];
 console.log(`${ex.length} pedaços, ${curtos.length} curtos (mín. ${MIN_PEDACO} s por pedaço, ${MIN_PALAVRA} s por palavra)`);
 curtos.forEach((c) => console.log('  ' + c));
 if (curtos.length) console.log('  -> junte a página curta com a vizinha em PEDACOS, ou segure-a mais (o 3º campo da página, ou o trecho de T que a fecha)');
@@ -182,7 +182,7 @@ for (const [b, dy] of passa) {
 	if (!q.y || top >= q.y + FOLGA_ROSTO) txt += `suba-o para top: ${top}`;
 	else {
 		const z = zoomMax(top, q.t);
-		txt += z >= 1 ? `top: ${top} e abra o plano (o queixo vai a y ${Math.round(q.y)}): ${dizTrecho(q.t)} no máximo ${fmt(z)}` : `não cabe abaixo do queixo nem com o plano aberto (zoom 1,0); tire uma linha (um 'quebra: true') ou diminua os tam (os destaques do vídeo ficam todos no mesmo tamanho, REGRAS §4)`;
+		txt += z >= 1 ? `top: ${top} e abra o plano (o queixo vai a y ${Math.round(q.y)}): ${dizTrecho(q.t)} no máximo ${fmt(z)}` : `não cabe abaixo do queixo nem com o plano aberto (zoom 1,0); tire uma linha (um 'quebra: true') ou diminua os tam (os destaques do vídeo ficam todos no mesmo tamanho, regras da casa)`;
 	}
 	console.log(txt);
 }

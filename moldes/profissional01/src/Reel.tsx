@@ -4,6 +4,7 @@ import {loadFont as loadPoppins} from '@remotion/google-fonts/Poppins';
 import {loadFont as loadSerif} from '@remotion/google-fonts/DMSerifDisplay';
 import {loadFont as loadScript} from '@remotion/google-fonts/GreatVibes';
 import P from './palavras_voz.json'; // scripts/palavras.py: src/palavras.json com o começo ancorado no ataque da voz
+import W from './palavras.json'; // a transcrição de tools/novo-video.py (só para conferir que palavras_voz.json é desta fala)
 import ROSTO_T from './rosto.json'; // entrada padrão: [[t,cx,cy,h]] a cada 0,25 s, em fração do quadro
 
 /**
@@ -47,9 +48,13 @@ const PS: Pal[] = P.palavras;
 if (!PS.length) throw new Error('src/palavras_voz.json está vazio: rode tools/novo-video.py e depois scripts/palavras.py.');
 /** texto do plano x fala: sem maiúscula, acento nem pontuação (o Whisper varia) */
 export const norm = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9%]/g, '');
+/* palavras_voz.json velho (de outra gravação, como o que vem do molde) não passa: para e diz o comando */
+const WT = W as {text: string}[];
+if (WT.length !== PS.length || WT.some((w, i) => norm(w.text) !== norm(PS[i].texto)))
+	throw new Error(`src/palavras_voz.json não é desta fala (${PS.length} palavras; src/palavras.json tem ${WT.length}). Rode na pasta do vídeo: ../../.venv/Scripts/python.exe scripts/palavras.py`);
 /** plano que não bate com a fala: para ao carregar e diz em português qual lista refazer (nada de TypeError) */
 const errPlano = (lista: string, oque: string) =>
-	new Error(`O plano de src/Reel.tsx não bate com a fala de src/palavras_voz.json (${PS.length} palavras, de 0 a ${PS.length - 1}). Na lista ${lista}: ${oque}. Refaça o plano para a fala nova (LEIA.md, seção "Vídeo novo").`);
+	new Error(`O plano de src/Reel.tsx não bate com a fala de src/palavras_voz.json (${PS.length} palavras, de 0 a ${PS.length - 1}). Na lista ${lista}: ${oque}. Refaça o plano para a fala nova (modelos/profissional01/profissional01.md, seção 9).`);
 const de = (i: number, lista = 'T') => {
 	if (!PS[i]) throw errPlano(lista, `a palavra nº ${i} não existe`);
 	return PS[i].de;
@@ -64,7 +69,7 @@ const confere = (lista: string, i0: number, txt: string) =>
 const c = (t: number) => t - 0.06; // corte 2 quadros antes da palavra
 
 /* ================================================================ O PLANO (preso à fala; num vídeo novo, refazer T,
- * trechos, CAM, MARCAS, ENTRADAS, PEDACOS, TELAS, CTA, FLASH e TITULOS). Os números são índices de palavras de
+ * trechos, CAM, MARCAS, LISTA, CURTA_JUNTO, ROSTO_MEDIDO, ENTRADAS, PEDACOS, TELAS, CTA, FLASH e TITULOS). Os números são índices de palavras de
  * src/palavras_voz.json (0 = a 1ª). Lista vazia ou null desliga a parte. */
 type Modo = 'video' | 'tela' | 'celular' | 'previas' | 'lista';
 export const T = {
@@ -87,13 +92,31 @@ const MARCAS = {
 	linhaTempo: [26], // "editar": a lâmina corta
 	player: [78, 82], // "usar": o vídeo toca; "vídeos": ganha a legenda
 	celular: [39, 46], // "Instagram": a interface acende; "desses": os outros celulares saem de trás
-	lista: [68, 71, 72], // "outros" até "edição": os vistos; "como": este modelo acende
 };
 Object.entries(MARCAS).forEach(([k, is]) => is.forEach((i) => de(i, `MARCAS.${k}`)));
+/* painel de lista (modo 'lista'): título do cabeçalho, itens e as palavras dos vistos; null desliga.
+   vistos: uma palavra por item (cada visto na sua palavra, o item da vez acende) ou só [primeira, última] (os vistos
+   espaçados por igual entre as duas). acende: 'davez' (o item da vez) ou o índice da palavra em que o último acende */
+const LISTA = {
+	titulo: 'Modelos de edição',
+	itens: ['modelodinamico01', 'modelopadrao01', 'modelodinamico03', 'pregacaodinamica01', 'storypodcast01', 'superpodcast01', 'youtubeedition01', 'profissional01'],
+	vistos: [68, 71], // "outros" até "edição"
+	acende: 72 as number | 'davez', // "como": este modelo acende
+} as {titulo: string; itens: string[]; vistos: number[]; acende: number | 'davez'} | null;
+if (LISTA) {
+	LISTA.vistos.forEach((i) => de(i, 'LISTA.vistos'));
+	if (typeof LISTA.acende === 'number') de(LISTA.acende, 'LISTA.acende');
+	if (LISTA.vistos.length !== LISTA.itens.length && LISTA.vistos.length !== 2)
+		throw errPlano('LISTA', `${LISTA.vistos.length} vistos para ${LISTA.itens.length} itens (ponha um por item, ou só a primeira e a última palavra)`);
+}
+/* telas cheias: a palavra que vem depois de uma de até 2 letras entra junto com ela (o "e" não fica sozinho na ponta
+   da linha esperando a próxima palavra). Vídeo novo: true. false = como no vídeo aprovado */
+const CURTA_JUNTO = false;
 /* páginas da legenda com entrada própria (índice da 1ª palavra -> tempo); as outras entram com a voz */
 const ENTRADAS: Record<number, number> = {8: T.ele};
-/* fecho: o campo de comentário recebe Comenta “PALAVRA” (i = índice de "comenta"; a palavra é a seguinte); null desliga */
-const CTA = {i: 83, comando: 'Comenta', palavra: '“EDIÇÃO”'} as {i: number; comando: string; palavra: string} | null;
+/* fecho: o campo de comentário recebe Comenta “PALAVRA” (i = índice de "comenta"; a palavra é a seguinte; de = o corte
+   do fecho); null desliga. Fora do plano, o fecho só lê o CTA (nunca T) */
+const CTA = {i: 83, comando: 'Comenta', palavra: '“EDIÇÃO”', de: T.comenta} as {i: number; comando: string; palavra: string; de: number} | null;
 if (CTA) confere('CTA', CTA.i, `${CTA.comando} ${CTA.palavra}`);
 /* flash na ênfase (tempo do corte); null desliga. Sem public/flash.mp4, o molde desenha um flash branco no lugar */
 const FLASH = T.mas as number | null;
@@ -299,10 +322,14 @@ const BlocoTela: React.FC<{t: number; s: Tela; fg: string; sub: string; ac: stri
 				const cor = l.acento ? ac : grande ? fg : sub;
 				const ps = l.txt.split(' ');
 				const tam = telaTam(l);
+				let antes = 0;
 				return (
 					<div key={i} style={{fontFamily: fam, fontSize: tam, fontWeight: l.fonte === 'script' || l.fonte === 'serif' ? 400 : grande ? 800 : 600, letterSpacing: l.fonte ? 0 : grande ? '-0.045em' : '-0.015em', lineHeight: l.fonte === 'script' ? 1.1 : grande ? 0.98 : 1.2, color: cor, whiteSpace: 'nowrap', position: 'relative'}}>
 						{ps.map((p, j) => {
-							const d = PS[k++].de;
+							// CURTA_JUNTO: a palavra depois de uma de até 2 letras entra junto com ela (adiantada, nunca atrasada)
+							const d = CURTA_JUNTO && j > 0 && norm(ps[j - 1]).length <= 2 ? antes : PS[k].de;
+							antes = d;
+							k++;
 							return (
 								<Ptela key={j} t={t} de={d} first={j === 0}>
 									{j === ps.length - 1 ? p.replace(/,$/, '') : p}
@@ -609,34 +636,53 @@ const Previas: React.FC<{t: number; a: number; nomes: [string, string]}> = ({t, 
 	);
 };
 
-/* "ver outros modelos de edição como esse": o painel do modelo (como o "Seu cronograma"), já preenchido; cada nome
-   ganha o visto a partir de "outros" e este modelo acende na cor de destaque em "como esse" */
-const MODELOS = ['modelodinamico01', 'modelopadrao01', 'modelodinamico03', 'pregacaodinamica01', 'storypodcast01', 'superpodcast01', 'youtubeedition01', 'profissional01'];
-const Lista: React.FC<{t: number; a: number}> = ({t, a}) => {
-	const [outros, ultima, como] = MARCAS.lista.map((i) => de(i));
-	const t0 = outros - 0.04; // "outros"
-	const passo = (ultima - t0) / (MODELOS.length - 1);
-	const esse = tw(t, como - 0.04, como + 0.25, 0, 1); // "como"
+/* painel de lista (como o "Seu cronograma"), já preenchido, dirigido por LISTA: cada item ganha o visto na sua vez e o
+   item da vez (ou o último, na palavra de `acende`) acende na cor de destaque. 6 a 8 itens: 85%, topo em y 262; menos
+   itens: tamanho cheio, centrado na metade de cima */
+const LISTA_ALT = (n: number) => 80 + 30 + 82 * n + 6; // cabeçalho + respiro + itens + borda
+const listaCaixa = (n: number) => {
+	const esc = n >= 6 ? 0.85 : 0.96; // com poucos itens, 96%: o zoom lento do painel (1,2%/s) não o leva para fora da zona segura
+	const top = n >= 6 ? 262 : Math.round(587 - (esc * LISTA_ALT(n)) / 2);
+	return {esc, top};
+};
+const Lista: React.FC<{t: number; a: number; lista: NonNullable<typeof LISTA>}> = ({t, a, lista}) => {
+	const n = lista.itens.length;
+	const vez = lista.vistos.length === n;
+	let marcas: number[];
+	if (vez) marcas = lista.vistos.map((i) => de(i) - 0.04);
+	else {
+		const [prim, ult] = lista.vistos.map((i) => de(i));
+		const t0 = prim - 0.04;
+		const passo = (ult - t0) / (n - 1);
+		marcas = lista.itens.map((_, i) => t0 + i * passo);
+	}
+	const fixo = typeof lista.acende === 'number' ? de(lista.acende) : null;
+	const {esc, top} = listaCaixa(n);
 	return (
 		<FundoPainel t={t} a={a}>
-			{/* 2026-10-12: cartão a 85% e com o topo em 262 (com a câmera lenta do painel não passa de 250) para todo o texto ficar na zona segura (y >= 250, x 60-940) */}
-			<div style={{position: 'absolute', left: 70, width: 860, top: 262, transform: 'scale(0.85)', transformOrigin: '50% 0'}}>
+			{/* 2026-10-12: com 6 a 8 itens, cartão a 85% e topo em 262 (com a câmera lenta do painel não passa de 250): todo o texto na zona segura (y >= 250, x 60-940) */}
+			<div style={{position: 'absolute', left: 70, width: 860, top, transform: `scale(${esc})`, transformOrigin: '50% 0'}}>
 			<div style={{background: C.creme, borderRadius: 32, overflow: 'hidden', boxShadow: '0 30px 60px -20px rgba(0,0,0,0.5)', ...suave(t, a + 0.15)}}>
-				<div style={{background: C.tinta, height: 80, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: SANS, fontWeight: 600, fontSize: 30, letterSpacing: '0.2em', textTransform: 'uppercase', color: C.creme}}>Modelos de edição</div>
+				<div style={{background: C.tinta, height: 80, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: SANS, fontWeight: 600, fontSize: 30, letterSpacing: '0.2em', textTransform: 'uppercase', color: C.creme}}>{lista.titulo}</div>
 				<div style={{padding: '12px 40px 18px'}}>
-					{MODELOS.map((m, i) => {
-						const d = t0 + i * passo;
+					{lista.itens.map((m, i) => {
+						const d = marcas[i];
 						const e = tw(t, d - 0.06, d + 0.3, 0, 1);
 						const v = tw(t, d, d + 0.45, 0, 1, E.io);
-						const ultimo = i === MODELOS.length - 1;
+						const ultimo = i === n - 1;
+						const esse =
+							fixo !== null
+								? ultimo ? tw(t, fixo - 0.04, fixo + 0.25, 0, 1) : 0
+								: tw(t, d - 0.04, d + 0.25, 0, 1) * (ultimo ? 1 : tw(t, marcas[i + 1] - 0.04, marcas[i + 1] + 0.25, 1, 0));
+						const aceso = (fixo === null || ultimo) && esse > 0.5;
 						return (
-							<div key={m} style={{position: 'relative', display: 'flex', alignItems: 'center', gap: 26, height: 82, borderTop: i ? '2px solid rgba(31,22,15,0.08)' : 'none', opacity: 0.28 + 0.72 * e}}>
-								{ultimo && <div style={{position: 'absolute', left: -22, right: -22, top: 6, bottom: 6, borderRadius: 18, background: C.cor, opacity: esse}} />}
+							<div key={m + i} style={{position: 'relative', display: 'flex', alignItems: 'center', gap: 26, height: 82, borderTop: i ? '2px solid rgba(31,22,15,0.08)' : 'none', opacity: 0.28 + 0.72 * e}}>
+								{(fixo === null || ultimo) && <div style={{position: 'absolute', left: -22, right: -22, top: 6, bottom: 6, borderRadius: 18, background: C.cor, opacity: esse}} />}
 								<svg width="52" height="52" viewBox="0 0 64 64" style={{flexShrink: 0, position: 'relative'}}>
-									<circle cx="32" cy="32" r="28" fill={ultimo && esse > 0.5 ? '#fff' : C.cor} fillOpacity={e} stroke={ultimo && esse > 0.5 ? '#fff' : C.cor} strokeWidth="4" />
-									<path d="M19 33 L28 42 L45 23" fill="none" stroke={ultimo && esse > 0.5 ? C.cor : '#fff'} strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" pathLength={1} strokeDasharray="1 1" strokeDashoffset={1 - v} />
+									<circle cx="32" cy="32" r="28" fill={aceso ? '#fff' : C.cor} fillOpacity={e} stroke={aceso ? '#fff' : C.cor} strokeWidth="4" />
+									<path d="M19 33 L28 42 L45 23" fill="none" stroke={aceso ? C.cor : '#fff'} strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" pathLength={1} strokeDasharray="1 1" strokeDashoffset={1 - v} />
 								</svg>
-								<span style={{position: 'relative', fontFamily: SANS, fontWeight: 600, fontSize: 40, color: ultimo && esse > 0.5 ? '#fff' : C.tinta, letterSpacing: '-0.01em', whiteSpace: 'nowrap'}}>{m}</span>
+								<span style={{position: 'relative', fontFamily: SANS, fontWeight: 600, fontSize: 40, color: aceso ? '#fff' : C.tinta, letterSpacing: '-0.01em', whiteSpace: 'nowrap'}}>{m}</span>
 							</div>
 						);
 					})}
@@ -652,10 +698,10 @@ const Lista: React.FC<{t: number; a: number}> = ({t, a}) => {
 export const FECHO = {top: 1040, altura: 64 + 22 + 170, larg: 750};
 const Comenta: React.FC<{t: number; cta: NonNullable<typeof CTA>}> = ({t, cta}) => {
 	const b = de(cta.i + 1); // a palavra a comentar
-	const k = mola(t, T.comenta + 0.04, 20);
+	const k = mola(t, cta.de + 0.04, 20);
 	const acende = tw(t, b - 0.05, b + 0.25, 0, 1);
 	const toque = tw(t, b - 0.05, b + 0.55, 0, 1);
-	const cursor = t < b && Math.floor((t - T.comenta) * 2.5) % 2 === 0;
+	const cursor = t < b && Math.floor((t - cta.de) * 2.5) % 2 === 0;
 	return (
 		<div style={{position: 'absolute', left: ZONA.esq, width: ZW, top: FECHO.top, textAlign: 'center', opacity: Math.min(1, k * 2), transform: `translateY(${(1 - k) * 30}px)`}}>
 			{/* 2026-10-12: em destaque fixo só o comando, Comenta "EDIÇÃO"; o resto da fala vai na legenda, abaixo */}
@@ -703,11 +749,11 @@ export const Reel: React.FC<Props> = ({previas = false, nomesPrevias = ['', ''],
 	const {a, fim, modo} = trecho(t, previas);
 	const zoom = zoomEm(t);
 	const tit = modo === 'video' ? TITULOS.find((q) => t >= q.de - 0.1 && t < q.ate) : undefined;
-	const cta = CTA !== null && t >= T.comenta;
+	const cta = CTA !== null && t >= CTA.de;
 	const dividida = modo === 'celular' || modo === 'previas' || modo === 'lista';
 	if ((modo === 'tela' || modo === 'celular') && !tem('quadro.jpg')) throw new Error(`Falta ${QUADRO}`);
 	if (modo === 'previas' && !(tem('previa1.mp4') && tem('previa2.mp4')))
-		throw new Error('Falta public/previa1.mp4 ou previa2.mp4: faça com tools/previa.py (LEIA.md, "Vídeo novo") ou renderize com "previas": false.');
+		throw new Error('Falta public/previa1.mp4 ou previa2.mp4: faça com tools/previa.py (modelos/profissional01/profissional01.md, seção 9) ou renderize com "previas": false.');
 	return (
 		<AbsoluteFill style={{background: '#000'}}>
 			{modo === 'video' && <Fala zoom={zoom} />}
@@ -723,9 +769,9 @@ export const Reel: React.FC<Props> = ({previas = false, nomesPrevias = ['', ''],
 					<Previas t={t} a={a} nomes={nomesPrevias} />
 				</Dividida>
 			)}
-			{modo === 'lista' && (
+			{modo === 'lista' && LISTA && (
 				<Dividida t={t} a={a} fim={fim}>
-					<Lista t={t} a={a} />
+					<Lista t={t} a={a} lista={LISTA} />
 				</Dividida>
 			)}
 
@@ -762,7 +808,7 @@ export const textos = (t: number, previas: boolean, arroba = ''): Caixa[] => {
 	const {a, modo} = trecho(t, previas);
 	const out: Caixa[] = [];
 	const tit = modo === 'video' ? TITULOS.find((q) => t >= q.de - 0.1 && t < q.ate) : undefined;
-	const cta = CTA !== null && t >= T.comenta;
+	const cta = CTA !== null && t >= CTA.de;
 	const dividida = modo === 'celular' || modo === 'previas' || modo === 'lista';
 	if (modo === 'video')
 		TITULOS.forEach((q) => {
@@ -794,7 +840,13 @@ export const textos = (t: number, previas: boolean, arroba = ''): Caixa[] => {
 		out.push({nome: pg.txt, tipo: 'legenda', palavras: Array.from({length: pg.n}, (_, k) => pg.i0 + k), ...centro(500, larg), y0: legY, y1: legY + legAltura(pg.txt, base)});
 	}
 	if (modo === 'celular' && arroba) out.push({nome: arroba, tipo: 'rotulo', palavras: [], x0: 360, x1: 640, y0: 720, y1: 790});
-	if (modo === 'lista') { const z = 1 + (t - a) * 0.012; out.push({nome: 'painel Modelos de edição', tipo: 'rotulo', palavras: [], x0: 540 + (134 - 540) * z, x1: 540 + (866 - 540) * z, y0: 480 + (262 - 480) * z, y1: 480 + (262 + 0.85 * 772 - 480) * z}); }
+	if (modo === 'lista' && LISTA) {
+		const z = 1 + (t - a) * 0.012; // câmera do painel (escala em volta de 540x480)
+		const {esc, top} = listaCaixa(LISTA.itens.length);
+		const ex = (x: number) => 540 + (x - 540) * z;
+		const ey = (y: number) => 480 + (y - 480) * z;
+		out.push({nome: 'painel ' + LISTA.titulo, tipo: 'rotulo', palavras: [], x0: ex(500 - 430 * esc), x1: ex(500 + 430 * esc), y0: ey(top), y1: ey(top + esc * LISTA_ALT(LISTA.itens.length))});
+	}
 	if (modo === 'previas') out.push({nome: 'nomes das prévias', tipo: 'rotulo', palavras: [], x0: 100, x1: 980 - 100, y0: 760, y1: 830});
 	return out;
 };

@@ -5,7 +5,7 @@ import {Texto} from './texto';
 import * as S from './cenas';
 
 /**
- * Vitrine no anunciomotion01. Câmera viva e transições do anúncio aprovado do Marcaí (Anuncio.tsx dele, MODELO §5): corte seco com batida de zoom (escuro <-> claro), borrão (a cena incha e borra, a
+ * Vitrine no anunciomotion01. Câmera viva e transições do modelo (anunciomotion01.md §6): corte seco com batida de zoom (escuro <-> claro), borrão (a cena incha e borra, a
  * próxima nasce do borrão) e íris (círculo abre do centro com anel na cor da marca). Cenas e tempos em src/tempos.json.
  */
 export type Props = {previas: boolean; nomesPrevias: [string, string]; musica: boolean; efeitos: boolean};
@@ -13,9 +13,9 @@ export type Props = {previas: boolean; nomesPrevias: [string, string]; musica: b
 const TB = 0.22; // borrão
 const TI = 0.42; // íris
 const CENAS = T.cenas.map((c) => ({...c, de: c.de_q / FPS, ate: c.ate_q / FPS}));
-/* as telas desenhadas em src/cenas.tsx; o plano só usa estas */
-const TELAS = ['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9', 'S10'];
-for (const c of T.cenas) if (!TELAS.includes(c.id)) pare(`a cena "${c.id}" de src/tempos.json não está desenhada em src/cenas.tsx. Use uma de ${TELAS.join(', ')} ou desenhe a nova (e ponha no Quadro do Reel.tsx).`);
+/* as telas são os exports S<n> de src/cenas.tsx: tela nova = export const S11: React.FC<TelaProps> = ... lá, e a cena "S11" no src/tempos.json */
+const TELAS = Object.fromEntries(Object.entries(S).filter(([k]) => /^S\d+$/.test(k))) as Record<string, React.FC<S.TelaProps>>;
+for (const c of T.cenas) if (!TELAS[c.id]) pare(`a cena "${c.id}" de src/tempos.json não está desenhada em src/cenas.tsx. Use uma de ${Object.keys(TELAS).join(', ')} ou desenhe a nova lá (export const ${c.id}).`);
 /* som e prévias ligados pedem os arquivos: para logo, dizendo como fazer */
 const ARQUIVOS = new Set(getStaticFiles().map((a) => a.name.replace(/\\/g, '/')));
 const COMO: Record<string, string> = {
@@ -40,21 +40,8 @@ const Camera: React.FC<{c: Cena; children: React.ReactNode}> = ({c, children}) =
 };
 
 const Quadro: React.FC<{c: Cena; p: Props}> = ({c, p}) => {
-	const vis = (() => {
-		switch (c.id) {
-			case 'S1': return <S.S1 />;
-			case 'S2': return <S.S2 />;
-			case 'S3': return <S.S3 />;
-			case 'S4': return <S.S4 />;
-			case 'S5': return <S.S5 />;
-			case 'S6': return <S.S6 />;
-			case 'S7': return <S.S7 previas={p.previas} nomes={p.nomesPrevias} />;
-			case 'S8': return <S.S8 />;
-			case 'S9': return <S.S9 />;
-			case 'S10': return <S.S10 />;
-			default: return null;
-		}
-	})();
+	const Tela = TELAS[c.id];
+	const vis = <Tela previas={p.previas} nomes={p.nomesPrevias} />;
 	return (
 		<Camera c={c}>
 			{vis}

@@ -1,12 +1,12 @@
 import React from 'react';
 import {AbsoluteFill, Img, OffthreadVideo, Sequence, staticFile} from 'remotion';
-import {C, DISPLAY, E, MONO, P, SOMBRA, T, fundoClaro, mola, presenca, tw, usePrevias, useT} from './tema';
+import {C, DISPLAY, E, MONO, NOVO, P, SOMBRA, T, fundoClaro, mola, presenca, tw, usePrevias, useT} from './tema';
 import {CEL, CEL_H} from './Rosto';
 import {Titulo, paginasDe} from './Editor';
 import {Bolinha, Coluna, Etiqueta, Faisca, Painel} from './ui';
 
-export const MODELO = 'modelopadrao01';
-const NOMES = ['modelodinamico01', 'modelopadrao01', 'modelodinamico03', 'pregacaodinamica01', 'profissional01', 'storypodcast01', 'superpodcast01', 'youtubeedition01'];
+// os textos destas telas (nomes dos cartões, etiqueta do celular, etiqueta ao lado do rosto) vêm do plano
+// (scripts/gerar_tempos.py -> src/tempos.json): modelos.nomes, celular.etiqueta, outros.texto
 
 /**
  * "a diferença entre vários modelos que eu criei e melhorei para editar qualquer tipo de vídeo usando o Claude"
@@ -18,11 +18,19 @@ export const Modelos: React.FC = () => {
 	const {t} = useT();
 	const S = T.modelos;
 	if (!S) return null;
-	const passo = (S.modelos - S.de - 0.12) / (NOMES.length - 1);
-	const saiCartoes = tw(t, S.editar, S.editar + 0.35, 0, 1, E.inOut);
-	const usando = S.formatos[2] + 0.18;
-	const junta = tw(t, usando, usando + 0.5, 0, 1, E.inOut);
-	const chip = mola(t, S.claude, {damping: 11, stiffness: 240});
+	const NOMES = S.nomes;
+	const passo = (S.modelos - S.de - 0.12) / Math.max(1, NOMES.length - 1);
+	// entradas: um tempo por cartão (a palavra dita); sem elas, espaçados por igual até "modelos" (o vídeo aprovado)
+	const entra = (k: number) => (S.entradas && S.entradas[k] !== undefined ? S.entradas[k] : S.de + 0.12 + k * passo);
+	const saiCartoes = S.editar !== undefined ? tw(t, S.editar, S.editar + 0.35, 0, 1, E.inOut) : 0;
+	const F = S.formatos && S.formatos.length >= 3 ? S.formatos : null;
+	const usando = F ? F[2] + 0.18 : Infinity;
+	const junta = F ? tw(t, usando, usando + 0.5, 0, 1, E.inOut) : 0;
+	const chip = S.claude !== undefined ? mola(t, S.claude, {damping: 11, stiffness: 240}) : 0;
+	// vídeo novo (ou com entradas): a grade fica no meio da área (y 502), e o cartão sozinho na última linha, no meio
+	const centra = NOVO || !!S.entradas;
+	const linhas = Math.ceil(NOMES.length / 2);
+	const gy0 = centra ? 502 - (linhas * 132 - 24) / 2 : 250;
 	const FORMATOS = [
 		{w: 214, h: 380, x: 96},
 		{w: 360, h: 203, x: 340},
@@ -32,9 +40,10 @@ export const Modelos: React.FC = () => {
 		<Painel de={S.de} ate={S.sai} funde>
 			{saiCartoes < 1
 				? NOMES.map((nome, k) => {
-						const p = mola(t, S.de + 0.12 + k * passo, {damping: 13, stiffness: 220, mass: 0.7});
+						const p = mola(t, entra(k), {damping: 13, stiffness: 220, mass: 0.7});
 						const col = k % 2, lin = Math.floor(k / 2);
-						const gx = 100 + col * 450, gy = 250 + lin * 132;
+						const sozinho = centra && NOMES.length % 2 === 1 && k === NOMES.length - 1;
+						const gx = sozinho ? 327.5 : 100 + col * 450, gy = gy0 + lin * 132;
 						const x = gx + (340 - gx) * saiCartoes, y = gy + (460 - gy) * saiCartoes;
 						const ok = mola(t, S.criei + k * 0.05, {damping: 10, stiffness: 300, mass: 0.6});
 						const barra = tw(t, S.melhorei + k * 0.05, S.melhorei + 0.45 + k * 0.05, 0, 1, E.inOut);
@@ -57,8 +66,8 @@ export const Modelos: React.FC = () => {
 						);
 					})
 				: null}
-			{FORMATOS.map((fm, k) => {
-				const p = mola(t, S.formatos[k], {damping: 13, stiffness: 200});
+			{F && FORMATOS.map((fm, k) => {
+				const p = mola(t, F[k], {damping: 13, stiffness: 200});
 				if (p <= 0) return null;
 				const cx = fm.x + fm.w / 2, cy = 520;
 				const x = fm.x + (540 - cx) * junta, y = cy - fm.h / 2;
@@ -152,7 +161,7 @@ export const CelularFrente: React.FC = () => {
 						<Bolinha size={58} />
 						<span style={{position: 'relative', fontFamily: DISPLAY, fontWeight: 800, fontSize: 60, letterSpacing: '-0.035em'}}>
 							<span style={{position: 'absolute', left: -4, right: -4, bottom: '0.14em', height: '0.36em', borderRadius: 6, background: C.menta, transform: `scaleX(${marca})`, transformOrigin: '0 50%'}} />
-							<span style={{position: 'relative'}}>{MODELO}</span>
+							<span style={{position: 'relative'}}>{S_C.etiqueta}</span>
 						</span>
 					</Etiqueta>
 				</div>
@@ -206,7 +215,7 @@ export const Outros: React.FC = () => {
 					<rect x={7} y={3} width={13} height={15} rx={2} />
 					<path d="M4 7v12a2 2 0 0 0 2 2h10" />
 				</svg>
-				outros modelos
+				{S.texto}
 			</Etiqueta>
 		</Coluna>
 	);

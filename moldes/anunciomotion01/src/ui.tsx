@@ -9,18 +9,18 @@ const hexA = (hex: string, a: number) => {
 };
 export {hexA};
 
-/* ---------------------------------------------------------------- fundos (MODELO §2) */
+/* ---------------------------------------------------------------- fundos (anunciomotion01.md §2) */
 export const Fundo: React.FC<{claro?: boolean; tom?: 'marca' | 'dor' | 'neutro' | 'noite'}> = ({claro, tom = 'marca'}) => {
 	const {t} = useT();
 	if (claro)
 		return (
 			<div style={{position: 'absolute', inset: 0, background: C.claro, overflow: 'hidden'}}>
-				<div style={ab(-300 + 60 * Math.sin(t * 0.6), -200, {width: 1100, height: 1100, borderRadius: '50%', background: 'radial-gradient(circle, rgba(60,242,164,0.30), rgba(60,242,164,0) 65%)'})} />
-				<div style={ab(380, 1100 + 50 * Math.cos(t * 0.5), {width: 1100, height: 1100, borderRadius: '50%', background: 'radial-gradient(circle, rgba(22,201,127,0.18), rgba(22,201,127,0) 65%)'})} />
-				<div style={{position: 'absolute', inset: 0, background: 'repeating-linear-gradient(135deg, rgba(13,26,20,0.024) 0 2px, transparent 2px 16px)'}} />
+				<div style={ab(-300 + 60 * Math.sin(t * 0.6), -200, {width: 1100, height: 1100, borderRadius: '50%', background: `radial-gradient(circle, ${hexA(C.v, 0.3)}, ${hexA(C.v, 0)} 65%)`})} />
+				<div style={ab(380, 1100 + 50 * Math.cos(t * 0.5), {width: 1100, height: 1100, borderRadius: '50%', background: `radial-gradient(circle, ${hexA(C.vFundo, 0.18)}, ${hexA(C.vFundo, 0)} 65%)`})} />
+				<div style={{position: 'absolute', inset: 0, background: `repeating-linear-gradient(135deg, ${hexA(C.tinta, 0.024)} 0 2px, transparent 2px 16px)`}} />
 			</div>
 		);
-	const luz = tom === 'dor' ? 'rgba(255,42,42,0.16)' : tom === 'noite' ? 'rgba(60,140,255,0.14)' : tom === 'neutro' ? 'rgba(255,255,255,0.05)' : 'rgba(60,242,164,0.20)';
+	const luz = tom === 'dor' ? 'rgba(255,42,42,0.16)' : tom === 'noite' ? 'rgba(60,140,255,0.14)' : tom === 'neutro' ? 'rgba(255,255,255,0.05)' : hexA(C.v, 0.2);
 	return (
 		<div style={{position: 'absolute', inset: 0, background: C.preto, overflow: 'hidden'}}>
 			<div style={{position: 'absolute', inset: 0, background: 'repeating-linear-gradient(135deg, rgba(255,255,255,0.028) 0 2px, transparent 2px 15px)'}} />
@@ -31,7 +31,7 @@ export const Fundo: React.FC<{claro?: boolean; tom?: 'marca' | 'dor' | 'neutro' 
 	);
 };
 
-/* ---------------------------------------------------------------- texto (MODELO §3) */
+/* ---------------------------------------------------------------- texto (anunciomotion01.md §3) */
 /** palavra que nasce de um desfoque com leve deslize (~4 quadros) */
 export const Pal: React.FC<{txt: string; de: number; style?: React.CSSProperties; dx?: number; dy?: number; children?: React.ReactNode}> = ({txt, de, style, dx = 34, dy = 0, children}) => {
 	const {t} = useT();
@@ -93,7 +93,7 @@ export const Pilula: React.FC<{texto: string; de: number; tam?: number; cor?: st
 					fontSize: tam,
 					letterSpacing: '-0.03em',
 					lineHeight: 1,
-					color: solida ? C.tinta : claro ? C.tinta : '#F0FFF8',
+					color: solida ? C.tinta : claro ? C.tinta : C.textoPilula,
 					textShadow: solida ? 'none' : claro ? 'none' : brilho(cor, tam / 140),
 					whiteSpace: 'nowrap',
 					opacity: Math.min(1, k * 1.6),
@@ -108,7 +108,7 @@ export const Pilula: React.FC<{texto: string; de: number; tam?: number; cor?: st
 	);
 };
 
-/** dor em glitch: caixa alta fina, tremida e rastro RGB (MODELO §4.3) */
+/** dor em glitch: caixa alta fina, tremida e rastro RGB (anunciomotion01.md §4) */
 export const Glitch: React.FC<{texto: string; de: number; tam: number; peso?: number; cor?: string}> = ({texto, de, tam, peso = 300, cor = '#FFE9E9'}) => {
 	const {f, t} = useT();
 	const k = tw(t, de - 0.03, de + 0.12, 0, 1);
@@ -147,7 +147,7 @@ export const Ecg: React.FC<{de: number; y: number; dur?: number; cor?: string}> 
 	);
 };
 
-/** anéis concêntricos com pontos orbitando (MODELO §4.6) */
+/** anéis concêntricos com pontos orbitando (anunciomotion01.md §4) */
 export const Aneis: React.FC<{de: number; cx: number; cy: number; cor?: string; r0?: number; passo?: number; n?: number; acesos?: number}> = ({de, cx, cy, cor = C.v, r0 = 260, passo = 150, n = 4}) => {
 	const {t} = useT();
 	return (
@@ -202,11 +202,11 @@ export const IconeVidro: React.FC<{tam: number; giroY?: number; giroX?: number; 
 		<div style={{width: tam, height: tam, perspective: 1600}}>
 			<div style={{position: 'relative', width: tam, height: tam, transformStyle: 'preserve-3d', transform: `rotateX(${giroX}deg) rotateY(${giroY}deg)`}}>
 				{Array.from({length: cam}, (_, i) => (
-					<div key={i} style={{position: 'absolute', inset: 0, borderRadius: tam * 0.27, transform: `translateZ(${-i * (tam * 0.012)}px)`, background: i === cam - 1 ? '#03301E' : `linear-gradient(160deg, ${hexA(cor, 0.9)}, #075C3A)`, filter: `brightness(${0.55 - i * 0.02})`}} />
+					<div key={i} style={{position: 'absolute', inset: 0, borderRadius: tam * 0.27, transform: `translateZ(${-i * (tam * 0.012)}px)`, background: i === cam - 1 ? C.vidroFundo : `linear-gradient(160deg, ${hexA(cor, 0.9)}, ${C.vidroCamada})`, filter: `brightness(${0.55 - i * 0.02})`}} />
 				))}
-				<div style={{position: 'absolute', inset: 0, borderRadius: tam * 0.27, background: `linear-gradient(155deg, #C8FFE6 0%, ${C.vFundo} 45%, #06603C 100%)`, boxShadow: `0 0 ${tam * 0.45}px ${hexA(cor, 0.7)}, inset 0 ${tam * 0.04}px ${tam * 0.05}px rgba(255,255,255,0.55), inset 0 -${tam * 0.06}px ${tam * 0.1}px rgba(0,50,30,0.5)`, transform: 'translateZ(1px)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden'}}>
+				<div style={{position: 'absolute', inset: 0, borderRadius: tam * 0.27, background: `linear-gradient(155deg, ${C.vidroLuz} 0%, ${C.vFundo} 45%, ${C.vidroBase} 100%)`, boxShadow: `0 0 ${tam * 0.45}px ${hexA(cor, 0.7)}, inset 0 ${tam * 0.04}px ${tam * 0.05}px rgba(255,255,255,0.55), inset 0 -${tam * 0.06}px ${tam * 0.1}px ${hexA(C.sombra, 0.5)}`, transform: 'translateZ(1px)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden'}}>
 					<div style={{position: 'absolute', left: '-30%', top: '-60%', width: '160%', height: '90%', background: 'radial-gradient(ellipse, rgba(255,255,255,0.35), rgba(255,255,255,0) 60%)', transform: `translateX(${giroY * 1.2}px)`}} />
-					<div style={{position: 'relative', filter: 'drop-shadow(0 8px 14px rgba(0,50,30,0.45))'}}>{children}</div>
+					<div style={{position: 'relative', filter: `drop-shadow(0 8px 14px ${hexA(C.sombra, 0.45)})`}}>{children}</div>
 				</div>
 			</div>
 		</div>

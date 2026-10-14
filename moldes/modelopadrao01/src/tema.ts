@@ -10,14 +10,16 @@ import RJ from './rosto_med.json'; // scripts/rosto.py: enquadramento por trecho
 type Tela<K extends keyof typeof TJ> = (typeof TJ)[K] | null;
 export type Tempos = Omit<typeof TJ, 'editor' | 'modelos' | 'celular' | 'previas' | 'outros' | 'prompt' | 'fecho' | 'silencio' | 'titulos'> & {
 	editor: Tela<'editor'>;
-	modelos: Tela<'modelos'>;
+	/** só de/modelos/criei/melhorei/sai/nomes são obrigatórios; sem formatos/claude não há formatos nem chip, sem editar os
+	 * cartões ficam até o painel sair; entradas = um tempo por cartão (a palavra dita), senão entram espaçados até modelos */
+	modelos: (Omit<(typeof TJ)['modelos'], 'editar' | 'formatos' | 'claude'> & {editar?: number; formatos?: number[]; claude?: number; entradas?: number[]}) | null;
 	celular: Tela<'celular'>;
 	previas: Tela<'previas'>;
 	outros: Tela<'outros'>;
 	prompt: Tela<'prompt'>;
 	fecho: Tela<'fecho'>;
 	silencio: Tela<'silencio'>;
-	titulos: {editor: {i0: number; grupos: number[]} | null; celular: {i0: number; grupos: number[]} | null};
+	titulos: {editor: {i0: number; grupos: number[]} | null; celular: {i0: number; grupos: number[]} | null; marcas?: string[]};
 	fala?: {palavras: number; fim: number};
 };
 const T = TJ as unknown as Tempos;
@@ -28,12 +30,19 @@ const marca = (x?: {palavras: number; fim: number}) => !!x && palavras.length > 
 if (!palavras.length) throw new Error('src/palavras.json está vazio: este molde precisa da fala transcrita (tools/preparar.py ou tools/novo-video.py).');
 if (!marca(T.fala))
 	throw new Error(
-		'src/tempos.json é de outra fala. Refaça o bloco "O PLANO" de scripts/gerar_tempos.py para a fala nova e rode ../../.venv/Scripts/python.exe scripts/gerar_tempos.py (ele para e diz a linha se uma palavra do plano não existe na fala). LEIA.md, "Vídeo novo".',
+		'src/tempos.json é de outra fala. Refaça o bloco "O PLANO" de scripts/gerar_tempos.py para a fala nova e rode ../../.venv/Scripts/python.exe scripts/gerar_tempos.py (ele para e diz a linha se uma palavra do plano não existe na fala). modelos/modelopadrao01/modelopadrao01.md, seção 9.',
 	);
 if (!marca(R.fala) || R.trechos.length !== T.blocos.length)
 	throw new Error('src/rosto_med.json é de outra gravação ou de outros blocos. Rode ../../.venv/Scripts/python.exe scripts/rosto.py (depois do gerar_tempos.py).');
 
 export const P = {duracao: T.duracao, palavras};
+
+/** A chave do vídeo novo. 0 = o vídeo aprovado, exatamente como ele foi feito (páginas de até 3 palavras, de 12 quadros a
+ * 2 s). Num vídeo novo, 1.5: legenda com tempo de leitura (página >= 1,5 s, quebras escolhidas pelo melhor conjunto,
+ * presa aos cortes e às telas), legenda logo abaixo do queixo medido crescendo para baixo, título do editor e do celular
+ * na caixa x 80-940 e a legenda colada no título, sem janela vazia. scripts/cobertura.mjs cobra. */
+export const MIN_PAGINA = 0;
+export const NOVO = MIN_PAGINA > 0;
 export {T, R};
 export const FPS = T.fps;
 

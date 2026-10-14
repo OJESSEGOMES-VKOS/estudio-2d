@@ -5,7 +5,7 @@ import {loadFont as loadSerif} from '@remotion/google-fonts/InstrumentSerif';
 import {loadFont as loadMono} from '@remotion/google-fonts/GeistMono';
 import PALAVRAS from './palavras.json'; // entrada padrão: [{text,start,end}]
 
-/** modelodinamico02 (../../modelos/modelodinamico02/MODELO.md). Nada daqui vale pro 01 nem pro padrão.
+/** modelodinamico02 (../../modelos/modelodinamico02/modelodinamico02.md). Nada daqui vale pro 01 nem pro padrão.
  * 2026-10-13 (teste do estúdio aberto): lê a entrada padrão (src/palavras.json, public/voz.wav); a duração vem das
  * palavras; palavra do plano que a fala não tem para o molde com a mensagem do que refazer. */
 const palavras = (PALAVRAS as {text: string; start: number; end: number}[]).map((p) => ({texto: p.text, de: p.start, ate: p.end}));
@@ -16,7 +16,7 @@ export const FPS = 30;
 export const QUADROS = Math.round((palavras[palavras.length - 1].ate + 1.24) * FPS);
 export const DURACAO = QUADROS / FPS;
 
-/** um mundo de cor, dois fundos que se alternam (MODELO §2): preto quente ↔ laranja Claude */
+/** um mundo de cor, dois fundos que se alternam (modelodinamico02.md): preto quente ↔ laranja Claude */
 export const C = {
 	escuro: '#130B08',
 	laranja: '#E0592A',
@@ -51,7 +51,7 @@ export const mola = (t: number, at: number, cfg: Partial<{damping: number; stiff
 
 /** a palavra sem maiúscula, acento e pontuação (o Whisper varia nisso) */
 export const limpa = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9%]/g, '');
-const REFAZER = 'Refaça CENAS e os heróis de src/Cenas.tsx para a fala nova (LEIA.md, "Vídeo novo") e rode node scripts/cobertura.mjs, que lista tudo o que falta.';
+const REFAZER = 'Refaça CENAS e os heróis de src/Cenas.tsx para a fala nova (modelos/modelodinamico02/modelodinamico02.md, §9 "Como fazer um vídeo novo") e rode node scripts/cobertura.mjs, que lista tudo o que falta.';
 /** início da n-ésima vez que a palavra é dita; se a fala não tem, para com o que refazer */
 export const w = (texto: string, n = 1) => {
 	let k = 0;

@@ -6,7 +6,7 @@ import PB from './palavras.json';
 import ROSTO_T from './rosto.json';
 
 /**
- * Molde do storypodcast01 (../../modelos/storypodcast01/MODELO.md, ref3 9:16 como principal), feito na vitrine dos modelos.
+ * Molde do storypodcast01 (regras em ../../modelos/storypodcast01/storypodcast01.md), feito na vitrine dos modelos.
  * Revisão 2026-10-12 (correções do Jessé): 6 cortes em vez de 10 (só com motivo), legenda padrão em 2 posições fixas
  * (LEG_Y e LEG_Y2), todo pedaço >= 1,5 s, duas fontes (Poppins 400/600 + Anton), sem o nome do modelo na tela,
  * música e tratamento de fundo como props (desligados por padrão). Plano em ../plano.md, checador em scripts/cobertura.mjs.
@@ -22,9 +22,9 @@ const ANT = ant.fontFamily;
 export const FONTES = [POP, ANT]; // regra do modelo: no máximo 2 fontes e 1 variação de peso (Poppins 600)
 const ESTREITA = 0.88; // Anton -> proporção da condensada das refs (largura/maiúscula: AFASTAR 3,71 -> 3,24)
 
-/* identidade do modelo (MODELO §13) */
+/* identidade do modelo (storypodcast01.md, seção 4, "A cor é o sentido") */
 const COR = {giz: '#F6F6F6', dor: '#FD1701', sonho: '#0A64FC', breu: '#0A0D0F'};
-const FS = 46; // corpo da pequena (MODELO §4: ~2,5% H)
+const FS = 46; // corpo da pequena (storypodcast01.md, seção 5: Poppins 46 px)
 
 /* legenda padrão: 2 posições fixas (topo da caixa). LEG_Y no peito; LEG_Y2 só quando um destaque ou o rosto
    (prévias, câmera descida) ocupa a 1ª. Zona segura 9:16 das redes. */
@@ -48,7 +48,7 @@ export const DURACAO = Number((PS[PS.length - 1].ate + FOLGA).toFixed(2));
 const norm = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9%]/g, '');
 /** plano que não bate com a fala: para ao carregar e diz em português qual lista refazer (nada de TypeError) */
 const errPlano = (lista: string, oque: string) =>
-	new Error(`O plano de src/Reel.tsx não bate com a fala de src/palavras.json (${PS.length} palavras, de 0 a ${PS.length - 1}). Na lista ${lista}: ${oque}. Refaça o plano para a fala nova (LEIA.md, seção "Vídeo novo").`);
+	new Error(`O plano de src/Reel.tsx não bate com a fala de src/palavras.json (${PS.length} palavras, de 0 a ${PS.length - 1}). Na lista ${lista}: ${oque}. Refaça o plano para a fala nova (modelos/storypodcast01/storypodcast01.md, seção 9, passo 4).`);
 const de = (i: number, lista = 'CORTE') => {
 	if (!PS[i]) throw errPlano(lista, `a palavra nº ${i} não existe`);
 	return PS[i].de;
@@ -245,7 +245,7 @@ const surge = (t: number, t0: number): React.CSSProperties => {
 	const e = tw(t, t0 - 0.03, t0 + 0.1, 0, 1, E.io);
 	return {opacity: e, filter: e < 1 ? `blur(${(1 - e) * 7}px)` : undefined};
 };
-/* saída: pisca 2 vezes em ~0,2 s e some (só quando não há corte) */
+/* saída: pisca 3 vezes nos últimos 6 quadros (~0,2 s) e some (só quando não há corte) */
 const PISCA_SAIDA = [1, 0, 1, 0, 1, 0];
 const visivelSaida = (f: number, fAte: number) => {
 	if (CORTES_F.includes(fAte) || fAte >= fr(DURACAO)) return f < fAte;
@@ -452,7 +452,7 @@ const Video: React.FC<{f: number; previas: boolean; efeitoFundo: boolean}> = ({f
 	return (
 		<AbsoluteFill style={{filter: `${filtro}${chicote ? ' url(#chicote)' : ''}`, WebkitMaskImage: desce ? 'linear-gradient(180deg, transparent 0px, transparent 640px, #000 820px)' : undefined}}>
 			<AbsoluteFill style={{transform: `translate(${tx + (chicote ? -70 : 0)}px, ${ty}px) scale(${s})`, transformOrigin: '0 0'}}>
-				{efeitoFundo && exige('fala_grade.mp4', 'rode scripts/grade.py pela trava (LEIA.md, "Como gerar", passo 1) ou renderize com "efeitoFundo": false.')}
+				{efeitoFundo && exige('fala_grade.mp4', 'rode scripts/grade.py pela trava e depois tools/adaptar.py --desenho (modelos/storypodcast01/storypodcast01.md, seção 9, passo 2) ou renderize com "efeitoFundo": false.')}
 				<OffthreadVideo muted src={staticFile(efeitoFundo ? 'fala_grade.mp4' : 'fala.mp4')} style={{width: W, height: H}} />
 			</AbsoluteFill>
 			<svg width="0" height="0" style={{position: 'absolute'}}>
@@ -470,6 +470,8 @@ const exige = (arq: string, como: string) => {
 	return null;
 };
 const Vinheta: React.FC = () => <AbsoluteFill style={{background: 'radial-gradient(ellipse 85% 70% at 50% 42%, rgba(0,0,0,0) 45%, rgba(4,7,8,0.6) 100%)'}} />;
+/* vazamento de luz laranja nos quadros 0 a 4 do vídeo: faz parte do aprovado (a abertura acende quente e apaga em
+   0,17 s). É a única luz quente do modelo; fora dela vale "nada de âmbar". Não tire. */
 const Vazamento: React.FC<{f: number}> = ({f}) => {
 	const op = [0.95, 0.8, 0.55, 0.3, 0.1][f];
 	if (op === undefined) return null;
@@ -482,7 +484,7 @@ export const PreviasEmCima: React.FC<{f: number; nomes: [string, string]}> = ({f
 	if (!JANELA_PREVIAS) return null;
 	const de = fr(JANELA_PREVIAS.de);
 	if (f < de || f >= fr(JANELA_PREVIAS.ate)) return null;
-	for (const arq of ['previa1.mp4', 'previa2.mp4']) exige(arq, 'faça as prévias com tools/previa.py (LEIA.md, "Vídeo novo") ou renderize com "previas": false.');
+	for (const arq of ['previa1.mp4', 'previa2.mp4']) exige(arq, 'faça as prévias com tools/previa.py (modelos/storypodcast01/storypodcast01.md, seção 9, "Prévias") ou renderize com "previas": false.');
 	const t = f / FPS;
 	return (
 		<AbsoluteFill>

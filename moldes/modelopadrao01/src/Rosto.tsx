@@ -30,6 +30,11 @@ const cheio = (k: number): Q => {
 	const s = T.planos[k] === 'B' ? 1.2 : 1.06;
 	return {s, ...prende(s, 540 - s * r.cx, alvoOlhos(k) - s * r.olhos), c: [0, 0, 0, 0], r: 0};
 };
+/** onde o queixo medido do trecho k fica na tela, no rosto cheio (a legenda do vídeo novo mora logo abaixo) */
+export const queixoTela = (k: number) => {
+	const q = cheio(k);
+	return q.y + q.s * R.trechos[k].queixo;
+};
 const dividido = (k: number): Q => {
 	const r = R.trechos[k];
 	const s = 1.08;

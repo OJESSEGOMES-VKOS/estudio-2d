@@ -1,4 +1,4 @@
-// Checador das frases do ilustrations01 (MODELO §3 e §11, lições do BRIEF). uso: node scripts/checar.mjs  (sai 1 se reprovar)
+// Checador das frases do ilustrations01 (ilustrations01.md, lições do BRIEF). uso: node scripts/checar.mjs  (sai 1 se reprovar)
 // Lê o plano de verdade (src/plano.json, pelo src/Reel.tsx). Antes de tudo: o plano é desta fala (senão para dizendo o
 // que refazer). Depois confere: tempo de leitura (>= 1 s + 3 palavras/s depois de digitada, o que já dá mais de 0,4 s a
 // cada palavra, e >= 1,5 s no total), uma frase por vez com 0,4 s de vão, entrada no início de uma palavra (±2 quadros),

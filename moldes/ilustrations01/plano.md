@@ -1,6 +1,6 @@
 # Plano: vitrine no ilustrations01
 
-Modelo: `../../modelos/ilustrations01/MODELO.md` (metáfora em vetor no preto, 0% rosto). Entra só a voz
+Modelo: `../../modelos/ilustrations01/ilustrations01.md` (metáfora em vetor no preto, 0% rosto). Entra só a voz
 (`public/voz.wav`, 30,36 s). Saída 1080x1920, 30 qps, 30,33 s (910 quadros), um plano só, câmera parada.
 
 ## Forma: C, corrente com virada (ref4)

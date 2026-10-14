@@ -5,8 +5,8 @@
 // - toda fala na tela, cada palavra uma vez; máx. 4 linhas por bloco; legenda padrão em ≤ 2 posições (bloco só de
 //   pequenas que divide o tempo com um bloco de palavra-chave faz parte do destaque, não é legenda padrão);
 // - tempo de leitura (REGRAS §3): bloco ≥ 1,5 s e cada palavra ≥ 0,4 s na tela; palavra-chave completa ≥ 0,8 s
-//   (MODELO §13, só aviso); terço inferior ≥ 1,5 s. Bloco com `aceito` no plano foi aprovado abaixo da régua (a
-//   vitrine segue o ritmo da fala, MODELO "Regras novas"): sai como aviso. Num vídeo novo, nenhum bloco leva `aceito`;
+//   (superpodcast01.md §13, só aviso); terço inferior ≥ 1,5 s. Bloco com `aceito` no plano foi aprovado abaixo da régua (a
+//   vitrine segue o ritmo da fala): sai como aviso. Num vídeo novo, nenhum bloco leva `aceito`;
 // - zona segura 9:16: y 250–1500 (texto pequeno: y ± ~0,6 corpo; destaque: até 220 px de corpo), x 60–940 (estimado);
 // - nenhum texto no rosto (REGRAS §5) nos mundos que mostram a gravação: rosto, dividida e arquivo sem a imagem (que vira
 //   a gravação inteira); o rosto sai de src/rosto.json com o enquadramento do plano;
@@ -163,7 +163,7 @@ for (const n of terco) erros.push(n);
 // mídia que falta: o vídeo sai (plano B), mas não é o que o plano descreve
 const cardsFalta = [];
 for (const [mundo, lista] of Object.entries(C.CARTOES)) for (const n of lista ?? []) if (!existe(`cards/${n}.jpg`)) cardsFalta.push(`${mundo}: ${n}`);
-if (cardsFalta.length) avisos.push(`src/cards.json lista ${cardsFalta.length} cards que não estão em public/cards/ (${cardsFalta.slice(0, 3).join(', ')}${cardsFalta.length > 3 ? ', ...' : ''}): o molde desenha um quadro escuro no lugar de cada um. Faça os cards com o seu material: da raiz do estúdio, .venv/Scripts/python.exe tools/cards.py videos/<pasta deste vídeo> (LEIA.md, passo 2)`);
+if (cardsFalta.length) avisos.push(`src/cards.json lista ${cardsFalta.length} cards que não estão em public/cards/ (${cardsFalta.slice(0, 3).join(', ')}${cardsFalta.length > 3 ? ', ...' : ''}): o molde desenha um quadro escuro no lugar de cada um. Faça os cards com o seu material: da raiz do estúdio, .venv/Scripts/python.exe tools/cards.py videos/<pasta deste vídeo> (modelos/superpodcast01/superpodcast01.md, "Como fazer um vídeo novo")`);
 for (const p of C.PLANOS) {
 	if (p.img && !existe(p.img)) avisos.push(`o plano ${p.id} (${p.mundo}) usa img '${p.img}', que não está em public/: sai a gravação em tom de arquivo (plano B); veja se o texto dele não cai no rosto`);
 	if (p.mundo === 'palco' && !existe('palco.png')) avisos.push(`o plano ${p.id} é de palco e não há public/palco.png: sai o palco desenhado pelo molde (o padrão sem IA)`);

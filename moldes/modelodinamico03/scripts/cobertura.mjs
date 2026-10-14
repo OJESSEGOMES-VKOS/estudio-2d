@@ -1,4 +1,4 @@
-// Conferidor do modelodinamico03: lê o plano de src/Reel.tsx e confere as regras de ofício (REGRAS.md §3 e §5) e as do
+// Conferidor do modelodinamico03: lê o plano de src/Reel.tsx e confere as regras de ofício (regras da casa) e as do
 // modelo. Sai com código 1 quando reprova e diz o que mexer (arquivo:linha). Rode de dentro da pasta do vídeo (ou de
 // qualquer lugar: os caminhos partem deste arquivo).
 // uso: node scripts/cobertura.mjs
@@ -64,7 +64,7 @@ PB.forEach((p, i) => {
 console.log(`${PB.length} palavras, ${buracos.length} com buraco`);
 buracos.forEach((b) => console.log('  ' + b));
 
-// 2. tempo de leitura (REGRAS §3): pedaço >= 1,5 s na tela e palavra >= 0,4 s depois de nascer; repetição; linhas
+// 2. tempo de leitura (regras da casa): pedaço >= 1,5 s na tela e palavra >= 0,4 s depois de nascer; repetição; linhas
 const MIN_PEDACO = 1.5, MIN_PALAVRA = 0.4, MAX_LINHAS_LEG = 2, MAX_LINHAS = 4;
 const ex = exibicoes();
 const curtos = [], linhas = [];
@@ -81,7 +81,7 @@ const vezes = PB.map(() => 0);
 ex.forEach((e) => e.ids.forEach((i) => vezes[i]++));
 const repetidas = vezes.flatMap((v, i) => (v > 1 ? [`${i} "${PB[i].text}" ${v} vezes: tire-a de um dos pedaços/blocos (cada trecho aparece uma vez só)`] : []));
 
-// 3. posições, rosto, choque e zona segura (REGRAS §3 e §5), quadro a quadro, sem e com prévias:
+// 3. posições, rosto, choque e zona segura (regras da casa), quadro a quadro, sem e com prévias:
 // - legenda em repouso só em LEG_Y (a da regra) ou LEG_Y2 (2ª posição, pé em 1500); no meio só na ida/volta;
 // - o topo de todo texto fica abaixo do queixo medido (+ FOLGA_ROSTO); destaque e legenda nunca se cruzam;
 // - todo texto dentro de x ZONA.esq–ZONA.dir e y ZONA.topo–ZONA.base (60–940, 250–1500).

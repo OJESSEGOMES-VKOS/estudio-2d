@@ -5,7 +5,7 @@ import PB from './palavras.json';
 import PLANO from './plano.json';
 
 /**
- * Vitrine no ilustrations01 (../../modelos/ilustrations01/MODELO.md), 1º vídeo do modelo.
+ * Vitrine no ilustrations01 (../../modelos/ilustrations01/ilustrations01.md), 1º vídeo do modelo.
  * Forma C (corrente com virada, ref4): bonecos palito idênticos chegam um depois do outro segurando a mesma tela crua;
  * quando param, uma varredura edita a tela, cada uma de um jeito. Na virada ("outros modelos de edição") todas acendem
  * verde; o último a chegar (você) tem a tela crua até "usar isso nos seus vídeos". Apagão e moral: COMENTA “EDIÇÃO”.
@@ -23,9 +23,9 @@ export const ZONA = {esq: 60, dir: 940, topo: 250, base: 1500};
 const didact = loadDidact('normal', {weights: ['400'], subsets: ['latin', 'latin-ext']});
 const LETRA = didact.fontFamily;
 export const FONTES = [LETRA]; // uma fonte, um peso (geométrica com o I de serifa, como as frases da ref4)
-const CORPO = 34; // altura da maiúscula ~24 px = 1,25% da altura (MODELO §3; medido na ref4: 22 a 23 px)
+const CORPO = 34; // altura da maiúscula ~24 px = 1,25% da altura (ilustrations01.md; medido na ref4: 22 a 23 px)
 
-/* identidade do modelo (MODELO §8) */
+/* identidade do modelo (ilustrations01.md) */
 const COR = {giz: '#FCFCFC', c1: '#2C2C2C', c2: '#363636', c3: '#6A6A6A', c4: '#9B9B9B', verde: '#00FB10', verdeLuz: '#88FF8C'};
 
 export type Props = {previas: boolean; nomesPrevias: [string, string]; musica?: boolean; efeitos?: boolean};
@@ -48,7 +48,7 @@ if (!PS.length) pare('src/palavras.json está vazio: rode tools/novo-video.py co
 		const j = k >= 0 ? k : Math.min(plano.length, fala.length);
 		pare(
 			`O plano não bate com a fala. src/plano.json foi feito para outra fala: na palavra ${j + 1} o plano tem "${plano[j] ?? '(fim)'}" e src/palavras.json tem "${fala[j] ?? '(fim)'}". ` +
-				'Refaça a história sobre a fala nova em src/plano.json ("chegadas", "frases", "moral", "apenasUm", "previas", "virada", "apagao"; LEIA, "Vídeo novo") e cole o texto da fala nova no campo "fala" (linha 2).',
+				'Refaça a história sobre a fala nova em src/plano.json ("chegadas", "frases", "moral", "apenasUm", "previas", "virada", "apagao"; modelos/ilustrations01/ilustrations01.md, seção do vídeo novo) e cole o texto da fala nova no campo "fala" (linha 2).',
 		);
 	}
 }
@@ -107,7 +107,7 @@ export const T = {
 };
 const VARRE = 0.28; // duração da varredura
 
-/* chegadas: entra pela esquerda e freia longo (MODELO §3: 1,9 a 2,7 s). `edita`: a varredura na tela dele; `previa` (0
+/* chegadas: entra pela esquerda e freia longo (ilustrations01.md: 1,9 a 2,7 s). `edita`: a varredura na tela dele; `previa` (0
    esquerda, 1 direita): a tela que sobe com a prévia; `destaque`: o que acende no apenasUm; `voce`: o último, que só
    fica verde quando edita */
 type Chegada = {x0: number; x1: number; t0: number; d: number; edita: number | null; previa?: number; destaque?: boolean; voce?: boolean};
@@ -120,7 +120,7 @@ const velX = (c: Chegada, t: number) => {
 };
 export const PASSO = 62; // px por meia passada
 
-/* frases: digitação com a letra crescendo, uma por vez, some em 0,1 s 0,4 s antes da próxima (MODELO §3) */
+/* frases: digitação com a letra crescendo, uma por vez, some em 0,1 s 0,4 s antes da próxima (ilustrations01.md) */
 type Frase = {txt: string; de: number; dig: number; ate: number};
 export const FRASES: Frase[] = PL.frases.map((f, k) => ({...f, de: tempo(f.de, `frases[${k}].de`), ate: tempo(f.ate, `frases[${k}].ate`)}));
 /** a moral, depois do apagão, fica até o fim ([] desliga) */
@@ -484,7 +484,7 @@ export const VitrineIlustrations01: React.FC<Props> = ({previas = false, nomesPr
 							</filter>
 						</defs>
 						<Halos t={t} />
-						{/* reflexo: cópia espelhada sob o chão, borrada, ~20% da luz, some em 9% da altura (MODELO §3) */}
+						{/* reflexo: cópia espelhada sob o chão, borrada, ~20% da luz, some em 9% da altura (ilustrations01.md) */}
 						<g mask="url(#mReflexo)" opacity={0.22}>
 							<g transform={`translate(0,${2 * CHAO}) scale(1,-1)`} filter="url(#bReflexo)">
 								<Elenco t={t} previas={previas} sufixo="r" />

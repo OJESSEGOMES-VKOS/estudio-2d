@@ -4,9 +4,11 @@
 // - texto falado (ATRAS + FRASES juntos quando se sobrepõem, e o CTA): bloco >= 1,5 s e >= 1 s + 3 palavras/s,
 //   cada palavra >= 0,4 s na tela depois de entrar, no máximo 4 linhas;
 // - títulos e rótulos (nomes): >= 1 s + 3 palavras/s (um nome conta como uma palavra);
+// - conta no gelo (LISTA): cada item >= 1 s + 3 palavras/s depois de entrar, a conta inteira >= 1 s + 3 palavras/s, 1 a 5
+//   itens na ordem da fala, e o rosto no cartão (POSE.cartao) durante a conta;
 // - nada atravessa um corte seco (chave de câmera sem transição ou troca da montagem);
 // - a duração cobre a fala.
-// Sem legenda corrida neste modelo; as posições são as do desenho (MODELO §4), por isso a zona segura não é medida aqui.
+// Sem legenda corrida neste modelo; as posições são as do desenho (modelos/youtubeedition01/youtubeedition01.md, seção 5), por isso a zona segura não é medida aqui.
 // No fim, imprime o comando da trilha com os toques deste plano.
 import {build} from 'esbuild';
 import fs from 'node:fs';
@@ -33,7 +35,7 @@ try {
 }
 if (!P) process.exit(1);
 
-const {ATRAS, FRASES, TITULOS, GRADE, GRADES, MONTAGEM, REEL, ESTE, PREVIAS, CTA, DURACAO_Q, PS, chaves} = P;
+const {LISTA = null, ATRAS, FRASES, TITULOS, GRADE, GRADES, MONTAGEM, REEL, ESTE, PREVIAS, CTA, DURACAO_Q, PS, chaves} = P;
 const FPS = 30;
 const fim = DURACAO_Q / FPS;
 const erros = [];
@@ -60,6 +62,7 @@ const conferir = (previas) => {
 		...(REEL ? [['@ da tela de reels (com a prop arroba)', REEL.de + 0.15, REEL.ate]] : []),
 		...(ESTE ? [[`rótulo "${ESTE.rotulo}"`, ESTE.de, ESTE.ate]] : []),
 		...(previas && PREVIAS ? [['nomes das prévias', PREVIAS.entra + 0.12, PREVIAS.ate]] : []),
+		...(LISTA ? [[`conta "${LISTA.itens.map((x) => x[0]).join(' ')}"`, LISTA.itens[0][1], LISTA.ate, LISTA.itens.reduce((s, [p]) => s + n(p), 0)], ...LISTA.itens.map(([p, t0]) => [`item "${p}"`, t0, LISTA.ate, n(p)])] : []),
 	];
 	const modo = previas ? 'com prévias' : 'sem prévias';
 	const linha = (nome, de, ate, precisa, ok) => console.log(`  ${nome.padEnd(46).slice(0, 46)} ${de.toFixed(2).padStart(6)}-${ate.toFixed(2).padStart(6)}  ${(ate - de).toFixed(2)} s / ${precisa.toFixed(2)} s  ${ok ? 'OK' : 'REPROVA'}`);
@@ -75,12 +78,26 @@ const conferir = (previas) => {
 		const c = cortes.filter((x) => de < x && x < ate - 1e-6);
 		if (c.length) erros.push(`${modo}: ${nome} atravessa o corte seco em ${c.map((x) => x.toFixed(2)).join(', ')} s`);
 	}
-	for (const [nome, de, ate] of nomes) {
-		const ok = ate - de >= 1 + 1 / 3 - 0.01;
-		linha(nome, de, ate, 1 + 1 / 3, ok);
-		if (!ok) erros.push(`${modo}: ${nome} fica ${(ate - de).toFixed(2)} s (precisa de 1,33 s)`);
+	for (const [nome, de, ate, np = 1] of nomes) {
+		const precisa = 1 + np / 3;
+		const ok = ate - de >= precisa - 0.01;
+		linha(nome, de, ate, precisa, ok);
+		if (!ok) erros.push(`${modo}: ${nome} fica ${(ate - de).toFixed(2)} s (precisa de ${precisa.toFixed(2).replace('.', ',')} s)`);
 		const c = cortes.filter((x) => de < x && x < ate - 1e-6);
 		if (c.length) erros.push(`${modo}: ${nome} atravessa o corte seco em ${c.map((x) => x.toFixed(2)).join(', ')} s`);
+	}
+	if (LISTA) {
+		const its = LISTA.itens;
+		if (its.length < 1 || its.length > 5) erros.push(`a conta tem ${its.length} itens (de 1 a 5; mais que isso, divida em duas telas)`);
+		its.forEach(([p, t0], k) => {
+			if (t0 < LISTA.de || t0 >= LISTA.ate) erros.push(`a conta: "${p}" entra em ${t0.toFixed(2)} s, fora da tela (${LISTA.de.toFixed(2)}-${LISTA.ate.toFixed(2)} s)`);
+			if (k && t0 < its[k - 1][1]) erros.push(`a conta: "${p}" entra antes do item anterior (a ordem é a da fala)`);
+		});
+		for (const x of [LISTA.de + 0.4, (LISTA.de + LISTA.ate) / 2, LISTA.ate - 0.05]) {
+			const ch = chaves(previas).filter(([t]) => t <= x).pop();
+			if (!ch || ch[1].w !== 370) erros.push(`${modo}: a conta (${LISTA.de.toFixed(2)}-${LISTA.ate.toFixed(2)} s) pede o rosto no cartão: uma chave [${LISTA.de.toFixed(2)}, POSE.cartao, 0.38, true] e nenhuma outra pose até ${LISTA.ate.toFixed(2)} s`);
+			if (!ch || ch[1].w !== 370) break;
+		}
 	}
 };
 conferir(false);
@@ -90,7 +107,7 @@ if (fim < ultima) erros.push(`a duração (${fim.toFixed(2)} s) corta a fala, qu
 
 console.log(erros.length ? 'PROBLEMAS:\n  ' + erros.join('\n  ') : 'sem problemas');
 const f2 = (x) => String(Math.round(x * 100) / 100);
-const sopros = [...GRADES.map((g) => g.de), ...(REEL ? [REEL.de] : [])].sort((a, b) => a - b);
+const sopros = [...GRADES.map((g) => g.de), ...(REEL ? [REEL.de] : []), ...(LISTA ? [LISTA.de] : [])].sort((a, b) => a - b);
 const toques = [...ATRAS.slice(0, 1).map((a) => a.de), ...TITULOS.map((d) => d.de), ...(CTA ? [CTA.chave[1]] : [])].sort((a, b) => a - b);
 console.log(`trilha (opcional) deste plano: ../../.venv/Scripts/python.exe scripts/trilha.py${sopros.length ? ' --sopros ' + sopros.map(f2).join(' ') : ''}${toques.length ? ' --toques ' + toques.map(f2).join(' ') : ''}`);
 process.exit(erros.length ? 1 : 0);
